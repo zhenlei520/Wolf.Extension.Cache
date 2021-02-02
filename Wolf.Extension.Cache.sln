@@ -1,0 +1,44 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5BAD409D-3957-4009-9B05-3DC51A5D33B4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{157F59B7-1E06-4AC1-948B-56B61DC2E28E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wolf.Extension.Cache", "src\Wolf.Extension.Cache\Wolf.Extension.Cache.csproj", "{7B305C78-9E40-4F3C-A7D7-51B0E56C8738}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wolf.Extension.Cache.Abstrations", "src\Wolf.Extension.Cache.Abstrations\Wolf.Extension.Cache.Abstrations.csproj", "{5B5E55B3-5BD7-4DCC-9CA8-94B1CC8D2779}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wolf.Extension.Cache.Redis", "src\Wolf.Extension.Cache.Redis\Wolf.Extension.Cache.Redis.csproj", "{B7C93922-9410-4B44-9EE9-D839E104F9F2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wolf.Extension.Cache.MemCache", "src\Wolf.Extension.Cache.MemCache\Wolf.Extension.Cache.MemCache.csproj", "{3EEE480E-EBFD-47E1-AE62-8FCFC57963EC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{7B305C78-9E40-4F3C-A7D7-51B0E56C8738} = {5BAD409D-3957-4009-9B05-3DC51A5D33B4}
+		{5B5E55B3-5BD7-4DCC-9CA8-94B1CC8D2779} = {5BAD409D-3957-4009-9B05-3DC51A5D33B4}
+		{B7C93922-9410-4B44-9EE9-D839E104F9F2} = {5BAD409D-3957-4009-9B05-3DC51A5D33B4}
+		{3EEE480E-EBFD-47E1-AE62-8FCFC57963EC} = {5BAD409D-3957-4009-9B05-3DC51A5D33B4}
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7B305C78-9E40-4F3C-A7D7-51B0E56C8738}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7B305C78-9E40-4F3C-A7D7-51B0E56C8738}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7B305C78-9E40-4F3C-A7D7-51B0E56C8738}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7B305C78-9E40-4F3C-A7D7-51B0E56C8738}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5B5E55B3-5BD7-4DCC-9CA8-94B1CC8D2779}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5B5E55B3-5BD7-4DCC-9CA8-94B1CC8D2779}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5B5E55B3-5BD7-4DCC-9CA8-94B1CC8D2779}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5B5E55B3-5BD7-4DCC-9CA8-94B1CC8D2779}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B7C93922-9410-4B44-9EE9-D839E104F9F2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B7C93922-9410-4B44-9EE9-D839E104F9F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B7C93922-9410-4B44-9EE9-D839E104F9F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B7C93922-9410-4B44-9EE9-D839E104F9F2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3EEE480E-EBFD-47E1-AE62-8FCFC57963EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3EEE480E-EBFD-47E1-AE62-8FCFC57963EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3EEE480E-EBFD-47E1-AE62-8FCFC57963EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3EEE480E-EBFD-47E1-AE62-8FCFC57963EC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
