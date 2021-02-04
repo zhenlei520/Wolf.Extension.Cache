@@ -7,6 +7,16 @@ namespace Wolf.Extension.Cache.MemoryCache
     /// </summary>
     public partial class CacheProvider
     {
+        #region 同步
 
+        
+
+        #endregion
+
+        #region 异步
+
+        
+
+        #endregion
     }
 }
