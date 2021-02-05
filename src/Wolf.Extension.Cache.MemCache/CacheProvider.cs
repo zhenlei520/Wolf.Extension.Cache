@@ -8,8 +8,7 @@ namespace Wolf.Extension.Cache.MemCache
     /// <summary>
     ///
     /// </summary>
-    public class CacheProvider:ICacheProvider
+    public class CacheProvider : ICacheProvider
     {
-
     }
 }

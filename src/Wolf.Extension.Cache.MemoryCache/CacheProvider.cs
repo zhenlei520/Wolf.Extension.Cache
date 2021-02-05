@@ -23,6 +23,11 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <summary>
         ///
         /// </summary>
+        private readonly object obj = new object();
+
+        /// <summary>
+        ///
+        /// </summary>
         private readonly IMemoryCache _memoryCache;
 
         /// <summary>
@@ -362,8 +367,6 @@ namespace Wolf.Extension.Cache.MemoryCache
 
         #region 异步
 
-        #endregion
-
         #region 设置缓存（异步）
 
         /// <summary>
@@ -586,6 +589,8 @@ namespace Wolf.Extension.Cache.MemoryCache
         {
             return Task.FromResult(RemoveRange(keys));
         }
+
+        #endregion
 
         #endregion
 
