@@ -136,6 +136,13 @@ namespace Wolf.Extension.Cache.Abstractions
         /// <returns>返回删除的数量</returns>
         bool RemoveRange(IEnumerable<string> keys);
 
+        /// <summary>
+        /// 查找所有符合给定模式( pattern)的 key
+        /// </summary>
+        /// <param name="pattern">如：runoob*，不含prefix前辍RedisHelper.Name</param>
+        /// <returns></returns>
+        List<string> Keys(string pattern);
+
         #endregion
 
         #region 异步
@@ -266,6 +273,13 @@ namespace Wolf.Extension.Cache.Abstractions
         /// <param name="keys">待删除的Key集合</param>
         /// <returns>返回删除的数量</returns>
         Task<bool> RemoveRangeAsync(List<string> keys);
+
+        /// <summary>
+        /// 查找所有符合给定模式( pattern)的 key（异步）
+        /// </summary>
+        /// <param name="pattern">如：runoob*，不含prefix前辍RedisHelper.Name</param>
+        /// <returns></returns>
+        Task<List<string>> KeysAsync(string pattern);
 
         #endregion
     }
