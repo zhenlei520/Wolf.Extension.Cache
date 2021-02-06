@@ -72,7 +72,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         public bool StringSet(IEnumerable<BaseRequest<string>> list, TimeSpan? expiry = null,
             PersistentOps persistentOps = null)
         {
-            return this.StringSet<string>(list, expiry, persistentOps);
+            return this.Set<string>(list, expiry, persistentOps);
         }
 
         #endregion
@@ -131,7 +131,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="persistentOps">策略</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public bool StringSet<T>(IEnumerable<BaseRequest<T>> list, TimeSpan? expiry = null,
+        public bool Set<T>(IEnumerable<BaseRequest<T>> list, TimeSpan? expiry = null,
             PersistentOps persistentOps = null)
         {
             if (list == null || !list.Any())
@@ -440,7 +440,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         public Task<bool> SetAsync<T>(List<BaseRequest<T>> list, TimeSpan? expiry = null,
             PersistentOps persistentOps = null)
         {
-            return Task.FromResult(StringSet(list, expiry, persistentOps));
+            return Task.FromResult(Set(list, expiry, persistentOps));
         }
 
         #endregion
