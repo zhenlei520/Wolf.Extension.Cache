@@ -221,20 +221,34 @@ namespace Wolf.Extension.Cache.MemoryCache
 
         #endregion
 
+        #region 从缓存中取出缓存key对应的hash键集合
+
         /// <summary>
         /// 从缓存中取出缓存key对应的hash键集合
         /// </summary>
         /// <param name="key">缓存键</param>
         /// <param name="hashKeys">Hash键集合</param>
         /// <returns></returns>
-        List<HashResponse<string>> HashGet(string key, List<string> hashKeys);
+        public List<HashResponse<string>> HashGet(string key, List<string> hashKeys)
+        {
+            return this.HashGet<string>(key, hashKeys);
+        }
+
+        #endregion
+
+        #region 从缓存中取出多个key对应的hash键集合
 
         /// <summary>
         /// 从缓存中取出多个key对应的hash键集合
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
-        List<HashMultResponse<string>> HashGet(List<MultHashRequest<string>> list);
+        public List<HashMultResponse<string>> HashGet(List<MultHashRequest<string>> list)
+        {
+            return this.HashGet<string>(list);
+        }
+
+        #endregion
 
         #region 根据缓存key以及hash key找到唯一对应的值
 
@@ -318,20 +332,21 @@ namespace Wolf.Extension.Cache.MemoryCache
                     HashMultResponse<T> hash = new HashMultResponse<T>()
                     {
                         Key = item.Key,
-                        List=new List<HashResponse<T>>()
+                        List = new List<HashResponse<T>>()
                     };
                     foreach (var key in item.List)
                     {
                         if (cacheInfo.Value.Any(x => x.Key == key))
                         {
-                            var value = cacheInfo.Value.Where(x => x.Key == key).Select(x=>x.Value).FirstOrDefault();
-                            hash.List.Add(new HashResponse<T>(key,value));
+                            var value = cacheInfo.Value.Where(x => x.Key == key).Select(x => x.Value).FirstOrDefault();
+                            hash.List.Add(new HashResponse<T>(key, value));
                         }
                         else
                         {
-                            hash.List.Add(new HashResponse<T>(key,default(T)));
+                            hash.List.Add(new HashResponse<T>(key, default(T)));
                         }
                     }
+
                     res.Add(hash);
                 }
             });
@@ -340,13 +355,40 @@ namespace Wolf.Extension.Cache.MemoryCache
 
         #endregion
 
+        #region 得到指定缓存key下的所有hash键集合
+
         /// <summary>
         /// 得到指定缓存key下的所有hash键集合
         /// </summary>
         /// <param name="key">缓存key</param>
         /// <param name="top">得到前top条的Hash键集合，默认查询全部</param>
         /// <returns></returns>
-        List<string> HashKeyList(string key, int? top = null);
+        public List<string> HashKeyList(string key, int? top = null)
+        {
+            var cacheInfo = this.Get<Hashtable>(key);
+            if (cacheInfo == null)
+            {
+                return new List<string>();
+            }
+
+            List<string> list = new List<string>();
+            var i = 0;
+            foreach (string hashKey in cacheInfo.Keys)
+            {
+                if (top == null || i < top.Value)
+                {
+                    list.Add(hashKey);
+                }
+
+                i++;
+            }
+
+            return list;
+        }
+
+        #endregion
+
+        #region 根据缓存key得到全部的hash键值对集合
 
         /// <summary>
         /// 根据缓存key得到全部的hash键值对集合
@@ -354,7 +396,33 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="key">缓存key</param>
         /// <param name="top">得到前top条的Hash键值对集合，默认查询全部</param>
         /// <returns></returns>
-        List<HashResponse<string>> HashList(string key, int? top = null);
+        public List<HashResponse<string>> HashList(string key, int? top = null)
+        {
+            var cacheInfo = this.Get<Hashtable>(key);
+            if (cacheInfo == null)
+            {
+                return new List<HashResponse<string>>();
+            }
+            var i = 0;
+            List<HashResponse<string>> list = new List<HashResponse<string>>();
+            foreach (string hashKey in cacheInfo.Keys)
+            {
+                if (top == null || i < top.Value)
+                {
+                    list.Add(new HashResponse<string>()
+                    {
+                        HashKey = hashKey,
+                        HashValue = cacheInfo[hashKey]?.ToString()
+                    });
+                }
+
+                i++;
+            }
+
+            return list;
+        }
+
+        #endregion
 
         /// <summary>
         /// 根据缓存key得到全部的hash键值对集合
