@@ -17,6 +17,6 @@ namespace Wolf.Extension.Cache.Abstractions.Response.Hash
         /// <summary>
         /// Hash信息
         /// </summary>
-        public IEnumerable<HashResponse<T>> List { get; set; }
+        public List<HashResponse<T>> List { get; set; }
     }
 }

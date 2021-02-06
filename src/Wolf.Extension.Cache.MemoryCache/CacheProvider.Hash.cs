@@ -268,17 +268,77 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <returns></returns>
         public List<HashResponse<T>> HashGet<T>(string key, List<string> hashKeys)
         {
+            var hashInfo = this.Get<Hashtable>(key);
+            if (hashInfo == null)
+            {
+                return new List<HashResponse<T>>();
+            }
 
+            List<HashResponse<T>> list = new List<HashResponse<T>>();
+            hashKeys.ForEach(hashKey =>
+            {
+                list.Add(hashInfo.ContainsKey(hashKey)
+                    ? new HashResponse<T>(hashKey, (T) hashInfo[hashKey])
+                    : new HashResponse<T>(hashKey, default(T)));
+            });
+            return list;
         }
 
         #endregion
+
+        #region 从缓存中取出多个key对应的hash键集合
 
         /// <summary>
         /// 从缓存中取出多个key对应的hash键集合
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
-        List<HashMultResponse<T>> HashGet<T>(List<MultHashRequest<string>> list);
+        public List<HashMultResponse<T>> HashGet<T>(List<MultHashRequest<string>> list)
+        {
+            var cacheKeyList = list.Select(x => x.Key).ToList();
+            List<BaseResponse<List<BaseResponse<T>>>> cacheList = this.Get<List<BaseResponse<T>>>(cacheKeyList);
+            List<HashMultResponse<T>> res = new List<HashMultResponse<T>>();
+            list.ForEach(item =>
+            {
+                BaseResponse<List<BaseResponse<T>>> cacheInfo = cacheList.FirstOrDefault(x => x.Key == item.Key);
+                if (cacheInfo?.Value == null)
+                {
+                    res.Add(new HashMultResponse<T>()
+                    {
+                        Key = item.Key,
+                        List = item.List.Select(x => new HashResponse<T>()
+                        {
+                            HashKey = x,
+                            HashValue = default(T)
+                        }).ToList()
+                    });
+                }
+                else
+                {
+                    HashMultResponse<T> hash = new HashMultResponse<T>()
+                    {
+                        Key = item.Key,
+                        List=new List<HashResponse<T>>()
+                    };
+                    foreach (var key in item.List)
+                    {
+                        if (cacheInfo.Value.Any(x => x.Key == key))
+                        {
+                            var value = cacheInfo.Value.Where(x => x.Key == key).Select(x=>x.Value).FirstOrDefault();
+                            hash.List.Add(new HashResponse<T>(key,value));
+                        }
+                        else
+                        {
+                            hash.List.Add(new HashResponse<T>(key,default(T)));
+                        }
+                    }
+                    res.Add(hash);
+                }
+            });
+            return res;
+        }
+
+        #endregion
 
         /// <summary>
         /// 得到指定缓存key下的所有hash键集合
