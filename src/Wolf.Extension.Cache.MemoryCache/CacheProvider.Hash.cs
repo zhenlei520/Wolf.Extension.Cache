@@ -398,21 +398,37 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <returns></returns>
         public List<HashResponse<string>> HashList(string key, int? top = null)
         {
+            return this.HashList<string>(key, top);
+        }
+
+        #endregion
+
+        #region 根据缓存key得到全部的hash键值对集合
+
+        /// <summary>
+        /// 根据缓存key得到全部的hash键值对集合
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <param name="top">得到前top条的Hash键值对集合，默认查询全部</param>
+        /// <returns></returns>
+        public List<HashResponse<T>> HashList<T>(string key, int? top = null)
+        {
             var cacheInfo = this.Get<Hashtable>(key);
             if (cacheInfo == null)
             {
-                return new List<HashResponse<string>>();
+                return new List<HashResponse<T>>();
             }
+
             var i = 0;
-            List<HashResponse<string>> list = new List<HashResponse<string>>();
+            List<HashResponse<T>> list = new List<HashResponse<T>>();
             foreach (string hashKey in cacheInfo.Keys)
             {
                 if (top == null || i < top.Value)
                 {
-                    list.Add(new HashResponse<string>()
+                    list.Add(new HashResponse<T>()
                     {
                         HashKey = hashKey,
-                        HashValue = cacheInfo[hashKey]?.ToString()
+                        HashValue = (T) cacheInfo[hashKey]
                     });
                 }
 
@@ -424,13 +440,7 @@ namespace Wolf.Extension.Cache.MemoryCache
 
         #endregion
 
-        /// <summary>
-        /// 根据缓存key得到全部的hash键值对集合
-        /// </summary>
-        /// <param name="key">缓存key</param>
-        /// <param name="top">得到前top条的Hash键值对集合，默认查询全部</param>
-        /// <returns></returns>
-        List<HashResponse<T>> HashList<T>(string key, int? top = null);
+        #region 根据多个缓存key得到缓存key对应缓存key全部的hash键值对集合的集合列表
 
         /// <summary>
         /// 根据多个缓存key得到缓存key对应缓存key全部的hash键值对集合的集合列表
@@ -438,7 +448,14 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="keys">缓存键集合</param>
         /// <param name="top">得到前top条的Hash键值对集合，默认查询全部</param>
         /// <returns></returns>
-        List<HashMultResponse<string>> HashMultList(IEnumerable<string> keys, int? top = null);
+        public List<HashMultResponse<string>> HashMultList(IEnumerable<string> keys, int? top = null)
+        {
+            return this.HashMultList<string>(keys, top);
+        }
+
+        #endregion
+
+        #region 根据多个缓存key得到缓存key对应缓存key全部的hash键值对集合的集合列表
 
         /// <summary>
         /// 根据多个缓存key得到缓存key对应缓存key全部的hash键值对集合的集合列表
@@ -447,7 +464,52 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="top">得到前top条的Hash键值对集合，默认查询全部</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        List<HashMultResponse<T>> HashMultList<T>(IEnumerable<string> keys, int? top = null);
+        public List<HashMultResponse<T>> HashMultList<T>(IEnumerable<string> keys, int? top = null)
+        {
+            if (keys == null || !keys.Any())
+            {
+                return new List<HashMultResponse<T>>();
+            }
+
+            var cacheList = this.Get<Hashtable>(keys);
+            if (cacheList == null || !cacheList.Any())
+            {
+                return new List<HashMultResponse<T>>();
+            }
+
+            List<HashMultResponse<T>> multList = new List<HashMultResponse<T>>();
+            foreach (var key in keys)
+            {
+                var cacheInfo = cacheList.FirstOrDefault(x => x.Key == key);
+                var i = 0;
+                List<HashResponse<T>> list = new List<HashResponse<T>>();
+                foreach (string hashKey in cacheInfo.Value.Keys)
+                {
+                    if (top == null || i < top.Value)
+                    {
+                        list.Add(new HashResponse<T>()
+                        {
+                            HashKey = hashKey,
+                            HashValue = (T) cacheInfo.Value[hashKey]
+                        });
+                    }
+
+                    i++;
+                }
+
+                multList.Add(new HashMultResponse<T>()
+                {
+                    Key = key,
+                    List = list
+                });
+            }
+
+            return multList;
+        }
+
+        #endregion
+
+        #region 判断HashKey是否存在
 
         /// <summary>
         /// 判断HashKey是否存在
@@ -455,7 +517,15 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="key">缓存键</param>
         /// <param name="hashKey">哈希键</param>
         /// <returns></returns>
-        bool HashExists(string key, string hashKey);
+        public bool HashExists(string key, string hashKey)
+        {
+            var cacheInfo = this.Get<Hashtable>(key);
+            return cacheInfo != null && cacheInfo.ContainsKey(hashKey);
+        }
+
+        #endregion
+
+        #region 移除指定缓存键的Hash键对应的值
 
         /// <summary>
         /// 移除指定缓存键的Hash键对应的值
@@ -463,7 +533,21 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="key">缓存键</param>
         /// <param name="hashKey">Hash键</param>
         /// <returns></returns>
-        bool HashDelete(string key, string hashKey);
+        public bool HashDelete(string key, string hashKey)
+        {
+            var cacheInfo = this.Get<Hashtable>(key);
+            if (cacheInfo == null || !cacheInfo.ContainsKey(hashKey))
+            {
+                return true;
+            }
+
+            cacheInfo.Remove(hashKey);
+            return true;
+        }
+
+        #endregion
+
+        #region 移除指定缓存键的多个Hash键对应的值
 
         /// <summary>
         /// 移除指定缓存键的多个Hash键对应的值
@@ -471,7 +555,23 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="key">缓存键</param>
         /// <param name="hashKeys">hash键集合</param>
         /// <returns></returns>
-        bool HashDelete(string key, List<string> hashKeys);
+        public bool HashDelete(string key, List<string> hashKeys)
+        {
+            var cacheInfo = this.Get<Hashtable>(key);
+            if (cacheInfo == null)
+            {
+                return true;
+            }
+
+            foreach (var hashKey in hashKeys)
+            {
+                cacheInfo.Remove(hashKey);
+            }
+
+            return true;
+        }
+
+        #endregion
 
         /// <summary>
         /// 删除多个缓存键对应的hash键集合
