@@ -1,15 +1,13 @@
 ﻿// Copyright (c) zhenlei520 All rights reserved.
 
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Wolf.Extension.Cache.Abstractions.Configurations;
 using Wolf.Extension.Cache.Abstractions.Request.Base;
 using Wolf.Extension.Cache.Abstractions.Request.Hash;
 using Wolf.Extension.Cache.Abstractions.Response.Base;
 using Wolf.Extension.Cache.Abstractions.Response.Hash;
-using Wolf.Systems.Core;
 
 namespace Wolf.Extension.Cache.MemoryCache
 {
@@ -98,21 +96,21 @@ namespace Wolf.Extension.Cache.MemoryCache
         {
             lock (obj)
             {
-                var hashTable = this.Get<Hashtable>(key);
-                if (hashTable != null)
+                var hashSet = this.Get<HashSet<HashResponse<T>>>(key);
+                if (hashSet != null)
                 {
-                    if (hashTable.ContainsKey(hashKey))
+                    if (hashSet.Any(x => x.HashKey == hashKey))
                     {
-                        hashTable.Remove(hashKey);
+                        hashSet.RemoveWhere(x => x.HashKey == hashKey);
                     }
                 }
                 else
                 {
-                    hashTable = new Hashtable();
+                    hashSet = new HashSet<HashResponse<T>>();
                 }
 
-                hashTable.Add(hashKey, value);
-                return this.Set(key, hashTable, persistentOps: persistentOps);
+                hashSet.Add(new HashResponse<T>(hashKey, value));
+                return this.Set(key, hashSet, persistentOps: persistentOps);
             }
         }
 
@@ -133,23 +131,23 @@ namespace Wolf.Extension.Cache.MemoryCache
         {
             lock (obj)
             {
-                var hashTable = this.Get<Hashtable>(request.Key);
+                var hashSet = this.Get<HashSet<HashResponse<T>>>(request.Key);
                 foreach (var item in request.List)
                 {
-                    if (hashTable == null)
+                    if (hashSet == null)
                     {
-                        hashTable = new Hashtable();
+                        hashSet = new HashSet<HashResponse<T>>();
                     }
 
-                    if (hashTable.ContainsKey(item.HashKey))
+                    if (hashSet.Any(x => x.HashKey == item.HashKey))
                     {
-                        hashTable.Remove(item.HashKey);
+                        hashSet.RemoveWhere(x => x.HashKey == item.HashKey);
                     }
 
-                    hashTable.Add(item.HashKey, item.Value);
+                    hashSet.Add(new HashResponse<T>(item.HashKey, item.Value));
                 }
 
-                return this.Set(request.Key, hashTable, persistentOps: persistentOps);
+                return this.Set(request.Key, hashSet, persistentOps: persistentOps);
             }
         }
 
@@ -171,32 +169,31 @@ namespace Wolf.Extension.Cache.MemoryCache
         {
             lock (obj)
             {
-                List<BaseRequest<Hashtable>> list = new List<BaseRequest<Hashtable>>();
+                List<BaseRequest<HashSet<HashResponse<T>>>> list = new List<BaseRequest<HashSet<HashResponse<T>>>>();
 
-                var cacheList = this.Get<Hashtable>(request.Select(x => x.Key)) ??
-                                new List<BaseResponse<Hashtable>>(); //得到缓存键对应的hash集合的集合
+                var cacheList = this.Get<HashSet<HashResponse<T>>>(request.Select(x => x.Key)) ??
+                                new List<BaseResponse<HashSet<HashResponse<T>>>>(); //得到缓存键对应的hash集合的集合
                 request.ForEach(item =>
                 {
-                    var hashTable = cacheList.FirstOrDefault(x => x.Key == item.Key) ??
-                                    new BaseResponse<Hashtable>(item.Key, new Hashtable()); //指定缓存的hash键值对集合
+                    var hashSet = cacheList.FirstOrDefault(x => x.Key == item.Key) ??new BaseResponse<HashSet<HashResponse<T>>>(); //指定缓存的hash键值对集合
 
                     foreach (var hashInfo in item.List)
                     {
-                        if (hashTable.Value.ContainsKey(hashInfo.HashKey))
+                        if (hashSet.Value.Any(x=>x.HashKey==hashInfo.HashKey))
                         {
-                            hashTable.Value.Remove(hashInfo.HashKey);
+                            hashSet.Value.RemoveWhere(x=>x.HashKey==hashInfo.HashKey);
                         }
                     }
 
                     foreach (var hashInfo in item.List)
                     {
-                        hashTable.Value.Add(hashInfo.HashKey, hashInfo.Value);
+                        hashSet.Value.Add(new HashResponse<T>(hashInfo.HashKey, hashInfo.Value));
                     }
 
-                    list.Add(new BaseRequest<Hashtable>()
+                    list.Add(new BaseRequest<HashSet<HashResponse<T>>>()
                     {
-                        Key = hashTable.Key,
-                        Value = hashTable.Value
+                        Key = hashSet.Key,
+                        Value = hashSet.Value
                     });
                 });
 
@@ -261,13 +258,13 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <returns></returns>
         public T HashGet<T>(string key, string hashKey)
         {
-            var hashInfo = this.Get<Hashtable>(key);
-            if (hashInfo == null || !hashInfo.ContainsKey(hashKey))
+            var hashInfo = this.Get<HashSet<HashResponse<T>>>(key);
+            if (hashInfo == null || hashInfo.All(x => x.HashKey != hashKey))
             {
                 return default(T);
             }
 
-            return (T) hashInfo[hashKey];
+            return hashInfo.Where(x=>x.HashKey==hashKey).Select(x=>x.HashValue).FirstOrDefault();
         }
 
         #endregion
@@ -282,7 +279,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <returns></returns>
         public List<HashResponse<T>> HashGet<T>(string key, List<string> hashKeys)
         {
-            var hashInfo = this.Get<Hashtable>(key);
+            var hashInfo = this.Get<HashSet<HashResponse<T>>>(key);
             if (hashInfo == null)
             {
                 return new List<HashResponse<T>>();
@@ -291,8 +288,8 @@ namespace Wolf.Extension.Cache.MemoryCache
             List<HashResponse<T>> list = new List<HashResponse<T>>();
             hashKeys.ForEach(hashKey =>
             {
-                list.Add(hashInfo.ContainsKey(hashKey)
-                    ? new HashResponse<T>(hashKey, (T) hashInfo[hashKey])
+                list.Add(hashInfo.Any(x=>x.HashKey==hashKey)
+                    ? new HashResponse<T>(hashKey,  hashInfo.Where(x=>x.HashKey== hashKey).Select(x=>x.HashValue).FirstOrDefault())
                     : new HashResponse<T>(hashKey, default(T)));
             });
             return list;
@@ -365,7 +362,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <returns></returns>
         public List<string> HashKeyList(string key, int? top = null)
         {
-            var cacheInfo = this.Get<Hashtable>(key);
+            var cacheInfo = this.Get<HashSet<HashResponse<string>>>(key);
             if (cacheInfo == null)
             {
                 return new List<string>();
@@ -373,11 +370,11 @@ namespace Wolf.Extension.Cache.MemoryCache
 
             List<string> list = new List<string>();
             var i = 0;
-            foreach (string hashKey in cacheInfo.Keys)
+            foreach (var item in cacheInfo)
             {
                 if (top == null || i < top.Value)
                 {
-                    list.Add(hashKey);
+                    list.Add(item.HashKey);
                 }
 
                 i++;
@@ -413,7 +410,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <returns></returns>
         public List<HashResponse<T>> HashList<T>(string key, int? top = null)
         {
-            var cacheInfo = this.Get<Hashtable>(key);
+            var cacheInfo = this.Get<HashSet<HashResponse<T>>>(key);
             if (cacheInfo == null)
             {
                 return new List<HashResponse<T>>();
@@ -421,14 +418,14 @@ namespace Wolf.Extension.Cache.MemoryCache
 
             var i = 0;
             List<HashResponse<T>> list = new List<HashResponse<T>>();
-            foreach (string hashKey in cacheInfo.Keys)
+            foreach (var item in cacheInfo)
             {
                 if (top == null || i < top.Value)
                 {
                     list.Add(new HashResponse<T>()
                     {
-                        HashKey = hashKey,
-                        HashValue = (T) cacheInfo[hashKey]
+                        HashKey = item.HashKey,
+                        HashValue = item.HashValue
                     });
                 }
 
@@ -471,7 +468,7 @@ namespace Wolf.Extension.Cache.MemoryCache
                 return new List<HashMultResponse<T>>();
             }
 
-            var cacheList = this.Get<Hashtable>(keys);
+            var cacheList = this.Get<HashSet<HashResponse<T>>>(keys);
             if (cacheList == null || !cacheList.Any())
             {
                 return new List<HashMultResponse<T>>();
@@ -483,14 +480,14 @@ namespace Wolf.Extension.Cache.MemoryCache
                 var cacheInfo = cacheList.FirstOrDefault(x => x.Key == key);
                 var i = 0;
                 List<HashResponse<T>> list = new List<HashResponse<T>>();
-                foreach (string hashKey in cacheInfo.Value.Keys)
+                foreach (var item in cacheInfo.Value)
                 {
                     if (top == null || i < top.Value)
                     {
                         list.Add(new HashResponse<T>()
                         {
-                            HashKey = hashKey,
-                            HashValue = (T) cacheInfo.Value[hashKey]
+                            HashKey = item.HashKey,
+                            HashValue = item.HashValue
                         });
                     }
 
@@ -519,8 +516,8 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <returns></returns>
         public bool HashExists(string key, string hashKey)
         {
-            var cacheInfo = this.Get<Hashtable>(key);
-            return cacheInfo != null && cacheInfo.ContainsKey(hashKey);
+            var cacheInfo = this.Get<HashSet<HashResponse<object>>>(key);
+            return cacheInfo != null && cacheInfo.Any(x=>x.HashKey==hashKey);
         }
 
         #endregion
@@ -535,14 +532,8 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <returns></returns>
         public bool HashDelete(string key, string hashKey)
         {
-            var cacheInfo = this.Get<Hashtable>(key);
-            if (cacheInfo == null || !cacheInfo.ContainsKey(hashKey))
-            {
-                return true;
-            }
-
-            cacheInfo.Remove(hashKey);
-            return true;
+            var cacheInfo = this.Get<HashSet<HashResponse<object>>>(key);
+            return this.DeleteHash(cacheInfo, hashKey);
         }
 
         #endregion
@@ -557,7 +548,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <returns></returns>
         public bool HashDelete(string key, List<string> hashKeys)
         {
-            var cacheInfo = this.Get<Hashtable>(key);
+            var cacheInfo = this.Get<HashSet<HashResponse<object>>>(key);
             if (cacheInfo == null)
             {
                 return true;
@@ -565,7 +556,7 @@ namespace Wolf.Extension.Cache.MemoryCache
 
             foreach (var hashKey in hashKeys)
             {
-                cacheInfo.Remove(hashKey);
+                this.DeleteHash(cacheInfo, hashKey);
             }
 
             return true;
@@ -573,12 +564,39 @@ namespace Wolf.Extension.Cache.MemoryCache
 
         #endregion
 
+        #region 删除多个缓存键对应的hash键集合
+
         /// <summary>
-        /// 删除多个缓存键对应的hash键集合
+        /// 删除多个缓存键对应的hash键集合(存在一个成功的即为成功)
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        bool HashRangeDelete(List<HashMultResponse<string>> request);
+        public bool HashRangeDelete(List<BaseRequest<List<string>>> request)
+        {
+            var cacheKeyList = request.Select(x => x.Key).ToList();
+            var hashList = this.Get<HashSet<HashResponse<object>>>(cacheKeyList);
+            bool isSuccess = false;
+            foreach (var item in request)
+            {
+                var hashInfo = hashList.FirstOrDefault(x => x.Key == item.Key);
+                if (hashInfo != null)
+                {
+                    foreach (var hashKey in item.Value)
+                    {
+                        if (this.DeleteHash(hashInfo.Value, hashKey) && !isSuccess)
+                        {
+                            isSuccess = true;
+                        }
+                    }
+                }
+            }
+
+            return isSuccess;
+        }
+
+        #endregion
+
+        #region 为数字增长val
 
         /// <summary>
         /// 为数字增长val
@@ -587,7 +605,35 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="hashKey">hash键</param>
         /// <param name="val">增加的值</param>
         /// <returns>增长后的值</returns>
-        long HashIncrement(string key, string hashKey, long val = 1);
+        public long HashIncrement(string key, string hashKey, long val = 1)
+        {
+            lock (obj)
+            {
+                var cacheInfo = this.Get<HashSet<HashResponse<long>>>(key);
+                if (cacheInfo == null)
+                {
+                    cacheInfo = new HashSet<HashResponse<long>>();
+                }
+
+                long hashValue;
+                if (cacheInfo.Any(x=>x.HashKey==hashKey))
+                {
+                    hashValue = cacheInfo.Where(x => x.HashKey == hashKey).Select(x => x.HashValue).FirstOrDefault();
+                    cacheInfo.RemoveWhere(x=>x.HashKey==hashKey);
+                }
+                else
+                {
+                    hashValue = 0;
+                }
+
+                var res = hashValue + val;
+                cacheInfo.Add(new HashResponse<long>(hashKey, res) );
+                this.Set(key, cacheInfo);
+                return res;
+            }
+        }
+
+        #endregion
 
         /// <summary>
         /// 为数字减少val
@@ -596,11 +642,433 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="hashKey">hash键</param>
         /// <param name="val">减少的值</param>
         /// <returns>减少后的值</returns>
-        long HashDecrement(string key, string hashKey, long val = 1);
+        public long HashDecrement(string key, string hashKey, long val = 1)
+        {
+            lock (obj)
+            {
+                var cacheInfo = this.Get<HashSet<HashResponse<long>>>(key);
+                if (cacheInfo == null)
+                {
+                    cacheInfo = new HashSet<HashResponse<long>>();
+                }
+
+                long hashValue;
+                if (cacheInfo.Any(x=>x.HashKey==hashKey))
+                {
+                    hashValue = cacheInfo.Where(x => x.HashKey == hashKey).Select(x => x.HashValue).FirstOrDefault();
+                    cacheInfo.RemoveWhere(x=>x.HashKey==hashKey);
+                }
+                else
+                {
+                    hashValue = 0;
+                }
+
+                var res = hashValue - val;
+                cacheInfo.Add(new HashResponse<long>(hashKey, res));
+                this.Set(key, cacheInfo);
+                return res;
+            }
+        }
 
         #endregion
 
         #region 异步
+
+        #region 异步
+
+        #region 存储数据到Hash表（异步）
+
+        /// <summary>
+        /// 存储数据到Hash表（异步）
+        /// </summary>
+        /// <param name="key">缓存键</param>
+        /// <param name="hashKey">Hash键</param>
+        /// <param name="value">hash值</param>
+        /// <param name="persistentOps">策略</param>
+        /// <returns></returns>
+        public Task<bool> HashSetAsync(
+            string key,
+            string hashKey,
+            string value,
+            HashPersistentOps persistentOps = null)
+        {
+            return Task.FromResult(this.HashSet(key, hashKey, value, persistentOps));
+        }
+
+        #endregion
+
+        #region 存储数据到Hash表（异步）
+
+        /// <summary>
+        /// 存储数据到Hash表（异步）
+        /// </summary>
+        /// <param name="request">缓存键集合</param>
+        /// <param name="persistentOps">策略</param>
+        /// <returns></returns>
+        public Task<bool> HashSetAsync(
+            MultHashRequest<HashRequest<string>> request,
+            HashPersistentOps persistentOps = null)
+        {
+            return Task.FromResult<bool>(this.HashSet(request, persistentOps));
+        }
+
+        #endregion
+
+        #region 存储数据到Hash表（异步）
+
+        /// <summary>
+        /// 存储数据到Hash表（异步）
+        /// </summary>
+        /// <param name="request">缓存键以及Hash键值对集合的集合</param>
+        /// <param name="persistentOps">策略</param>
+        /// <returns></returns>
+        public Task<bool> HashSetAsync(
+            List<MultHashRequest<HashRequest<string>>> request,
+            HashPersistentOps persistentOps = null)
+        {
+            return Task.FromResult<bool>(this.HashSet(request, persistentOps));
+        }
+
+        #endregion
+
+        #region 存储数据到Hash表（异步）
+
+        /// <summary>
+        /// 存储数据到Hash表（异步）
+        /// </summary>
+        /// <param name="key">缓存键</param>
+        /// <param name="hashKey">Hash键</param>
+        /// <param name="value">hash值</param>
+        /// <param name="persistentOps">策略</param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public Task<bool> HashSetAsync<T>(
+            string key,
+            string hashKey,
+            T value,
+            HashPersistentOps persistentOps = null)
+        {
+            return Task.FromResult<bool>(this.HashSet(key, hashKey, value, persistentOps));
+        }
+
+        #endregion
+
+        #region 存储数据到Hash表（异步）
+
+        /// <summary>
+        /// 存储数据到Hash表（异步）
+        /// </summary>
+        /// <param name="request">hash键值对集合</param>
+        /// <param name="persistentOps">策略</param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public Task<bool> HashSetAsync<T>(MultHashRequest<HashRequest<T>> request,
+            HashPersistentOps persistentOps = null)
+        {
+            return Task.FromResult<bool>(this.HashSet(request, persistentOps));
+        }
+
+        #endregion
+
+        #region 存储数据到Hash表（异步）
+
+        /// <summary>
+        /// 存储数据到Hash表（异步）
+        /// </summary>
+        /// <param name="request">缓存键与hash键值对集合的集合</param>
+        /// <param name="persistentOps">策略</param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public Task<bool> HashSetAsync<T>(
+            List<MultHashRequest<HashRequest<T>>> request,
+            HashPersistentOps persistentOps = null)
+        {
+            return Task.FromResult(this.HashSet(request, persistentOps));
+        }
+
+        #endregion
+
+        #region 根据缓存key以及hash key找到唯一对应的值（异步）
+
+        /// <summary>
+        /// 根据缓存key以及hash key找到唯一对应的值（异步）
+        /// </summary>
+        /// <param name="key">缓存键</param>
+        /// <param name="hashKey">hash键</param>
+        /// <returns></returns>
+        public Task<string> HashGetAsync(string key, string hashKey)
+        {
+            return Task.FromResult<string>(this.HashGet(key, hashKey));
+        }
+
+        #endregion
+
+        #region 从缓存中取出缓存key对应的hash键集合（异步）
+
+        /// <summary>
+        /// 从缓存中取出缓存key对应的hash键集合（异步）
+        /// </summary>
+        /// <param name="key">缓存键</param>
+        /// <param name="hashKeys">Hash键集合</param>
+        /// <returns></returns>
+        public Task<List<HashResponse<string>>> HashGetAsync(string key, List<string> hashKeys)
+        {
+            return Task.FromResult(this.HashGet(key, hashKeys));
+        }
+
+        #endregion
+
+        #region 从缓存中取出多个key对应的hash键集合（异步）
+
+        /// <summary>
+        /// 从缓存中取出多个key对应的hash键集合（异步）
+        /// </summary>
+        /// <param name="list"></param>
+        /// <returns></returns>
+        public Task<List<HashMultResponse<string>>> HashGetAsync(List<MultHashRequest<string>> list)
+        {
+            return Task.FromResult(this.HashGet(list));
+        }
+
+        #endregion
+
+        #region 根据缓存key以及hash key找到唯一对应的值（异步）
+
+        /// <summary>
+        /// 根据缓存key以及hash key找到唯一对应的值（异步）
+        /// </summary>
+        /// <param name="key">缓存键</param>
+        /// <param name="hashKey">hash键</param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public Task<T> HashGetAsync<T>(string key, string hashKey)
+        {
+            return Task.FromResult(this.HashGet<T>(key, hashKey));
+        }
+
+        #endregion
+
+        #region 从缓存中取出缓存key对应的hash键集合（异步）
+
+        /// <summary>
+        /// 从缓存中取出缓存key对应的hash键集合（异步）
+        /// </summary>
+        /// <param name="key">缓存键</param>
+        /// <param name="hashKeys">Hash键集合</param>
+        /// <returns></returns>
+        public Task<List<HashResponse<T>>> HashGetAsync<T>(string key, List<string> hashKeys)
+        {
+            return Task.FromResult(this.HashGet<T>(key, hashKeys));
+        }
+
+        #endregion
+
+        #region 从缓存中取出多个key对应的hash键集合（异步）
+
+        /// <summary>
+        /// 从缓存中取出多个key对应的hash键集合（异步）
+        /// </summary>
+        /// <param name="list"></param>
+        /// <returns></returns>
+        public Task<List<HashMultResponse<T>>> HashGetAsync<T>(List<MultHashRequest<string>> list)
+        {
+            return Task.FromResult(this.HashGet<T>(list));
+        }
+
+        #endregion
+
+        #region 得到指定缓存key下的所有hash键集合
+
+        /// <summary>
+        /// 得到指定缓存key下的所有hash键集合
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <param name="top">得到前top条的Hash键集合，默认查询全部</param>
+        /// <returns></returns>
+        public Task<List<string>> HashKeyListAsync(string key, int? top = null)
+        {
+            return Task.FromResult<List<string>>(this.HashKeyList(key, top));
+        }
+
+        #endregion
+
+        #region 根据缓存key得到全部的hash键值对集合
+
+        /// <summary>
+        /// 根据缓存key得到全部的hash键值对集合
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <param name="top">得到前top条的Hash键值对集合，默认查询全部</param>
+        /// <returns></returns>
+        public Task<List<HashResponse<string>>> HashListAsync(string key, int? top = null)
+        {
+            return Task.FromResult(this.HashList(key, top));
+        }
+
+        #endregion
+
+        #region 根据缓存key得到全部的hash键值对集合
+
+        /// <summary>
+        /// 根据缓存key得到全部的hash键值对集合
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <param name="top">得到前top条的Hash键值对集合，默认查询全部</param>
+        /// <returns></returns>
+        public Task<List<HashResponse<T>>> HashListAsync<T>(string key, int? top = null)
+        {
+            return Task.FromResult(this.HashList<T>(key, top));
+        }
+
+        #endregion
+
+        #region 根据多个缓存key得到缓存key对应缓存key全部的hash键值对集合的集合列表
+
+        /// <summary>
+        /// 根据多个缓存key得到缓存key对应缓存key全部的hash键值对集合的集合列表
+        /// </summary>
+        /// <param name="keys">缓存键集合</param>
+        /// <param name="top">得到前top条的Hash键值对集合，默认查询全部</param>
+        /// <returns></returns>
+        public Task<List<HashMultResponse<string>>> HashMultListAsync(IEnumerable<string> keys, int? top = null)
+        {
+            return Task.FromResult(this.HashMultList(keys, top));
+        }
+
+        #endregion
+
+        #region 根据多个缓存key得到缓存key对应缓存key全部的hash键值对集合的集合列表
+
+        /// <summary>
+        /// 根据多个缓存key得到缓存key对应缓存key全部的hash键值对集合的集合列表
+        /// </summary>
+        /// <param name="keys">缓存键集合</param>
+        /// <param name="top">得到前top条的Hash键值对集合，默认查询全部</param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public Task<List<HashMultResponse<T>>> HashMultListAsync<T>(IEnumerable<string> keys, int? top = null)
+        {
+            return Task.FromResult(this.HashMultList<T>(keys, top));
+        }
+
+        #endregion
+
+        #region 判断HashKey是否存在（异步）
+
+        /// <summary>
+        /// 判断HashKey是否存在（异步）
+        /// </summary>
+        /// <param name="key">缓存键</param>
+        /// <param name="hashKey">哈希键</param>
+        /// <returns></returns>
+        public Task<bool> HashExistsAsync(string key, string hashKey)
+        {
+            return Task.FromResult<bool>(this.HashExists(key, hashKey));
+        }
+
+        #endregion
+
+        #region 移除指定缓存键的Hash键对应的值（异步）
+
+        /// <summary>
+        /// 移除指定缓存键的Hash键对应的值（异步）
+        /// </summary>
+        /// <param name="key">缓存键</param>
+        /// <param name="hashKey">Hash键</param>
+        /// <returns></returns>
+        public Task<bool> HashDeleteAsync(string key, string hashKey)
+        {
+            return Task.FromResult(this.HashDelete(key, hashKey));
+        }
+
+        #endregion
+
+        #region 移除指定缓存键的多个Hash键对应的值（异步）
+
+        /// <summary>
+        /// 移除指定缓存键的多个Hash键对应的值（异步）
+        /// </summary>
+        /// <param name="key">缓存键</param>
+        /// <param name="hashKeys">hash键集合</param>
+        /// <returns></returns>
+        public Task<bool> HashDeleteAsync(string key, List<string> hashKeys)
+        {
+            return Task.FromResult<bool>(this.HashDelete(key, hashKeys));
+        }
+
+        #endregion
+
+        #region 删除多个缓存键对应的hash键集合（异步）
+
+        /// <summary>
+        /// 删除多个缓存键对应的hash键集合（异步）
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public Task<bool> HashRangeDeleteAsync(List<BaseRequest<List<string>>> request)
+        {
+            return Task.FromResult(this.HashRangeDelete(request));
+        }
+
+        #endregion
+
+        #region 为数字增长val（异步）
+
+        /// <summary>
+        /// 为数字增长val（异步）
+        /// </summary>
+        /// <param name="key">缓存键</param>
+        /// <param name="hashKey">hash键</param>
+        /// <param name="val">增加的值</param>
+        /// <returns>增长后的值</returns>
+        public Task<long> HashIncrementAsync(string key, string hashKey, long val = 1)
+        {
+            return Task.FromResult<long>(this.HashIncrement(key, hashKey, val));
+        }
+
+        #endregion
+
+        #region 为数字减少val
+
+        /// <summary>
+        /// 为数字减少val
+        /// </summary>
+        /// <param name="key">缓存键</param>
+        /// <param name="hashKey">hash键</param>
+        /// <param name="val">减少的值</param>
+        /// <returns>减少后的值</returns>
+        public Task<long> HashDecrementAsync(string key, string hashKey, long val = 1)
+        {
+            return Task.FromResult<long>(this.HashDecrement(key, hashKey, val));
+        }
+
+        #endregion
+
+        #endregion
+
+        #endregion
+
+        #region private methods
+
+        #region 删除hashkey
+
+        /// <summary>
+        /// 删除hashkey
+        /// </summary>
+        /// <param name="hashSet"></param>
+        /// <param name="hashKey"></param>
+        /// <returns></returns>
+        private bool DeleteHash(HashSet<HashResponse<object>> hashSet, string hashKey)
+        {
+            if (hashSet != null && hashSet.Any(x=>x.HashKey==hashKey))
+            {
+                hashSet.RemoveWhere(x=>x.HashKey==hashKey);
+            }
+
+            return true;
+        }
+
+        #endregion
 
         #endregion
     }

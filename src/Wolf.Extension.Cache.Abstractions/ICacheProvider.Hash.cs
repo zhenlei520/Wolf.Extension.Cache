@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Wolf.Extension.Cache.Abstractions.Configurations;
+using Wolf.Extension.Cache.Abstractions.Request.Base;
 using Wolf.Extension.Cache.Abstractions.Request.Hash;
 using Wolf.Extension.Cache.Abstractions.Response.Hash;
 
@@ -203,7 +204,7 @@ namespace Wolf.Extension.Cache.Abstractions
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        bool HashRangeDelete(List<HashMultResponse<string>> request);
+        bool HashRangeDelete(List<BaseRequest<List<string>>> request);
 
         /// <summary>
         /// 为数字增长val
@@ -414,7 +415,7 @@ namespace Wolf.Extension.Cache.Abstractions
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        Task<bool> HashRangeDeleteAsync(List<HashMultResponse<string>> request);
+        Task<bool> HashRangeDeleteAsync(List<BaseRequest<List<string>>> request);
 
         /// <summary>
         /// 为数字增长val（异步）

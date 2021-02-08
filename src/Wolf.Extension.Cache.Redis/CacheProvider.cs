@@ -6,9 +6,9 @@ using Wolf.Extension.Cache.Abstractions;
 namespace Wolf.Extension.Cache.Redis
 {
     /// <summary>
-    ///
+    /// 基本存储
     /// </summary>
-    public class CacheProvider:ICacheProvider
+    public partial class CacheProvider:ICacheProvider
     {
 
     }

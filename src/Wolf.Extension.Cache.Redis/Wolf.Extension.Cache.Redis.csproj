@@ -17,4 +17,16 @@
     <ProjectReference Include="..\Wolf.Extension.Cache.Abstractions\Wolf.Extension.Cache.Abstractions.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="CacheProvider.Hash.cs">
+      <DependentUpon>CacheProvider.cs</DependentUpon>
+    </Compile>
+    <Compile Update="CacheProvider.List.cs">
+      <DependentUpon>CacheProvider.cs</DependentUpon>
+    </Compile>
+    <Compile Update="CacheProvider.SortSet.cs">
+      <DependentUpon>CacheProvider.cs</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
 </Project>

@@ -11,8 +11,10 @@ namespace Wolf.Extension.Cache.Redis
     /// </summary>
     public class CacheBuilder : DefaultWeight, ICacheBuilder
     {
-        public int Weights { get; }
-        public string Identify { get; }
+        /// <summary>
+        ///
+        /// </summary>
+        public string Identify => "Redis";
 
         public ICacheProvider CreateProvider(string serviceId = "")
         {

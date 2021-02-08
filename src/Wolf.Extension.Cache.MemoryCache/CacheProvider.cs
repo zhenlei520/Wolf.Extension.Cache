@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using Wolf.Extension.Cache.Abstractions;
@@ -21,7 +22,7 @@ namespace Wolf.Extension.Cache.MemoryCache
     public partial class CacheProvider : ICacheProvider
     {
         /// <summary>
-        ///
+        /// 
         /// </summary>
         private readonly object obj = new object();
 
@@ -30,14 +31,30 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// </summary>
         private readonly IMemoryCache _memoryCache;
 
+        private readonly Wolf.Extension.Cache.MemoryCache.Configurations.MemoryCacheOptions _memoryCacheOptions;
+
         /// <summary>
         ///
         /// </summary>
         /// <param name="memoryCache"></param>
-        public CacheProvider(IMemoryCache memoryCache)
+        /// <param name="memoryCacheOptions"></param>
+        public CacheProvider(IMemoryCache memoryCache,
+            Wolf.Extension.Cache.MemoryCache.Configurations.MemoryCacheOptions memoryCacheOptions)
         {
             this._memoryCache = memoryCache;
+            this._memoryCacheOptions = memoryCacheOptions;
         }
+
+        #region 得到缓存key
+
+        /// <summary>
+        /// 得到缓存key
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <returns></returns>
+        private string GetCacheKey(string key) => _memoryCacheOptions.Pre + key;
+
+        #endregion
 
         #region 基本
 
@@ -69,7 +86,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="expiry">过期时间，null：永不过期</param>
         /// <param name="persistentOps">策略</param>
         /// <returns></returns>
-        public bool StringSet(IEnumerable<BaseRequest<string>> list, TimeSpan? expiry = null,
+        public bool Set(IEnumerable<BaseRequest<string>> list, TimeSpan? expiry = null,
             PersistentOps persistentOps = null)
         {
             return this.Set<string>(list, expiry, persistentOps);
@@ -91,9 +108,10 @@ namespace Wolf.Extension.Cache.MemoryCache
         public bool Set<T>(string key, T obj, TimeSpan? expiry = null, PersistentOps persistentOps = null)
         {
             CheckKey(key);
+            var cacheKey = GetCacheKey(key);
             if (expiry == null)
             {
-                this._memoryCache.Set(key, obj);
+                this._memoryCache.Set(cacheKey, obj);
             }
             else
             {
@@ -113,7 +131,7 @@ namespace Wolf.Extension.Cache.MemoryCache
                     return false;
                 }
 
-                this._memoryCache.Set(key, obj, memoryCacheEntryOptions);
+                this._memoryCache.Set(cacheKey, obj, memoryCacheEntryOptions);
             }
 
             return true;
@@ -201,7 +219,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         public T Get<T>(string key)
         {
             CheckKey(key);
-            return _memoryCache.Get<T>(key);
+            return _memoryCache.Get<T>(GetCacheKey(key));
         }
 
         #endregion
@@ -242,7 +260,7 @@ namespace Wolf.Extension.Cache.MemoryCache
                 value = this.Get<long>(key) + val;
             }
 
-            this.Set<long>(key, value);
+            this.Set(key, value);
             return value;
         }
 
@@ -264,7 +282,7 @@ namespace Wolf.Extension.Cache.MemoryCache
                 value = this.Get<long>(key) - val;
             }
 
-            this.Set<long>(key, value);
+            this.Set(key, value);
             return value;
         }
 
@@ -280,7 +298,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         public bool Exist(string key)
         {
             CheckKey(key);
-            return this._memoryCache.TryGetValue(key, out object value);
+            return this._memoryCache.TryGetValue(GetCacheKey(key), out object value);
         }
 
         #endregion
@@ -298,7 +316,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         {
             CheckKey(key);
             persistentOps = persistentOps.Get();
-            this._memoryCache.GetOrCreate(key, cacheEntry =>
+            this._memoryCache.GetOrCreate(GetCacheKey(key), cacheEntry =>
             {
                 if (persistentOps.Strategy == OverdueStrategy.AbsoluteExpiration)
                 {
@@ -331,7 +349,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         public bool Remove(string key)
         {
             CheckKey(key);
-            this._memoryCache.Remove(key);
+            this._memoryCache.Remove(GetCacheKey(key));
             return true;
         }
 
@@ -359,6 +377,47 @@ namespace Wolf.Extension.Cache.MemoryCache
             }
 
             return true;
+        }
+
+        #endregion
+
+        #region 查找所有符合给定模式( pattern)的 key
+
+        /// <summary>
+        /// 查找所有符合给定模式( pattern)的 key
+        /// </summary>
+        /// <param name="pattern">如：runoob，不含prefix前辍RedisHelper.Name</param>
+        /// <returns></returns>
+        public List<string> Keys(string pattern = "*")
+        {
+            List<string> allKeyList = new List<string>();
+            if (pattern == "*")
+            {
+                allKeyList = this.GetAllCacheKeys();
+            }
+
+            return allKeyList.Where(x => x.StartsWith(GetCacheKey(pattern))).ToList();
+        }
+
+        /// <summary>
+        /// 得到全部的缓存键
+        /// </summary>
+        /// <returns></returns>
+        private List<string> GetAllCacheKeys()
+        {
+            const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+            var entries = _memoryCache.GetType().GetField("_entries", flags)?.GetValue(_memoryCache);
+            if (entries == null)
+            {
+                return new List<string>();
+            }
+
+            var cacheItems = entries.GetType().GetProperty("Keys")?.GetValue(entries) as ICollection<object>;
+            var keys = new List<string>();
+            if (cacheItems == null || !cacheItems.Any())
+                return keys;
+
+            return cacheItems.Select(r => r.ToString()).ToList();
         }
 
         #endregion
@@ -400,7 +459,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         public Task<bool> SetAsync(List<BaseRequest<string>> list, TimeSpan? expiry = null,
             PersistentOps persistentOps = null)
         {
-            return Task.FromResult<bool>(StringSet(list, expiry, persistentOps));
+            return Task.FromResult(Set(list, expiry, persistentOps));
         }
 
         #endregion
@@ -588,6 +647,11 @@ namespace Wolf.Extension.Cache.MemoryCache
         public Task<bool> RemoveRangeAsync(List<string> keys)
         {
             return Task.FromResult(RemoveRange(keys));
+        }
+
+        public Task<List<string>> KeysAsync(string pattern)
+        {
+            throw new NotImplementedException();
         }
 
         #endregion

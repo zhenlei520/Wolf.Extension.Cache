@@ -55,7 +55,7 @@ namespace Wolf.Extension.Cache.Abstractions
         /// <param name="count">数量</param>
         /// <param name="isDesc">是否降序，默认降序</param>
         /// <returns></returns>
-        List<string> SortedSetRangeByRank(string key, long count = 1000, bool isDesc = true);
+        List<string> SortedSetRangeByRank(string key, int count = 1000, bool isDesc = true);
 
         /// <summary>
         /// 根据排名查询指定缓存的count数量的值
@@ -65,7 +65,7 @@ namespace Wolf.Extension.Cache.Abstractions
         /// <param name="isDesc">是否降序，默认降序</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        List<T> SortedSetRangeByRank<T>(string key, long count = 1000, bool isDesc = true);
+        List<T> SortedSetRangeByRank<T>(string key, int count = 1000, bool isDesc = true);
 
         /// <summary>
         /// 根据缓存键获取从起始排名到终点排名的数据
@@ -75,7 +75,7 @@ namespace Wolf.Extension.Cache.Abstractions
         /// <param name="toRank">终点排名下标（包含）</param>
         /// <param name="isDesc">是否降序，默认降序</param>
         /// <returns></returns>
-        List<string> SortedSetRangeFrom(string key, long fromRank, long toRank, bool isDesc = true);
+        List<string> SortedSetRangeFrom(string key, int fromRank, int toRank, bool isDesc = true);
 
         /// <summary>
         /// 根据缓存键获取从起始排名到终点排名的数据
@@ -86,7 +86,7 @@ namespace Wolf.Extension.Cache.Abstractions
         /// <param name="isDesc">是否降序，默认降序</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        List<T> SortedSetRangeFrom<T>(string key, long fromRank, long toRank, bool isDesc = true);
+        List<T> SortedSetRangeFrom<T>(string key, int fromRank, int toRank, bool isDesc = true);
 
         /// <summary>
         /// 查询指定缓存下的value是否存在
@@ -151,7 +151,7 @@ namespace Wolf.Extension.Cache.Abstractions
         /// <param name="count">数量</param>
         /// <param name="isDesc">是否降序，默认降序</param>
         /// <returns></returns>
-        Task<List<string>> SortedSetRangeByRankAsync(string key, long count = 1000, bool isDesc = true);
+        Task<List<string>> SortedSetRangeByRankAsync(string key, int count = 1000, bool isDesc = true);
 
         /// <summary>
         /// 根据排名查询指定缓存的count数量的值（异步）
@@ -161,7 +161,7 @@ namespace Wolf.Extension.Cache.Abstractions
         /// <param name="isDesc">是否降序，默认降序</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        Task<List<T>> SortedSetRangeByRankAsync<T>(string key, long count = 1000, bool isDesc = true);
+        Task<List<T>> SortedSetRangeByRankAsync<T>(string key, int count = 1000, bool isDesc = true);
 
         /// <summary>
         /// 根据缓存键获取从起始排名到终点排名的数据（异步）
@@ -171,7 +171,7 @@ namespace Wolf.Extension.Cache.Abstractions
         /// <param name="toRank">终点排名下标（包含）</param>
         /// <param name="isDesc">是否降序，默认降序</param>
         /// <returns></returns>
-        Task<List<string>> SortedSetRangeFromAsync(string key, long fromRank, long toRank, bool isDesc = true);
+        Task<List<string>> SortedSetRangeFromAsync(string key, int fromRank, int toRank, bool isDesc = true);
 
         /// <summary>
         /// 根据缓存键获取从起始排名到终点排名的数据（异步）
@@ -182,7 +182,7 @@ namespace Wolf.Extension.Cache.Abstractions
         /// <param name="isDesc">是否降序，默认降序</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        Task<List<T>> SortedSetRangeFromAsync<T>(string key, long fromRank, long toRank, bool isDesc = true);
+        Task<List<T>> SortedSetRangeFromAsync<T>(string key, int fromRank, int toRank, bool isDesc = true);
 
         /// <summary>
         /// 查询指定缓存下的value是否存在（异步）

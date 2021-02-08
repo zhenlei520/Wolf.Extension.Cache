@@ -138,10 +138,11 @@ namespace Wolf.Extension.Cache.Abstractions
 
         /// <summary>
         /// 查找所有符合给定模式( pattern)的 key
+        /// 默认得到全部的键
         /// </summary>
         /// <param name="pattern">如：runoob*，不含prefix前辍RedisHelper.Name</param>
         /// <returns></returns>
-        List<string> Keys(string pattern);
+        List<string> Keys(string pattern="*");
 
         #endregion
 
