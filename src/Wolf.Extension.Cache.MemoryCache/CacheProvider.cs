@@ -22,7 +22,7 @@ namespace Wolf.Extension.Cache.MemoryCache
     public partial class CacheProvider : ICacheProvider
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private readonly object obj = new object();
 
@@ -649,9 +649,18 @@ namespace Wolf.Extension.Cache.MemoryCache
             return Task.FromResult(RemoveRange(keys));
         }
 
-        public Task<List<string>> KeysAsync(string pattern)
+        #endregion
+
+        #region 查找所有符合给定模式( pattern)的 key（异步）
+
+        /// <summary>
+        /// 查找所有符合给定模式( pattern)的 key（异步）
+        /// </summary>
+        /// <param name="pattern">如：runoob*，不含prefix前辍RedisHelper.Name</param>
+        /// <returns></returns>
+        public Task<List<string>> KeysAsync(string pattern="*")
         {
-            throw new NotImplementedException();
+            return Task.FromResult(Keys(pattern));
         }
 
         #endregion

@@ -142,7 +142,7 @@ namespace Wolf.Extension.Cache.Abstractions
         /// </summary>
         /// <param name="pattern">如：runoob*，不含prefix前辍RedisHelper.Name</param>
         /// <returns></returns>
-        List<string> Keys(string pattern="*");
+        List<string> Keys(string pattern = "*");
 
         #endregion
 
@@ -280,7 +280,7 @@ namespace Wolf.Extension.Cache.Abstractions
         /// </summary>
         /// <param name="pattern">如：runoob*，不含prefix前辍RedisHelper.Name</param>
         /// <returns></returns>
-        Task<List<string>> KeysAsync(string pattern);
+        Task<List<string>> KeysAsync(string pattern = "*");
 
         #endregion
     }
