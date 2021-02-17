@@ -28,6 +28,15 @@
     <Compile Update="ICacheProvider.SortSet.cs">
       <DependentUpon>ICacheProvider.cs</DependentUpon>
     </Compile>
+    <Compile Update="ICacheProvider.Hash.Async.cs">
+      <DependentUpon>ICacheProvider.Async.cs</DependentUpon>
+    </Compile>
+    <Compile Update="ICacheProvider.List.Async.cs">
+      <DependentUpon>ICacheProvider.Async.cs</DependentUpon>
+    </Compile>
+    <Compile Update="ICacheProvider.SortSet.Async.cs">
+      <DependentUpon>ICacheProvider.Async.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
   
 </Project>

@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) zhenlei520 All rights reserved.
+// Licensed under the MIT License. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -35,7 +38,7 @@ namespace Wolf.Extension.Cache.Redis.Common
 #else
                                                        AppDomain.CurrentDomain.Id
 #endif
-                                                      ) & 0x00ffffff;
+            ) & 0x00ffffff;
 
         /// <summary>
         ///
@@ -57,12 +60,6 @@ namespace Wolf.Extension.Cache.Redis.Common
             var guid =
                 $"{uninxtime.ToString("x8").PadLeft(8, '0')}{__staticMachine.ToString("x8").PadLeft(8, '0').Substring(2, 6)}{__staticPid.ToString("x8").PadLeft(8, '0').Substring(6, 2)}{increment.ToString("x8").PadLeft(8, '0')}{rand.ToString("x8").PadLeft(8, '0')}";
             return Guid.Parse(guid);
-            //var value = HashIncrement("NewMongodbIdyyyyMMdd", now.ToString("HH:mm"), 1);
-            //if (value == 1) Expire("NewMongodbIdyyyyMMdd", TimeSpan.FromHours(24));
-            //var rand = rnd.Next(0, int.MaxValue);
-            ////e8f35037-887d-4f64-8355-f96e02e71807
-            //var guid = $"{uninxtime.ToString("x8").PadLeft(8, '0')}{rand.ToString("x8").PadLeft(8, '0')}{value.ToString("x8").PadLeft(16, '0')}";
-            //return Guid.Parse(guid);
         }
 
         /// <summary>
@@ -72,15 +69,56 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="value">字符串值</param>
         /// <param name="expireSeconds">过期(秒单位)</param>
         /// <returns></returns>
-        public static bool Set(string key, string value, int expireSeconds = -1)
+        public static bool Set<T>(string key, T value, int expireSeconds = -1)
         {
             key = string.Concat(Name, key);
             using (var conn = Instance.GetConnection())
             {
-                if (expireSeconds > 0)
+                if (expireSeconds != -1)
                     return conn.Client.Set(key, value, TimeSpan.FromSeconds(expireSeconds)) == "OK";
-                else
-                    return conn.Client.Set(key, value) == "OK";
+                return conn.Client.Set(key, value) == "OK";
+            }
+        }
+
+        /// <summary>
+        /// 设置指定 key 的值
+        /// </summary>
+        /// <param name="list"></param>
+        /// <param name="expireSeconds">过期(秒单位)</param>
+        /// <returns></returns>
+        public static bool Set<T>(IEnumerable<KeyValuePair<string, T>> list, int expireSeconds = -1)
+        {
+            using (var conn = Instance.GetConnection())
+            {
+                List<string> successList = new List<string>();
+                foreach (var item in list)
+                {
+                    var key = string.Concat(Name, item.Key);
+                    bool isSuccess;
+                    if (expireSeconds != -1)
+                    {
+                        isSuccess = conn.Client.Set(key, item.Value, TimeSpan.FromSeconds(expireSeconds)) == "OK";
+                    }
+                    else
+                    {
+                        isSuccess = conn.Client.Set(key, item.Value) == "OK";
+                    }
+
+                    if (isSuccess)
+                    {
+                        successList.Add(key);
+                    }
+                    else
+                    {
+                        foreach (var cacheKey in successList)
+                        {
+                            conn.Client.Del(cacheKey);
+                        }
+
+                        return false;
+                    }
+                }
+                return true;
             }
         }
 
@@ -293,7 +331,8 @@ namespace Wolf.Extension.Cache.Redis.Common
             if (expire > TimeSpan.Zero)
             {
                 Dictionary<string, List<(double, string)>> dics = new Dictionary<string, List<(double, string)>>();
-                double expireTime = (DateTime.Now.AddSeconds(expire.TotalSeconds).ToUnixTimestamp(TimestampType.Millisecond).ConvertToDouble(0));
+                double expireTime = (DateTime.Now.AddSeconds(expire.TotalSeconds)
+                    .ToUnixTimestamp(TimestampType.Millisecond).ConvertToDouble(0));
                 foreach (var item in keyValues)
                 {
                     var cacheKey = GetCacheFileKey();
@@ -374,7 +413,8 @@ namespace Wolf.Extension.Cache.Redis.Common
             if (expire > TimeSpan.Zero)
             {
                 List<ValueTuple<double, string>> memberScores = new List<ValueTuple<double, string>>();
-                double expireTime = (DateTime.Now.AddSeconds(expire.TotalSeconds).ToUnixTimestamp(TimestampType.Millisecond).ConvertToDouble(0));
+                double expireTime = (DateTime.Now.AddSeconds(expire.TotalSeconds)
+                    .ToUnixTimestamp(TimestampType.Millisecond).ConvertToDouble(0));
                 for (int i = 0; i < kvalues.Length; i += 2)
                 {
                     if (kvalues[i] != null && kvalues[i + 1] != null)
