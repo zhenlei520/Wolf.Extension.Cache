@@ -17,7 +17,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="value">字符串值</param>
         /// <param name="expireSeconds">过期(秒单位)</param>
         /// <returns></returns>
-        public static async Task<bool> SetAsync(string key, string value, int expireSeconds = -1)
+        public static async Task<bool> SetAsync<T>(string key, T value, int expireSeconds = -1)
         {
             key = string.Concat(Name, key);
             using (var conn = await Instance.GetConnectionAsync())

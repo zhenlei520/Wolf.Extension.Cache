@@ -6,6 +6,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using Wolf.Systems.Abstracts;
+using Wolf.Systems.Core;
+using Wolf.Systems.Core.Provider.Random;
+using Wolf.Systems.Enum;
 
 namespace Wolf.Extension.Cache.Redis.Common
 {
@@ -14,12 +18,12 @@ namespace Wolf.Extension.Cache.Redis.Common
     /// </summary>
     internal partial class QuickHelperBase
     {
-        private static RandomNumberGenerator _randomNumberGenerator = new RandomNumberGenerator();
+        private static IRandomNumberGeneratorProvider _randomNumberGenerator = new RandomNumberGeneratorProvider();
 
         /// <summary>
         ///
         /// </summary>
-        public static string Name { get; set; }
+        internal static string Name { get; set; }
 
         /// <summary>
         ///
@@ -118,6 +122,7 @@ namespace Wolf.Extension.Cache.Redis.Common
                         return false;
                     }
                 }
+
                 return true;
             }
         }
@@ -141,6 +146,8 @@ namespace Wolf.Extension.Cache.Redis.Common
             }
         }
 
+        #region 获取指定 key 的值
+
         /// <summary>
         /// 获取指定 key 的值
         /// </summary>
@@ -154,6 +161,32 @@ namespace Wolf.Extension.Cache.Redis.Common
                 return conn.Client.Get(key);
             }
         }
+
+        #endregion
+
+        #region 获取指定 keys集合的值
+
+        /// <summary>
+        /// 获取指定 keys集合的值
+        /// </summary>
+        /// <param name="keys">不含prefix前辍RedisHelper.Name</param>
+        /// <returns></returns>
+        public static List<KeyValuePair<string, string>> Get(params string[] keys)
+        {
+            using (var conn = Instance.GetConnection())
+            {
+                List<KeyValuePair<string, string>> list = new List<KeyValuePair<string, string>>();
+                foreach (var key in keys)
+                {
+                    var cacheKey = string.Concat(Name, key);
+                    list.Add(new KeyValuePair<string, string>(cacheKey, conn.Client.Get(cacheKey)));
+                }
+
+                return list;
+            }
+        }
+
+        #endregion
 
         /// <summary>
         /// 获取多个指定 key 的值(数组)
@@ -332,7 +365,7 @@ namespace Wolf.Extension.Cache.Redis.Common
             {
                 Dictionary<string, List<(double, string)>> dics = new Dictionary<string, List<(double, string)>>();
                 double expireTime = (DateTime.Now.AddSeconds(expire.TotalSeconds)
-                    .ToUnixTimestamp(TimestampType.Millisecond).ConvertToDouble(0));
+                    .ToUnixTimestamp(TimestampType.MilliSecond).ConvertToDouble(0));
                 foreach (var item in keyValues)
                 {
                     var cacheKey = GetCacheFileKey();
@@ -394,7 +427,7 @@ namespace Wolf.Extension.Cache.Redis.Common
             if (expire > TimeSpan.Zero)
             {
                 ZAdd(GetCacheFileKey(),
-                    (DateTime.Now.AddSeconds(expire.TotalSeconds).ToUnixTimestamp(TimestampType.Millisecond).ConvertToDouble(0),
+                    (DateTime.Now.AddSeconds(expire.TotalSeconds).ToUnixTimestamp(TimestampType.MilliSecond).ConvertToDouble(0),
                         GetOverTimeExpireValue(key, hashKey)));
             }
 
@@ -414,7 +447,7 @@ namespace Wolf.Extension.Cache.Redis.Common
             {
                 List<ValueTuple<double, string>> memberScores = new List<ValueTuple<double, string>>();
                 double expireTime = (DateTime.Now.AddSeconds(expire.TotalSeconds)
-                    .ToUnixTimestamp(TimestampType.Millisecond).ConvertToDouble(0));
+                    .ToUnixTimestamp(TimestampType.MilliSecond).ConvertToDouble(0));
                 for (int i = 0; i < kvalues.Length; i += 2)
                 {
                     if (kvalues[i] != null && kvalues[i + 1] != null)

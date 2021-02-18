@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using Wolf.Extension.Cache.Abstractions.Configurations;
 using Wolf.Extension.Cache.Abstractions.Request.Base;
 using Wolf.Extension.Cache.Abstractions.Response.Base;
+using Wolf.Extension.Cache.Abstractions.Common;
+using Wolf.Extension.Cache.Redis.Common;
 
 namespace Wolf.Extension.Cache.Redis
 {
@@ -15,6 +17,8 @@ namespace Wolf.Extension.Cache.Redis
     /// </summary>
     public partial class CacheProvider
     {
+        #region 设置缓存（异步）
+
         /// <summary>
         /// 设置缓存（异步）
         /// </summary>
@@ -23,11 +27,18 @@ namespace Wolf.Extension.Cache.Redis
         /// <param name="expiry">过期时间，null：永不过期</param>
         /// <param name="persistentOps">策略</param>
         /// <returns></returns>
-        Task<bool> SetAsync(
+        public Task<bool> SetAsync(
             string key,
             string value,
             TimeSpan? expiry = null,
-            PersistentOps persistentOps = null);
+            PersistentOps persistentOps = null)
+        {
+            return this.SetAsync<string>(key, value, expiry, persistentOps);
+        }
+
+        #endregion
+
+        #region 设置缓存键值对集合(异步)
 
         /// <summary>
         /// 设置缓存键值对集合(异步)
@@ -36,8 +47,15 @@ namespace Wolf.Extension.Cache.Redis
         /// <param name="expiry">过期时间，null：永不过期</param>
         /// <param name="persistentOps">策略</param>
         /// <returns></returns>
-        Task<bool> SetAsync(List<BaseRequest<string>> list, TimeSpan? expiry = null,
-            PersistentOps persistentOps = null);
+        public Task<bool> SetAsync(List<BaseRequest<string>> list, TimeSpan? expiry = null,
+            PersistentOps persistentOps = null)
+        {
+            return Task.FromResult(this.Set(list, expiry, persistentOps));
+        }
+
+        #endregion
+
+        #region 保存一个对象(异步)
 
         /// <summary>
         /// 保存一个对象(异步)
@@ -48,11 +66,20 @@ namespace Wolf.Extension.Cache.Redis
         /// <param name="persistentOps">策略</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        Task<bool> SetAsync<T>(
+        public Task<bool> SetAsync<T>(
             string key,
             T obj,
             TimeSpan? expiry = null,
-            PersistentOps persistentOps = null);
+            PersistentOps persistentOps = null)
+        {
+            persistentOps = persistentOps.Get();
+            return base.Execute(persistentOps.Strategy, () => QuickHelperBase.SetAsync(key, obj,
+                expiry.HasValue ? Convert.ToInt32(expiry.Value.TotalSeconds) : -1), () => Task.FromResult(false));
+        }
+
+        #endregion
+
+        #region 保存多个对象集合(异步)
 
         /// <summary>
         /// 保存多个对象集合(异步)
@@ -62,22 +89,43 @@ namespace Wolf.Extension.Cache.Redis
         /// <param name="persistentOps">策略</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        Task<bool> SetAsync<T>(List<BaseRequest<T>> list, TimeSpan? expiry = null,
-            PersistentOps persistentOps = null);
+        public Task<bool> SetAsync<T>(List<BaseRequest<T>> list, TimeSpan? expiry = null,
+            PersistentOps persistentOps = null)
+        {
+            return Task.FromResult(this.Set(list, expiry, persistentOps));
+        }
+
+        #endregion
+
+        #region 获取单个key的值（异步）
 
         /// <summary>
         /// 获取单个key的值（异步）
         /// </summary>
         /// <param name="key">缓存键</param>
         /// <returns></returns>
-        Task<string> GetAsync(string key);
+        public Task<string> GetAsync(string key)
+        {
+            return Task.FromResult(this.Get(key));
+        }
+
+        #endregion
+
+        #region 获取多组缓存键集合（异步）
 
         /// <summary>
         /// 获取多组缓存键集合（异步）
         /// </summary>
         /// <param name="keys">缓存键集合</param>
         /// <returns></returns>
-        Task<List<BaseResponse<string>>> GetAsync(IEnumerable<string> keys);
+        public Task<List<BaseResponse<string>>> GetAsync(IEnumerable<string> keys)
+        {
+            return Task.FromResult(this.Get(keys));
+        }
+
+        #endregion
+
+        #region 获取指定缓存的值（异步）
 
         /// <summary>
         /// 获取指定缓存的值（异步）
@@ -85,14 +133,28 @@ namespace Wolf.Extension.Cache.Redis
         /// <param name="key">缓存键</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        Task<T> GetAsync<T>(string key) where T : class, new();
+        public Task<T> GetAsync<T>(string key) where T : class, new()
+        {
+            return Task.FromResult(this.Get<T>(key));
+        }
+
+        #endregion
+
+        #region 获取多组缓存键集合（异步）
 
         /// <summary>
         /// 获取多组缓存键集合（异步）
         /// </summary>
         /// <param name="keys">缓存键集合</param>
         /// <returns></returns>
-        Task<List<BaseResponse<T>>> GetAsync<T>(IEnumerable<string> keys) where T : class, new();
+        public Task<List<BaseResponse<T>>> GetAsync<T>(IEnumerable<string> keys) where T : class, new()
+        {
+            return Task.FromResult(this.Get<T>(keys));
+        }
+
+        #endregion
+
+        #region 为数字增长val（异步）
 
         /// <summary>
         /// 为数字增长val（异步）
@@ -100,7 +162,14 @@ namespace Wolf.Extension.Cache.Redis
         /// <param name="key">缓存键</param>
         /// <param name="val">增加的值</param>
         /// <returns></returns>
-        Task<long> IncrementAsync(string key, long val = 1);
+        public Task<long> IncrementAsync(string key, long val = 1)
+        {
+            return Task.FromResult(this.Increment(key, val));
+        }
+
+        #endregion
+
+        #region 为数字减少val（异步）
 
         /// <summary>
         /// 为数字减少val（异步）
@@ -108,14 +177,28 @@ namespace Wolf.Extension.Cache.Redis
         /// <param name="key">缓存键</param>
         /// <param name="val">减少的值</param>
         /// <returns></returns>
-        Task<long> DecrementAsync(string key, long val = 1);
+        public Task<long> DecrementAsync(string key, long val = 1)
+        {
+            return Task.FromResult(this.Decrement(key, val));
+        }
+
+        #endregion
+
+        #region 检查指定的缓存key是否存在（异步）
 
         /// <summary>
         /// 检查指定的缓存key是否存在（异步）
         /// </summary>
         /// <param name="key">缓存key</param>
         /// <returns></returns>
-        Task<bool> ExistAsync(string key);
+        public Task<bool> ExistAsync(string key)
+        {
+            return Task.FromResult(this.Exist(key));
+        }
+
+        #endregion
+
+        #region 设置过期时间（异步）
 
         /// <summary>
         /// 设置过期时间（异步）
@@ -124,7 +207,14 @@ namespace Wolf.Extension.Cache.Redis
         /// <param name="expiry">过期时间</param>
         /// <param name="persistentOps">策略</param>
         /// <returns></returns>
-        Task<bool> SetExpireAsync(string key, TimeSpan expiry, PersistentOps persistentOps = null);
+        public Task<bool> SetExpireAsync(string key, TimeSpan expiry, PersistentOps persistentOps = null)
+        {
+            return Task.FromResult(this.SetExpire(key, expiry, persistentOps));
+        }
+
+        #endregion
+
+        #region 删除指定Key的缓存（异步）
 
         /// <summary>
         /// 删除指定Key的缓存（异步）
@@ -132,7 +222,14 @@ namespace Wolf.Extension.Cache.Redis
         /// </summary>
         /// <param name="key">缓存key</param>
         /// <returns>返回删除的数量</returns>
-        Task<bool> RemoveAsync(string key);
+        public Task<bool> RemoveAsync(string key)
+        {
+            return Task.FromResult(this.Remove(key));
+        }
+
+        #endregion
+
+        #region 删除指定Key的缓存（异步）
 
         /// <summary>
         /// 删除指定Key的缓存（异步）
@@ -140,13 +237,25 @@ namespace Wolf.Extension.Cache.Redis
         /// </summary>
         /// <param name="keys">待删除的Key集合</param>
         /// <returns>返回删除的数量</returns>
-        Task<bool> RemoveRangeAsync(List<string> keys);
+        public Task<bool> RemoveRangeAsync(List<string> keys)
+        {
+            return Task.FromResult(this.RemoveRange(keys));
+        }
+
+        #endregion
+
+        #region 查找所有符合给定模式( pattern)的 key（异步）
 
         /// <summary>
         /// 查找所有符合给定模式( pattern)的 key（异步）
         /// </summary>
         /// <param name="pattern">如：runoob*，不含prefix前辍RedisHelper.Name</param>
         /// <returns></returns>
-        Task<List<string>> KeysAsync(string pattern = "*");
+        public Task<List<string>> KeysAsync(string pattern = "*")
+        {
+            return Task.FromResult(this.Keys(pattern));
+        }
+
+        #endregion
     }
 }

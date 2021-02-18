@@ -10,6 +10,7 @@ using Wolf.Extension.Cache.Abstractions.Request.Base;
 using Wolf.Extension.Cache.Abstractions.Response.Base;
 using Wolf.Extension.Cache.Redis.Common;
 using Wolf.Extension.Cache.Abstractions.Common;
+using Wolf.Extension.Cache.Redis.Configurations;
 using Wolf.Extensions.Serialize.Json.Abstracts;
 
 namespace Wolf.Extension.Cache.Redis
@@ -19,8 +20,16 @@ namespace Wolf.Extension.Cache.Redis
     /// </summary>
     public partial class CacheProvider : BaseRedisCacheProvider, ICacheProvider
     {
-        public CacheProvider(IJsonProvider jsonProvider) : base(jsonProvider)
+        private readonly RedisOptions _redisOptions;
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="jsonProvider"></param>
+        /// <param name="redisOptions"></param>
+        public CacheProvider(IJsonProvider jsonProvider, RedisOptions redisOptions) : base(jsonProvider)
         {
+            this._redisOptions = redisOptions;
         }
 
         #region 设置缓存
@@ -107,6 +116,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <returns></returns>
         public string Get(string key)
         {
+            return this.Get<string>(key);
         }
 
         #endregion
@@ -120,6 +130,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <returns></returns>
         public List<BaseResponse<string>> Get(IEnumerable<string> keys)
         {
+            return this.Get<string>(keys);
         }
 
         #endregion
@@ -134,6 +145,8 @@ namespace Wolf.Extension.Cache.Redis
         /// <returns></returns>
         public T Get<T>(string key)
         {
+            var res = QuickHelperBase.Get(key);
+            return base.ConvertObj<T>(res);
         }
 
         #endregion
@@ -147,6 +160,8 @@ namespace Wolf.Extension.Cache.Redis
         /// <returns></returns>
         public List<BaseResponse<T>> Get<T>(IEnumerable<string> keys)
         {
+            var ret = QuickHelperBase.Get((keys ?? new List<string>()).ToArray());
+            return ret.Select(x => new BaseResponse<T>(x.Key, base.ConvertObj<T>(x.Value))).ToList();
         }
 
         #endregion
@@ -161,8 +176,9 @@ namespace Wolf.Extension.Cache.Redis
         /// <returns>原value+val</returns>
         public long Increment(string key, long val = 1)
         {
-
+            return QuickHelperBase.Increment(key, val);
         }
+
         #endregion
 
         #region 为数字减少val
@@ -175,26 +191,42 @@ namespace Wolf.Extension.Cache.Redis
         /// <returns>原value-val</returns>
         public long Decrement(string key, long val = 1)
         {
-
+            return QuickHelperBase.Increment(key, -val);
         }
 
         #endregion
+
+        #region 检查指定的缓存key是否存在
 
         /// <summary>
         /// 检查指定的缓存key是否存在
         /// </summary>
         /// <param name="key">缓存key</param>
         /// <returns></returns>
-        bool Exist(string key);
+        public bool Exist(string key)
+        {
+            return QuickHelperBase.Exists(key);
+        }
+
+        #endregion
+
+        #region 设置过期时间（需调整）
 
         /// <summary>
-        /// 设置过期时间
+        /// 设置过期时间（需调整）
         /// </summary>
         /// <param name="key">缓存key</param>
         /// <param name="expiry">过期时间，null：永不过期</param>
         /// <param name="persistentOps">策略</param>
         /// <returns></returns>
-        bool SetExpire(string key, TimeSpan expiry, PersistentOps persistentOps = null);
+        public bool SetExpire(string key, TimeSpan expiry, PersistentOps persistentOps = null)
+        {
+            return QuickHelperBase.Expire(key, expiry);
+        }
+
+        #endregion
+
+        #region 删除指定Key的缓存
 
         /// <summary>
         /// 删除指定Key的缓存
@@ -202,7 +234,15 @@ namespace Wolf.Extension.Cache.Redis
         /// </summary>
         /// <param name="key">缓存key</param>
         /// <returns>返回删除的数量</returns>
-        bool Remove(string key);
+        public bool Remove(string key)
+        {
+            QuickHelperBase.Remove(key);
+            return true;
+        }
+
+        #endregion
+
+        #region 删除指定Key的缓存
 
         /// <summary>
         /// 删除指定Key的缓存
@@ -210,7 +250,15 @@ namespace Wolf.Extension.Cache.Redis
         /// </summary>
         /// <param name="keys">待删除的Key集合</param>
         /// <returns>返回删除的数量</returns>
-        bool RemoveRange(IEnumerable<string> keys);
+        public bool RemoveRange(IEnumerable<string> keys)
+        {
+            QuickHelperBase.Remove((keys ?? new List<string>()).ToArray());
+            return true;
+        }
+
+        #endregion
+
+        #region 查找所有符合给定模式( pattern)的 key
 
         /// <summary>
         /// 查找所有符合给定模式( pattern)的 key
@@ -218,6 +266,13 @@ namespace Wolf.Extension.Cache.Redis
         /// </summary>
         /// <param name="pattern">如：runoob*，不含prefix前辍RedisHelper.Name</param>
         /// <returns></returns>
-        List<string> Keys(string pattern = "*");
+        public List<string> Keys(string pattern = "*")
+        {
+            var keys = new List<string>();
+            QuickHelperBase.Keys(this._redisOptions.Pre + pattern).ToList().ForEach(p => { keys.Add(p.Substring(this._redisOptions.Pre.Length)); });
+            return keys;
+        }
+
+        #endregion
     }
 }

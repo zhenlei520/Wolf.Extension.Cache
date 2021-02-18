@@ -93,7 +93,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <typeparam name="T"></typeparam>
         /// <param name="values"></param>
         /// <returns></returns>
-        protected List<T> ConvertListObj<T>(List<string> values) where T : class, new()
+        protected List<T> ConvertListObj<T>(List<string> values)
         {
             List<T> list = new List<T>();
             values.ForEach(p => { list.Add(ConvertObj<T>(p)); });
@@ -106,7 +106,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <typeparam name="T"></typeparam>
         /// <param name="value"></param>
         /// <returns></returns>
-        private T ConvertObj<T>(string value) where T : class, new()
+        protected T ConvertObj<T>(string value)
         {
             if (string.IsNullOrWhiteSpace(value))
             {
@@ -119,7 +119,7 @@ namespace Wolf.Extension.Cache.Redis
                 return (T) Convert.ChangeType(value, typeof(T));
             }
 
-            return _jsonProvider.Deserialize<T>(value);
+            return (T)_jsonProvider.Deserialize(value,typeof(T));
         }
 
         #endregion

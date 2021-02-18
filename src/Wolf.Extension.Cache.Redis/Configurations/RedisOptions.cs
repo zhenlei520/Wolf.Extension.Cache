@@ -1,6 +1,8 @@
 ﻿// Copyright (c) zhenlei520 All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
+
 namespace Wolf.Extension.Cache.Redis.Configurations
 {
     /// <summary>
@@ -37,5 +39,20 @@ namespace Wolf.Extension.Cache.Redis.Configurations
         /// Redis连接池连接数
         /// </summary>
         public int PoolSize { get; set; }
+
+        // /// <summary>
+        // /// Redis默认 Hashkey  过期缓存key前缀
+        // /// </summary>
+        // public string OverTimeCacheKeyPre { get; set; }
+        //
+        // /// <summary>
+        // /// Hash缓存key 范围
+        // /// </summary>
+        // public List<string> OverTimeCacheKeys { get; set; }
+
+        /// <summary>
+        /// 定时清理Hash的时间 默认为500ms
+        /// </summary>
+        public int Timer { get; set; }
     }
 }
