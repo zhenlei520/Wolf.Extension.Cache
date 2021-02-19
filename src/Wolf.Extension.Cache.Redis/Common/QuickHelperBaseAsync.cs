@@ -24,8 +24,50 @@ namespace Wolf.Extension.Cache.Redis.Common
             {
                 if (expireSeconds > 0)
                     return await conn.Client.SetAsync(key, value, TimeSpan.FromSeconds(expireSeconds)) == "OK";
-                else
-                    return await conn.Client.SetAsync(key, value) == "OK";
+                return await conn.Client.SetAsync(key, value) == "OK";
+            }
+        }
+
+        /// <summary>
+        /// 设置指定 key 的值
+        /// </summary>
+        /// <param name="list"></param>
+        /// <param name="expireSeconds">过期(秒单位)</param>
+        /// <returns></returns>
+        public static async Task<bool> SetAsync<T>(IEnumerable<KeyValuePair<string, T>> list, int expireSeconds = -1)
+        {
+            using (var conn = await Instance.GetConnectionAsync())
+            {
+                List<string> successList = new List<string>();
+                foreach (var item in list)
+                {
+                    var key = string.Concat(Name, item.Key);
+                    bool isSuccess;
+                    if (expireSeconds != -1)
+                    {
+                        isSuccess = await conn.Client.SetAsync(key, item.Value, TimeSpan.FromSeconds(expireSeconds)) == "OK";
+                    }
+                    else
+                    {
+                        isSuccess = await conn.Client.SetAsync(key, item.Value) == "OK";
+                    }
+
+                    if (isSuccess)
+                    {
+                        successList.Add(key);
+                    }
+                    else
+                    {
+                        foreach (var cacheKey in successList)
+                        {
+                            conn.Client.DelAsync(cacheKey);
+                        }
+
+                        return false;
+                    }
+                }
+
+                return true;
             }
         }
 

@@ -81,7 +81,17 @@ namespace Wolf.Extension.Cache.Redis
         {
             persistentOps = persistentOps.Get();
             return base.Execute(persistentOps.Strategy, () => QuickHelperBase.Set(key, obj,
-                expiry.HasValue ? Convert.ToInt32(expiry.Value.TotalSeconds) : -1), () => false);
+                expiry.HasValue ? Convert.ToInt32(expiry.Value.TotalSeconds) : -1), () =>
+            {
+                var res=QuickHelperBase.Set(key, obj,-1);
+                if (expiry != null)
+                {
+                    //需要过期
+
+                }
+
+                return res;
+            });
         }
 
         #endregion

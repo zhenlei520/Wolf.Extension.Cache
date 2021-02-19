@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Wolf.Extension.Cache.Abstractions.Configurations;
 using Wolf.Extension.Cache.Abstractions.Request.Base;
@@ -89,10 +90,12 @@ namespace Wolf.Extension.Cache.Redis
         /// <param name="persistentOps">策略</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public Task<bool> SetAsync<T>(List<BaseRequest<T>> list, TimeSpan? expiry = null,
+        public async Task<bool> SetAsync<T>(List<BaseRequest<T>> list, TimeSpan? expiry = null,
             PersistentOps persistentOps = null)
         {
-            return Task.FromResult(this.Set(list, expiry, persistentOps));
+            persistentOps = persistentOps.Get();
+            return await QuickHelperBase.SetAsync(list.Select(x => new KeyValuePair<string, T>(x.Key, x.Value)),
+                expiry.HasValue ? Convert.ToInt32(expiry.Value.TotalSeconds) : -1);
         }
 
         #endregion

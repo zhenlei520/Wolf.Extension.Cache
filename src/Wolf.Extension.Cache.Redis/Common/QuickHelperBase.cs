@@ -422,7 +422,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="expire">过期时间</param>
         /// <param name="value">结果</param>
         /// <returns></returns>
-        public static string HashSetHashFileExpire(string key, string hashKey, TimeSpan expire, string value)
+        public static string HashSetHashFileExpire<T>(string key, string hashKey, TimeSpan expire, T value)
         {
             if (expire > TimeSpan.Zero)
             {

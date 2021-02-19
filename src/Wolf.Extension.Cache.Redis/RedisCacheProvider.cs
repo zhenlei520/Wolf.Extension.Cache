@@ -248,21 +248,21 @@ namespace Wolf.Extension.Cache.Redis
         public bool HashSet<T>(string key, string dataKey, T t, long second = -1L, bool isSetHashKeyExpire = true,
             OverdueStrategy overdueStrategy = null)
         {
-            string value = "";
+            string cacheValue = "";
             return base.Execute(overdueStrategy, () =>
             {
                 if (!isSetHashKeyExpire)
                 {
-                    value =
+                    cacheValue =
                         QuickHelperBase.HashSetExpire(key, GetExpire(second), dataKey, ConvertJson(t));
                 }
                 else
                 {
-                    value = QuickHelperBase.HashSetHashFileExpire(GetKey(key), GetKey(dataKey), GetExpire(second),
+                    cacheValue = QuickHelperBase.HashSetHashFileExpire(GetKey(key), GetKey(dataKey), GetExpire(second),
                         ConvertJson(t));
                 }
 
-                bool result = string.Equals(value, "OK",
+                bool result = string.Equals(cacheValue, "OK",
                     StringComparison.OrdinalIgnoreCase);
                 return result;
             }, () => { return false; });
