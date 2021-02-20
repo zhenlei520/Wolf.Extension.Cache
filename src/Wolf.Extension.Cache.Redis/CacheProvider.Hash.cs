@@ -35,6 +35,7 @@ namespace Wolf.Extension.Cache.Redis
             string value,
             HashPersistentOps persistentOps = null)
         {
+            return this.HashSet<string>(key, hashKey, value, persistentOps);
         }
 
         #endregion
@@ -51,9 +52,12 @@ namespace Wolf.Extension.Cache.Redis
             MultHashRequest<HashRequest<string>> request,
             HashPersistentOps persistentOps = null)
         {
+            return this.HashSet<string>(request, persistentOps);
         }
 
         #endregion
+
+        #region 存储数据到Hash表
 
         /// <summary>
         /// 存储数据到Hash表
@@ -61,9 +65,14 @@ namespace Wolf.Extension.Cache.Redis
         /// <param name="request">缓存键以及Hash键值对集合的集合</param>
         /// <param name="persistentOps">策略</param>
         /// <returns></returns>
-        bool HashSet(
+        public bool HashSet(
             List<MultHashRequest<HashRequest<string>>> request,
-            HashPersistentOps persistentOps = null);
+            HashPersistentOps persistentOps = null)
+        {
+            return this.HashSet<string>(request, persistentOps);
+        }
+
+        #endregion
 
         #region 存储数据到Hash表
 
@@ -110,6 +119,8 @@ namespace Wolf.Extension.Cache.Redis
 
         #endregion
 
+        #region 存储数据到Hash表
+
         /// <summary>
         /// 存储数据到Hash表
         /// </summary>
@@ -117,8 +128,36 @@ namespace Wolf.Extension.Cache.Redis
         /// <param name="persistentOps">策略</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        bool HashSet<T>(MultHashRequest<HashRequest<T>> request,
-            HashPersistentOps persistentOps = null);
+        public bool HashSet<T>(MultHashRequest<HashRequest<T>> request,
+            HashPersistentOps persistentOps = null)
+        {
+            persistentOps = persistentOps.Get();
+            string cacheValue = "";
+            if (persistentOps.Strategy == OverdueStrategy.AbsoluteExpiration)
+            {
+                if (!persistentOps.IsCanHashExpire)
+                {
+                    cacheValue =
+                        QuickHelperBase.HashSetExpire(key, TimeSpan.Zero, hashKey, value);
+                }
+                else
+                {
+                    cacheValue = QuickHelperBase.HashSetHashFileExpire<T>(key, hashKey, persistentOps.TimeSpan.Value,
+                        value);
+                }
+
+                bool result = string.Equals(cacheValue, "OK",
+                    StringComparison.OrdinalIgnoreCase);
+                return result;
+            }
+            else
+            {
+                //滑动过期
+                return false;
+            }
+        }
+
+        #endregion
 
         /// <summary>
         /// 存储数据到Hash表

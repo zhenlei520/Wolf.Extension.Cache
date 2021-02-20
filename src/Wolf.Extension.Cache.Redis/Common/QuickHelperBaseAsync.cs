@@ -19,7 +19,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public static async Task<bool> SetAsync<T>(string key, T value, int expireSeconds = -1)
         {
-            key = string.Concat(Name, key);
+            key = string.Concat(Prefix, key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 if (expireSeconds > 0)
@@ -41,7 +41,7 @@ namespace Wolf.Extension.Cache.Redis.Common
                 List<string> successList = new List<string>();
                 foreach (var item in list)
                 {
-                    var key = string.Concat(Name, item.Key);
+                    var key = string.Concat(Prefix, item.Key);
                     bool isSuccess;
                     if (expireSeconds != -1)
                     {
@@ -80,7 +80,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public static async Task<bool> SetBytesAsync(string key, byte[] value, int expireSeconds = -1)
         {
-            key = string.Concat(Name, key);
+            key = string.Concat(Prefix, key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 if (expireSeconds > 0)
@@ -97,7 +97,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public static async Task<string> GetAsync(string key)
         {
-            key = string.Concat(Name, key);
+            key = string.Concat(Prefix, key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.GetAsync(key);
@@ -113,7 +113,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         {
             if (key == null || key.Length == 0) return new string[0];
             string[] rkeys = new string[key.Length];
-            for (int a = 0; a < key.Length; a++) rkeys[a] = string.Concat(Name, key[a]);
+            for (int a = 0; a < key.Length; a++) rkeys[a] = string.Concat(Prefix, key[a]);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.MGetAsync(rkeys);
@@ -127,7 +127,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public static async Task<byte[]> GetBytesAsync(string key)
         {
-            key = string.Concat(Name, key);
+            key = string.Concat(Prefix, key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.GetBytesAsync(key);
@@ -143,7 +143,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         {
             if (key == null || key.Length == 0) return 0;
             string[] rkeys = new string[key.Length];
-            for (int a = 0; a < key.Length; a++) rkeys[a] = string.Concat(Name, key[a]);
+            for (int a = 0; a < key.Length; a++) rkeys[a] = string.Concat(Prefix, key[a]);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.DelAsync(rkeys);
@@ -157,7 +157,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public static async Task<bool> ExistsAsync(string key)
         {
-            key = string.Concat(Name, key);
+            key = string.Concat(Prefix, key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.ExistsAsync(key);
@@ -172,7 +172,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public static async Task<long> IncrementAsync(string key, long value = 1)
         {
-            key = string.Concat(Name, key);
+            key = string.Concat(Prefix, key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.IncrByAsync(key, value);
@@ -188,7 +188,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         public static async Task<bool> ExpireAsync(string key, TimeSpan expire)
         {
             if (expire <= TimeSpan.Zero) return false;
-            key = string.Concat(Name, key);
+            key = string.Concat(Prefix, key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.ExpireAsync(key, expire);
@@ -202,7 +202,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public static async Task<long> TtlAsync(string key)
         {
-            key = string.Concat(Name, key);
+            key = string.Concat(Prefix, key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.TtlAsync(key);
@@ -258,7 +258,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public static async Task<string> HashSetExpireAsync(string key, TimeSpan expire, params object[] keyValues)
         {
-            key = string.Concat(Name, key);
+            key = string.Concat(Prefix, key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 var ret = await conn.Client.HMSetAsync(key, keyValues.Select(a => string.Concat(a)).ToArray());
@@ -275,7 +275,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public static async Task<string> HashGetAsync(string key, string field)
         {
-            key = string.Concat(Name, key);
+            key = string.Concat(Prefix, key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.HGetAsync(key, field);
@@ -291,7 +291,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public static async Task<long> HashIncrementAsync(string key, string field, long value = 1)
         {
-            key = string.Concat(Name, key);
+            key = string.Concat(Prefix, key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.HIncrByAsync(key, field, value);
@@ -307,7 +307,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         public static async Task<long> HashDeleteAsync(string key, params string[] fields)
         {
             if (fields == null || fields.Length == 0) return 0;
-            key = string.Concat(Name, key);
+            key = string.Concat(Prefix, key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.HDelAsync(key, fields);
@@ -322,7 +322,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public static async Task<bool> HashExistsAsync(string key, string field)
         {
-            key = string.Concat(Name, key);
+            key = string.Concat(Prefix, key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.HExistsAsync(key, field);
@@ -336,7 +336,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public static async Task<long> HashLengthAsync(string key)
         {
-            key = string.Concat(Name, key);
+            key = string.Concat(Prefix, key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.HLenAsync(key);
@@ -350,7 +350,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public static async Task<Dictionary<string, string>> HashGetAllAsync(string key)
         {
-            key = string.Concat(Name, key);
+            key = string.Concat(Prefix, key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.HGetAllAsync(key);
@@ -364,7 +364,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public static async Task<string[]> HashKeysAsync(string key)
         {
-            key = string.Concat(Name, key);
+            key = string.Concat(Prefix, key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.HKeysAsync(key);
@@ -378,7 +378,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public static async Task<string[]> HashValsAsync(string key)
         {
-            key = string.Concat(Name, key);
+            key = string.Concat(Prefix, key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.HValsAsync(key);
@@ -397,7 +397,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public static async Task<string> LIndexAsync(string key, long index)
         {
-            key = string.Concat(Name, key);
+            key = string.Concat(Prefix, key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.LIndexAsync(key, index);
@@ -413,7 +413,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public static async Task<long> LInsertBeforeAsync(string key, string pivot, string value)
         {
-            key = string.Concat(Name, key);
+            key = string.Concat(Prefix, key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.LInsertAsync(key, RedisInsert.Before, pivot, value);
@@ -429,7 +429,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public static async Task<long> LInsertAfterAsync(string key, string pivot, string value)
         {
-            key = string.Concat(Name, key);
+            key = string.Concat(Prefix, key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.LInsertAsync(key, RedisInsert.After, pivot, value);
@@ -443,7 +443,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public static async Task<long> LLenAsync(string key)
         {
-            key = string.Concat(Name, key);
+            key = string.Concat(Prefix, key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.LLenAsync(key);
@@ -457,7 +457,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public static async Task<string> LPopAsync(string key)
         {
-            key = string.Concat(Name, key);
+            key = string.Concat(Prefix, key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.LPopAsync(key);
@@ -471,7 +471,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public static async Task<string> RPopAsync(string key)
         {
-            key = string.Concat(Name, key);
+            key = string.Concat(Prefix, key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.RPopAsync(key);
@@ -486,7 +486,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public static async Task<long> LPushAsync(string key, string[] value)
         {
-            key = string.Concat(Name, key);
+            key = string.Concat(Prefix, key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.LPushAsync(key, value);
@@ -501,7 +501,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public static async Task<long> RPushAsync(string key, string[] value)
         {
-            key = string.Concat(Name, key);
+            key = string.Concat(Prefix, key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.RPushAsync(key, value);
@@ -517,7 +517,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public static async Task<string[]> LRangAsync(string key, long start, long stop)
         {
-            key = string.Concat(Name, key);
+            key = string.Concat(Prefix, key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.LRangeAsync(key, start, stop);
@@ -533,7 +533,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public static async Task<long> LRemAsync(string key, long count, string value)
         {
-            key = string.Concat(Name, key);
+            key = string.Concat(Prefix, key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.LRemAsync(key, count, value);
@@ -549,7 +549,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public static async Task<bool> LSetAsync(string key, long index, string value)
         {
-            key = string.Concat(Name, key);
+            key = string.Concat(Prefix, key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.LSetAsync(key, index, value) == "OK";
@@ -565,7 +565,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public static async Task<bool> LTrimAsync(string key, long start, long stop)
         {
-            key = string.Concat(Name, key);
+            key = string.Concat(Prefix, key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.LTrimAsync(key, start, stop) == "OK";
@@ -585,7 +585,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public static async Task<long> ZAddAsync(string key, params (double, string)[] memberScores)
         {
-            key = string.Concat(Name, key);
+            key = string.Concat(Prefix, key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.ZAddAsync<double, string>(key,
@@ -600,7 +600,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public static async Task<long> ZCardAsync(string key)
         {
-            key = string.Concat(Name, key);
+            key = string.Concat(Prefix, key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.ZCardAsync(key);
@@ -616,7 +616,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public static async Task<long> ZCountAsync(string key, double min, double max)
         {
-            key = string.Concat(Name, key);
+            key = string.Concat(Prefix, key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.ZCountAsync(key, min, max);
@@ -632,7 +632,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public static async Task<double> ZIncrByAsync(string key, string memeber, double increment = 1)
         {
-            key = string.Concat(Name, key);
+            key = string.Concat(Prefix, key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.ZIncrByAsync(key, increment, memeber);
@@ -677,9 +677,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         async private static Task<long> ZInterStoreAsync(string destinationKey, RedisAggregate aggregate,
             params string[] keys)
         {
-            destinationKey = string.Concat(Name, destinationKey);
+            destinationKey = string.Concat(Prefix, destinationKey);
             string[] rkeys = new string[keys.Length];
-            for (int a = 0; a < keys.Length; a++) rkeys[a] = string.Concat(Name, keys[a]);
+            for (int a = 0; a < keys.Length; a++) rkeys[a] = string.Concat(Prefix, keys[a]);
             if (rkeys.Length == 0) return 0;
             using (var conn = await Instance.GetConnectionAsync())
             {
@@ -727,9 +727,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         async private static Task<long> ZUnionStoreAsync(string destinationKey, RedisAggregate aggregate,
             params string[] keys)
         {
-            destinationKey = string.Concat(Name, destinationKey);
+            destinationKey = string.Concat(Prefix, destinationKey);
             string[] rkeys = new string[keys.Length];
-            for (int a = 0; a < keys.Length; a++) rkeys[a] = string.Concat(Name, keys[a]);
+            for (int a = 0; a < keys.Length; a++) rkeys[a] = string.Concat(Prefix, keys[a]);
             if (rkeys.Length == 0) return 0;
             using (var conn = await Instance.GetConnectionAsync())
             {
@@ -748,7 +748,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public static async Task<string[]> ZRangeAsync(string key, long start, long stop)
         {
-            key = string.Concat(Name, key);
+            key = string.Concat(Prefix, key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.ZRangeAsync(key, start, stop, false);
@@ -767,7 +767,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         public static async Task<string[]> ZRangeByScoreAsync(string key, double minScore, double maxScore,
             long? limit = null, long offset = 0)
         {
-            key = string.Concat(Name, key);
+            key = string.Concat(Prefix, key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.ZRangeByScoreAsync(key, minScore, maxScore, false, false, false, offset,
@@ -783,7 +783,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public static async Task<long?> ZRankAsync(string key, string member)
         {
-            key = string.Concat(Name, key);
+            key = string.Concat(Prefix, key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.ZRankAsync(key, member);
@@ -798,7 +798,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public static async Task<long> ZRemAsync(string key, params string[] member)
         {
-            key = string.Concat(Name, key);
+            key = string.Concat(Prefix, key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.ZRemAsync(key, member);
@@ -814,7 +814,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public static async Task<long> ZRemRangeByRankAsync(string key, long start, long stop)
         {
-            key = string.Concat(Name, key);
+            key = string.Concat(Prefix, key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.ZRemRangeByRankAsync(key, start, stop);
@@ -830,7 +830,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public static async Task<long> ZRemRangeByScoreAsync(string key, double minScore, double maxScore)
         {
-            key = string.Concat(Name, key);
+            key = string.Concat(Prefix, key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.ZRemRangeByScoreAsync(key, minScore, maxScore);
@@ -846,7 +846,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public static async Task<string[]> ZRevRangeAsync(string key, long start, long stop)
         {
-            key = string.Concat(Name, key);
+            key = string.Concat(Prefix, key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.ZRevRangeAsync(key, start, stop, false);
@@ -865,7 +865,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         public static async Task<string[]> ZRevRangeByScoreAsync(string key, double maxScore, double minScore,
             long? limit = null, long? offset = null)
         {
-            key = string.Concat(Name, key);
+            key = string.Concat(Prefix, key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.ZRevRangeByScoreAsync(key, maxScore, minScore, false, false, false, offset,
@@ -881,7 +881,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public static async Task<long?> ZRevRankAsync(string key, string member)
         {
-            key = string.Concat(Name, key);
+            key = string.Concat(Prefix, key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.ZRevRankAsync(key, member);
@@ -896,7 +896,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public static async Task<double?> ZScoreAsync(string key, string member)
         {
-            key = string.Concat(Name, key);
+            key = string.Concat(Prefix, key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.ZScoreAsync(key, member);

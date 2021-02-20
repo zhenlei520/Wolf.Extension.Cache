@@ -460,7 +460,7 @@ namespace Wolf.Extension.Cache.Redis
 
                 foreach (var item in keys)
                 {
-                    string[] valuesList = values.Where(x => x.Key == string.Concat(QuickHelperBase.Name, item.Key))
+                    string[] valuesList = values.Where(x => x.Key == string.Concat(QuickHelperBase.Prefix, item.Key))
                         .Select(x => x.Value).FirstOrDefault();
                     Dictionary<string, string> newDic = new Dictionary<string, string>();
                     if (valuesList != null && valuesList.Length > 0)

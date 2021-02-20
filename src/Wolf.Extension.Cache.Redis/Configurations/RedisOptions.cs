@@ -1,8 +1,6 @@
 ﻿// Copyright (c) zhenlei520 All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
-
 namespace Wolf.Extension.Cache.Redis.Configurations
 {
     /// <summary>
@@ -10,6 +8,13 @@ namespace Wolf.Extension.Cache.Redis.Configurations
     /// </summary>
     public class RedisOptions
     {
+        /// <summary>
+        ///
+        /// </summary>
+        public RedisOptions()
+        {
+            this.OverTimeCacheKeyFormat = new[] {"Absolute_{0}~_~{1}", "Sliding_{0}~_~{1}"};
+        }
         /// <summary>
         /// 前缀
         /// </summary>
@@ -40,10 +45,13 @@ namespace Wolf.Extension.Cache.Redis.Configurations
         /// </summary>
         public int PoolSize { get; set; }
 
-        // /// <summary>
-        // /// Redis默认 Hashkey  过期缓存key前缀
-        // /// </summary>
-        // public string OverTimeCacheKeyPre { get; set; }
+        /// <summary>
+        /// Redis默认 Hashkey 过期格式：默认：
+        /// 第一个为绝对过期格式
+        /// 第二个为滑动过期格式
+        /// </summary>
+        public string[] OverTimeCacheKeyFormat { get; set; }
+
         //
         // /// <summary>
         // /// Hash缓存key 范围
