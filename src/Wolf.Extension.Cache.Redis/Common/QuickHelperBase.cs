@@ -342,6 +342,11 @@ namespace Wolf.Extension.Cache.Redis.Common
                     foreach (var item in keyValues)
                     {
                         string key = string.Concat(Prefix, item.Key);
+                        if (expire.LessThan(TimeSpan.Zero))
+                        {
+                            return "Empty Data";
+                        }
+
                         var ret = conn.Client.HMSet(key, item.Value.Select(a => string.Concat(a)).ToArray());
                         if (expire > TimeSpan.Zero) conn.Client.Expire(key, expire);
                         if (ret == "OK")
@@ -363,7 +368,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public static string HashSetHashFileExpire(Dictionary<string, object[]> keyValues, TimeSpan expire)
         {
-            if (expire > TimeSpan.Zero)
+            if (expire.GreaterThan(TimeSpan.Zero))
             {
                 Dictionary<string, List<(double, string)>> dics = new Dictionary<string, List<(double, string)>>();
                 double expireTime = (DateTime.Now.AddSeconds(expire.TotalSeconds)
@@ -388,8 +393,12 @@ namespace Wolf.Extension.Cache.Redis.Common
 
                 ZAdd(dics);
             }
+            else if (expire.Equals(TimeSpan.Zero))
+            {
+                return HashSetExpire(keyValues, TimeSpan.Zero);
+            }
 
-            return HashSetExpire(keyValues, TimeSpan.Zero);
+            return "Empty Data";
         }
 
         #endregion
@@ -816,9 +825,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public static long ZAdd(string key, params (double, string)[] memberScores)
         {
-            key = string.Concat(Prefix, key);
             using (var conn = Instance.GetConnection())
             {
+                key = string.Concat(Prefix, key);
                 return conn.Client.ZAdd<double, string>(key,
                     memberScores.Select(a => new Tuple<double, string>(a.Item1, a.Item2)).ToArray());
             }
@@ -1297,6 +1306,7 @@ namespace Wolf.Extension.Cache.Redis.Common
             {
                 return string.Format(options.OverTimeCacheKeyFormat[0], key, hashKey);
             }
+
             return string.Format(options.OverTimeCacheKeyFormat[1], key, hashKey);
         }
 
