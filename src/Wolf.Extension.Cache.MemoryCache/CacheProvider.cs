@@ -109,17 +109,17 @@ namespace Wolf.Extension.Cache.MemoryCache
             {
                 persistentOps = persistentOps.Get();
                 MemoryCacheEntryOptions memoryCacheEntryOptions = new MemoryCacheEntryOptions();
-                if (persistentOps.OverdueTimeSpan != null)
+                if (persistentOps.OverdueTimeSpan != TimeSpan.Zero)
                 {
                     if (persistentOps.Strategy == OverdueStrategy.AbsoluteExpiration)
                     {
                         memoryCacheEntryOptions =
-                            memoryCacheEntryOptions.SetAbsoluteExpiration(persistentOps.OverdueTimeSpan.Value);
+                            memoryCacheEntryOptions.SetAbsoluteExpiration(persistentOps.OverdueTimeSpan);
                     }
                     else if (persistentOps.Strategy == OverdueStrategy.SlidingExpiration)
                     {
                         memoryCacheEntryOptions =
-                            memoryCacheEntryOptions.SetSlidingExpiration(persistentOps.OverdueTimeSpan.Value);
+                            memoryCacheEntryOptions.SetSlidingExpiration(persistentOps.OverdueTimeSpan);
                     }
                     else
                     {
@@ -313,7 +313,7 @@ namespace Wolf.Extension.Cache.MemoryCache
             persistentOps = persistentOps.Get();
             this._memoryCache.GetOrCreate(GetCacheKey(key), cacheEntry =>
             {
-                if (persistentOps.OverdueTimeSpan == null)
+                if (persistentOps.OverdueTimeSpan == TimeSpan.Zero)
                 {
                     cacheEntry.AbsoluteExpiration = null;
                     cacheEntry.SlidingExpiration=null;
@@ -322,11 +322,11 @@ namespace Wolf.Extension.Cache.MemoryCache
                 {
                     if (persistentOps.Strategy == OverdueStrategy.AbsoluteExpiration)
                     {
-                        cacheEntry.AbsoluteExpiration = DateTimeOffset.Now.Add(persistentOps.OverdueTimeSpan.Value);
+                        cacheEntry.AbsoluteExpiration = DateTimeOffset.Now.Add(persistentOps.OverdueTimeSpan);
                     }
                     else if (persistentOps.Strategy == OverdueStrategy.SlidingExpiration)
                     {
-                        cacheEntry.SetSlidingExpiration(persistentOps.OverdueTimeSpan.Value);
+                        cacheEntry.SetSlidingExpiration(persistentOps.OverdueTimeSpan);
                     }
                     else
                     {

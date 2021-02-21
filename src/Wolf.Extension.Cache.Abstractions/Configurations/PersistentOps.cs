@@ -20,10 +20,7 @@ namespace Wolf.Extension.Cache.Abstractions.Configurations
             this.Strategy = OverdueStrategy.AbsoluteExpiration;
             this.IsAtomic = false;
             this.OverdueTime = null;
-            if (this.OverdueTime != null)
-            {
-                this.OverdueTimeSpan = DateTimeOffset.Now.AddSeconds(this.OverdueTime.Value) - DateTimeOffset.Now;
-            }
+            this.OverdueTimeSpan = this.OverdueTime != null ? TimeSpan.FromSeconds(this.OverdueTime.Value) : TimeSpan.Zero;
         }
 
         /// <summary>
@@ -40,7 +37,7 @@ namespace Wolf.Extension.Cache.Abstractions.Configurations
         /// <summary>
         /// 过期时间
         /// </summary>
-        public TimeSpan? OverdueTimeSpan { get; private set; }
+        public TimeSpan OverdueTimeSpan { get; private set; }
 
         /// <summary>
         /// 是否确保原子性，一个失败就回退

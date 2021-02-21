@@ -5,9 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading;
+using Wolf.Extension.Cache.Abstractions.Enum;
+using Wolf.Extension.Cache.Redis.Configurations;
 using Wolf.Systems.Abstracts;
 using Wolf.Systems.Core;
+using Wolf.Systems.Core.Common.Unique;
 using Wolf.Systems.Core.Provider.Random;
 using Wolf.Systems.Enum;
 
@@ -18,17 +20,23 @@ namespace Wolf.Extension.Cache.Redis.Common
     /// </summary>
     internal partial class QuickHelperBase
     {
-        private static IRandomNumberGeneratorProvider _randomNumberGenerator = new RandomNumberGeneratorProvider();
-
-        /// <summary>
-        /// 缓存前缀
-        /// </summary>
-        internal static string Prefix { get; set; }
+        private readonly ConnectionPool Instance;
+        private readonly RedisOptions _redisOptions;
 
         /// <summary>
         ///
         /// </summary>
-        public static ConnectionPool Instance { get; protected set; }
+        /// <param name="serviceId"></param>
+        /// <param name="redisOptions"></param>
+        public QuickHelperBase(string serviceId, RedisOptions redisOptions)
+        {
+            this.Instance =
+                GlobalConfigurations.Instance.Where(x => x.ServiecId == serviceId).Select(x => x.Instance)
+                    .FirstOrDefault() ?? throw new Exception("获取Redis连接异常");
+            this._redisOptions = redisOptions;
+        }
+
+        private static IRandomNumberGeneratorProvider _randomNumberGenerator = new RandomNumberGeneratorProvider();
 
         private static DateTime dt1970 = new DateTime(1970, 1, 1);
         private static Random rnd = new Random();
@@ -51,57 +59,67 @@ namespace Wolf.Extension.Cache.Redis.Common
 
         private static int __staticIncrement = rnd.Next();
 
-        /// <summary>
-        /// 生成类似Mongodb的ObjectId有序、不重复Guid
-        /// </summary>
-        /// <returns></returns>
-        public static Guid NewMongodbId()
-        {
-            var now = DateTime.Now;
-            var uninxtime = (int) now.Subtract(dt1970).TotalSeconds;
-            int increment = Interlocked.Increment(ref __staticIncrement) & 0x00ffffff;
-            var rand = rnd.Next(0, int.MaxValue);
-            var guid =
-                $"{uninxtime.ToString("x8").PadLeft(8, '0')}{__staticMachine.ToString("x8").PadLeft(8, '0').Substring(2, 6)}{__staticPid.ToString("x8").PadLeft(8, '0').Substring(6, 2)}{increment.ToString("x8").PadLeft(8, '0')}{rand.ToString("x8").PadLeft(8, '0')}";
-            return Guid.Parse(guid);
-        }
+        #region 设置指定缓存键的值
 
         /// <summary>
-        /// 设置指定 key 的值
+        /// 设置指定缓存键的值
         /// </summary>
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <param name="value">字符串值</param>
-        /// <param name="expireSeconds">过期(秒单位)</param>
+        /// <param name="overdueStrategy">过期策略</param>
+        /// <param name="timeSpan">过期时间</param>
         /// <returns></returns>
-        public static bool Set<T>(string key, T value, int expireSeconds = -1)
+        public bool Set<T>(string key, T value, OverdueStrategy overdueStrategy, TimeSpan timeSpan)
         {
-            key = string.Concat(Prefix, key);
             using (var conn = Instance.GetConnection())
             {
-                if (expireSeconds != -1)
-                    return conn.Client.Set(key, value, TimeSpan.FromSeconds(expireSeconds)) == "OK";
-                return conn.Client.Set(key, value) == "OK";
+                string cacheKey = GetCacheKey(key);
+                if (timeSpan < TimeSpan.Zero)
+                {
+                    return false;
+                }
+                else
+                {
+                    if (timeSpan == TimeSpan.Zero || overdueStrategy == OverdueStrategy.SlidingExpiration)
+                    {
+                        var ret = conn.Client.Set(cacheKey, value) == "OK";
+                        if (ret && overdueStrategy == OverdueStrategy.SlidingExpiration)
+                        {
+                            var slidingInfo = this.GetSlidingOverTimeExpireValue(key);
+                            this.ZAdd(slidingInfo.Key, (GetExpireTime(timeSpan), slidingInfo.Value));
+                        }
+
+                        return ret;
+                    }
+                    else
+                    {
+                        return conn.Client.Set(cacheKey, value, timeSpan) == "OK";
+                    }
+                }
             }
         }
+
+        #endregion
 
         /// <summary>
         /// 设置指定 key 的值
         /// </summary>
         /// <param name="list"></param>
-        /// <param name="expireSeconds">过期(秒单位)</param>
+        /// <param name="overdueStrategy">过期策略</param>
+        /// <param name="timeSpan">过期时间</param>
         /// <returns></returns>
-        public static bool Set<T>(IEnumerable<KeyValuePair<string, T>> list, int expireSeconds = -1)
+        public bool Set<T>(IEnumerable<KeyValuePair<string, T>> list,OverdueStrategy overdueStrategy,  TimeSpan timeSpan)
         {
             using (var conn = Instance.GetConnection())
             {
                 List<string> successList = new List<string>();
                 foreach (var item in list)
                 {
-                    var key = string.Concat(Prefix, item.Key);
+                    var key =GetCacheKey(item.Key);
                     bool isSuccess;
                     if (expireSeconds != -1)
                     {
-                        isSuccess = conn.Client.Set(key, item.Value, TimeSpan.FromSeconds(expireSeconds)) == "OK";
+                        isSuccess = conn.Client.Set(key, item.Value, timeSpan) == "OK";
                     }
                     else
                     {
@@ -383,7 +401,7 @@ namespace Wolf.Extension.Cache.Redis.Common
                     for (int i = 0; i < item.Value.Length; i += 2)
                     {
                         memberScores.Add(new ValueTuple<double, string>(expireTime,
-                            GetOverTimeExpireValue(item.Key, item.Value[i].ToString(), TODO, TODO)));
+                            GetSlidingOverTimeExpireValue(item.Key, item.Value[i].ToString(), TODO, TODO)));
                     }
 
                     dics[cacheKey] = memberScores;
@@ -437,7 +455,7 @@ namespace Wolf.Extension.Cache.Redis.Common
             {
                 ZAdd(GetCacheFileKey(),
                     (DateTime.Now.AddSeconds(expire.TotalSeconds).ToUnixTimestamp(TimestampType.MilliSecond).ConvertToDouble(0),
-                        GetOverTimeExpireValue(key, hashKey, TODO, TODO)));
+                        GetSlidingOverTimeExpireValue(key, hashKey, TODO, TODO)));
                 return "OK";
             }
 
@@ -467,7 +485,8 @@ namespace Wolf.Extension.Cache.Redis.Common
                 for (int i = 0; i < kvalues.Length; i += 2)
                 {
                     if (kvalues[i] != null && kvalues[i + 1] != null)
-                        memberScores.Add((expireTime, GetOverTimeExpireValue(key, kvalues[i].ToString(), TODO, TODO)));
+                        memberScores.Add((expireTime,
+                            GetSlidingOverTimeExpireValue(key, kvalues[i].ToString(), TODO, TODO)));
                 }
 
                 ZAdd(GetCacheFileKey(), memberScores.ToArray());
@@ -828,12 +847,12 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <param name="memberScores">一个或多个成员分数</param>
         /// <returns></returns>
-        public static long ZAdd(string key, params (double, string)[] memberScores)
+        public long ZAdd(string key, params (double, string)[] memberScores)
         {
             using (var conn = Instance.GetConnection())
             {
-                key = string.Concat(Prefix, key);
-                return conn.Client.ZAdd<double, string>(key,
+                string cacheKey = this.GetCacheKey(key);
+                return conn.Client.ZAdd(cacheKey,
                     memberScores.Select(a => new Tuple<double, string>(a.Item1, a.Item2)).ToArray());
             }
         }
@@ -1195,104 +1214,48 @@ namespace Wolf.Extension.Cache.Redis.Common
 
         #region private methods
 
-        #region hashKey过期策略
+        #region 得到缓存键
 
-        // private static string _cacheKeyPre;
-        //
-        // private static List<string> _cacheKeys;
-        //
-        // /// <summary>
-        // /// 得到缓存key前缀（Hash过期策略的缓存key）
-        // /// </summary>
-        // /// <returns></returns>
-        // private static string GetCacheFileKey()
-        // {
-        //     return $"{GetCacheFileKeyPre()}_{GetCacheFile()}";
-        // }
-        //
-        // /// <summary>
-        // /// 得到全部的缓存key
-        // /// </summary>
-        // /// <returns></returns>
-        // public static List<string> GetCacheFileKeys()
-        // {
-        //     var pre = GetCacheFileKeyPre();
-        //     return GetCacheFiles().Select(x => pre + "_" + x).ToList();
-        // }
-        //
-        // #region 缓存前缀
-        //
-        // /// <summary>
-        // /// 得到缓存key前缀
-        // /// </summary>
-        // /// <returns></returns>
-        // private static string GetCacheFileKeyPre()
-        // {
-        //     if (string.IsNullOrEmpty(_cacheKeyPre))
-        //         _cacheKeyPre = "EInfrastructure.Redis";
-        //     return _cacheKeyPre;
-        // }
-        //
-        // /// <summary>
-        // /// 设置 HashKey过期的 缓存key前缀
-        // /// </summary>
-        // /// <param name="cacheKeyPre"></param>
-        // /// <returns></returns>
-        // protected static void SetCacheFileKeyPre(string cacheKeyPre)
-        // {
-        //     _cacheKeyPre = cacheKeyPre;
-        // }
-        //
-        // #endregion
-        //
-        // #region 缓存key
-        //
-        // /// <summary>
-        // /// 设置缓存key
-        // /// </summary>
-        // /// <param name="cacheKeys"></param>
-        // protected static void SetCacheFileKeys(List<string> cacheKeys)
-        // {
-        //     _cacheKeys = cacheKeys;
-        // }
-        //
-        // /// <summary>
-        // /// 得到缓存key
-        // /// </summary>
-        // /// <returns></returns>
-        // private static List<string> GetCacheFiles()
-        // {
-        //     if (_cacheKeys == null || _cacheKeys.Count == 0)
-        //     {
-        //         _cacheKeys = new List<string>();
-        //         for (int i = 1; i <= 50; i++)
-        //         {
-        //             _cacheKeys.Add(i.ToString());
-        //         }
-        //     }
-        //
-        //     return _cacheKeys;
-        // }
-        //
-        // /// <summary>
-        // /// 得到缓存key
-        // /// </summary>
-        // /// <returns></returns>
-        // private static string GetCacheFile()
-        // {
-        //     if (_cacheKeys == null || _cacheKeys.Count == 0)
-        //     {
-        //         _cacheKeys = new List<string>();
-        //         for (int i = 1; i <= 50; i++)
-        //         {
-        //             _cacheKeys.Add(i.ToString());
-        //         }
-        //     }
-        //
-        //     return _cacheKeys[_randomNumberGenerator.Generate(0, _cacheKeys.Count - 1)];
-        // }
-        //
-        // #endregion
+        /// <summary>
+        /// 得到缓存键
+        /// </summary>
+        /// <param name="key">缓存键</param>
+        /// <returns></returns>
+        private string GetCacheKey(string key)
+        {
+            return string.Concat(this._redisOptions.Pre, key);
+        }
+
+        #endregion
+
+        #region 得到滑动过期的缓存Key与值
+
+        ///  <summary>
+        /// 得到滑动过期的缓存Key与值
+        ///  </summary>
+        ///  <param name="key"></param>
+        ///  <returns></returns>
+        private KeyValuePair<string, string> GetSlidingOverTimeExpireValue(string key)
+        {
+            int hashCode = GuidGeneratorCommon.GetHashCode(key);
+            string cacheKey = string.Format(this._redisOptions.SlidingOverTimeCacheKeyFormat[0], hashCode);
+            string cacheValue = string.Format(this._redisOptions.SlidingOverTimeCacheKeyFormat[1], key);
+            return new KeyValuePair<string, string>(cacheKey, cacheValue);
+        }
+
+        #endregion
+
+        #region 得到过期时间 13位时间戳
+
+        /// <summary>
+        /// 得到过期时间 13位时间戳
+        /// </summary>
+        /// <param name="timeSpan"></param>
+        /// <returns></returns>
+        private long GetExpireTime(TimeSpan timeSpan)
+        {
+            return (DateTime.Now + timeSpan).ToUnixTimestamp(TimestampType.MilliSecond);
+        }
 
         #endregion
 

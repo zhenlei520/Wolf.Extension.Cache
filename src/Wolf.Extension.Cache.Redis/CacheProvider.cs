@@ -10,6 +10,7 @@ using Wolf.Extension.Cache.Abstractions.Request.Base;
 using Wolf.Extension.Cache.Abstractions.Response.Base;
 using Wolf.Extension.Cache.Redis.Common;
 using Wolf.Extension.Cache.Abstractions.Common;
+using Wolf.Extension.Cache.Abstractions.Enum;
 using Wolf.Extension.Cache.Redis.Configurations;
 using Wolf.Extensions.Serialize.Json.Abstracts;
 
@@ -21,15 +22,19 @@ namespace Wolf.Extension.Cache.Redis
     public partial class CacheProvider : BaseRedisCacheProvider, ICacheProvider
     {
         private readonly RedisOptions _redisOptions;
+        private readonly QuickHelperBase _quickHelperBase;
 
         /// <summary>
         ///
         /// </summary>
         /// <param name="jsonProvider"></param>
         /// <param name="redisOptions"></param>
-        public CacheProvider(IJsonProvider jsonProvider, RedisOptions redisOptions) : base(jsonProvider)
+        /// <param name="serviceId"></param>
+        public CacheProvider(IJsonProvider jsonProvider, RedisOptions redisOptions, string serviceId) : base(
+            jsonProvider)
         {
             this._redisOptions = redisOptions;
+            this._quickHelperBase = new QuickHelperBase(serviceId);
         }
 
         #region 设置缓存
@@ -39,12 +44,11 @@ namespace Wolf.Extension.Cache.Redis
         /// </summary>
         /// <param name="key">缓存键</param>
         /// <param name="value">保存的值</param>
-        /// <param name="expiry">过期时间，null：永不过期</param>
         /// <param name="persistentOps">策略</param>
         /// <returns></returns>
-        public bool Set(string key, string value, TimeSpan? expiry = null, PersistentOps persistentOps = null)
+        public bool Set(string key, string value, PersistentOps persistentOps = null)
         {
-            return this.Set<string>(key, value, expiry, persistentOps);
+            return this.Set<string>(key, value, persistentOps);
         }
 
         #endregion
@@ -55,13 +59,12 @@ namespace Wolf.Extension.Cache.Redis
         /// 设置缓存键值对集合
         /// </summary>
         /// <param name="list">缓存键值对集合</param>
-        /// <param name="expiry">过期时间，null：永不过期</param>
         /// <param name="persistentOps">策略</param>
         /// <returns></returns>
-        public bool Set(IEnumerable<BaseRequest<string>> list, TimeSpan? expiry = null,
+        public bool Set(IEnumerable<BaseRequest<string>> list,
             PersistentOps persistentOps = null)
         {
-            return this.Set<string>(list, expiry, persistentOps);
+            return this.Set<string>(list, persistentOps);
         }
 
         #endregion
@@ -73,25 +76,24 @@ namespace Wolf.Extension.Cache.Redis
         /// </summary>
         /// <param name="key">缓存键</param>
         /// <param name="obj">缓存值</param>
-        /// <param name="expiry">过期时间，null：永不过期</param>
         /// <param name="persistentOps">策略</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public bool Set<T>(string key, T obj, TimeSpan? expiry = null, PersistentOps persistentOps = null)
+        public bool Set<T>(string key, T obj, PersistentOps persistentOps = null)
         {
             persistentOps = persistentOps.Get();
-            return base.Execute(persistentOps.Strategy, () => QuickHelperBase.Set(key, obj,
-                expiry.HasValue ? Convert.ToInt32(expiry.Value.TotalSeconds) : -1), () =>
-            {
-                var res=QuickHelperBase.Set(key, obj,-1);
-                if (expiry != null)
+            return base.Execute(persistentOps.Strategy,
+                () => this._quickHelperBase.Set(key, obj, this._redisOptions.Pre, persistentOps.OverdueTimeSpan), () =>
                 {
-                    //需要过期
+                    var res = this._quickHelperBase.Set(key, obj, this._redisOptions.Pre,
+                        persistentOps.OverdueTimeSpan);
+                    if (expiry != null)
+                    {
+                        //需要过期
+                    }
 
-                }
-
-                return res;
-            });
+                    return res;
+                });
         }
 
         #endregion
@@ -102,11 +104,10 @@ namespace Wolf.Extension.Cache.Redis
         /// 保存多个对象集合
         /// </summary>
         /// <param name="list">缓存键值对集合</param>
-        /// <param name="expiry">过期时间，null：永不过期</param>
         /// <param name="persistentOps">策略</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public bool Set<T>(IEnumerable<BaseRequest<T>> list, TimeSpan? expiry = null,
+        public bool Set<T>(IEnumerable<BaseRequest<T>> list,
             PersistentOps persistentOps = null)
         {
             persistentOps = persistentOps.Get();
@@ -229,9 +230,9 @@ namespace Wolf.Extension.Cache.Redis
         /// <param name="expiry">过期时间，null：永不过期</param>
         /// <param name="persistentOps">策略</param>
         /// <returns></returns>
-        public bool SetExpire(string key, TimeSpan expiry, PersistentOps persistentOps = null)
+        public bool SetExpire(string key, PersistentOps persistentOps = null)
         {
-            return QuickHelperBase.Expire(key, expiry);
+            return QuickHelperBase.Expire(key, persistentOps);
         }
 
         #endregion
@@ -279,7 +280,10 @@ namespace Wolf.Extension.Cache.Redis
         public List<string> Keys(string pattern = "*")
         {
             var keys = new List<string>();
-            QuickHelperBase.Keys(this._redisOptions.Pre + pattern).ToList().ForEach(p => { keys.Add(p.Substring(this._redisOptions.Pre.Length)); });
+            QuickHelperBase.Keys(this._redisOptions.Pre + pattern).ToList().ForEach(p =>
+            {
+                keys.Add(p.Substring(this._redisOptions.Pre.Length));
+            });
             return keys;
         }
 

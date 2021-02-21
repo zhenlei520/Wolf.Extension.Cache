@@ -13,8 +13,11 @@ namespace Wolf.Extension.Cache.Redis.Configurations
         /// </summary>
         public RedisOptions()
         {
-            this.OverTimeCacheKeyFormat = new[]
+            this.SlidingOverTimeCacheKeyFormat = new []{"Sliding_{0}","{0}"};
+            this.SlidingOverTimeCacheCount = 50;
+            this.HashOverTimeCacheKeyFormat = new[]
                 {"Absolute_{0}", "Absolute_{0}~_~{1}", "Sliding_{0}", "Sliding_{0}~_~{1}"};
+            this.HashOverTimeCacheCount = 50;
         }
 
         /// <summary>
@@ -48,9 +51,20 @@ namespace Wolf.Extension.Cache.Redis.Configurations
         public int PoolSize { get; set; }
 
         /// <summary>
+        /// Redis 默认缓存键滑动缓存过期 格式：
+        /// 第一个为滑动过期格式的键。第二个为滑动过期的值
+        /// </summary>
+        public string[] SlidingOverTimeCacheKeyFormat { get; set; }
+
+        /// <summary>
+        /// 缓存键滑动过期的缓存键个数
+        /// </summary>
+        public int SlidingOverTimeCacheCount { get; set; }
+
+        /// <summary>
         /// Redis默认 Hashkey 过期值的格式：默认：
-        /// 第一个为绝对过期键格式，第二个为绝对过期值的格式
-        /// 第三个为滑动过期格式，第四个为滑动过期值的格式
+        /// 第一个为绝对过期的键，第二个为绝对过期的值
+        /// 第三个为滑动过期的键，第四个为滑动过期的值
         /// </summary>
         public string[] HashOverTimeCacheKeyFormat { get; set; }
 

@@ -21,10 +21,7 @@ namespace Wolf.Extension.Cache.Abstractions.Configurations
             if (isCanHashExpire)
             {
                 this.HashOverdueTime = overdueTime;
-                if (this.HashOverdueTime != null)
-                {
-                    this.HashOverdueTimeSpan = DateTimeOffset.Now.AddSeconds(this.HashOverdueTime.Value) - DateTimeOffset.Now;
-                }
+                this.HashOverdueTimeSpan = this.HashOverdueTime != null ? TimeSpan.FromSeconds(this.HashOverdueTime.Value) : TimeSpan.Zero;
             }
 
             this.IsCanHashExpire = isCanHashExpire;
@@ -44,6 +41,6 @@ namespace Wolf.Extension.Cache.Abstractions.Configurations
         /// <summary>
         /// 过期时间
         /// </summary>
-        public TimeSpan? HashOverdueTimeSpan { get; private set; }
+        public TimeSpan HashOverdueTimeSpan { get; private set; }
     }
 }

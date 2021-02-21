@@ -32,7 +32,7 @@ namespace Wolf.Extension.Cache.Redis
             ValidationCommon.Check(redisConfig, "redis配置异常", HttpStatus.Err.Name);
             new RedisConfigValidator().Validate(redisConfig).Check();
             _prefix = redisConfig.Prefix;
-            CsRedisHelper.InitializeConfiguration(redisConfig);
+            CsRedisHelper.InitializeConfiguration(redisConfig, TODO);
         }
 
         #region 得到实现类唯一标示
@@ -66,8 +66,7 @@ namespace Wolf.Extension.Cache.Redis
         public bool StringSet(string key, string value, TimeSpan? expiry = default(TimeSpan?),
             OverdueStrategy overdueStrategy = null)
         {
-            return base.Execute(overdueStrategy, () => QuickHelperBase.Set(key, value,
-                expiry.HasValue ? Convert.ToInt32(expiry.Value.TotalSeconds) : -1), () => { return false; });
+            return base.Execute(overdueStrategy, () => QuickHelperBase.Set(key, value, TODO, TODO), () => { return false; });
         }
 
         /// <summary>
@@ -82,8 +81,7 @@ namespace Wolf.Extension.Cache.Redis
         public bool StringSet<T>(string key, T obj, TimeSpan? expiry = default(TimeSpan?),
             OverdueStrategy overdueStrategy = null)
         {
-            return base.Execute(overdueStrategy, () => QuickHelperBase.Set(key, ConvertJson(obj),
-                expiry.HasValue ? Convert.ToInt32(expiry.Value.TotalSeconds) : -1), () => { return false; });
+            return base.Execute(overdueStrategy, () => QuickHelperBase.Set(key, ConvertJson(obj), TODO, TODO), () => { return false; });
         }
 
         /// <summary>
