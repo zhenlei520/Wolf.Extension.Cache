@@ -7,7 +7,6 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using Wolf.Extension.Cache.Redis.Common;
-using Wolf.Extension.Cache.Redis.Config;
 using Wolf.Extension.Cache.Redis.Validator;
 
 namespace Wolf.Extension.Cache.Redis

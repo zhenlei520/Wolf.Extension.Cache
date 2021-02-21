@@ -121,9 +121,9 @@ namespace Wolf.Extension.Cache.Redis
         /// </summary>
         /// <param name="keys">缓存键集合</param>
         /// <returns></returns>
-        public Task<List<BaseResponse<string>>> GetAsync(IEnumerable<string> keys)
+        public Task<List<BaseResponse<string>>> GetAsync(ICollection<string> keys)
         {
-            return Task.FromResult(this.Get(keys));
+            return Task.FromResult(Get((ICollection<string>) keys));
         }
 
         #endregion
@@ -150,9 +150,9 @@ namespace Wolf.Extension.Cache.Redis
         /// </summary>
         /// <param name="keys">缓存键集合</param>
         /// <returns></returns>
-        public Task<List<BaseResponse<T>>> GetAsync<T>(IEnumerable<string> keys) where T : class, new()
+        public Task<List<BaseResponse<T>>> GetAsync<T>(ICollection<string> keys) where T : class, new()
         {
-            return Task.FromResult(this.Get<T>(keys));
+            return Task.FromResult(Get<T>((ICollection<string>) keys));
         }
 
         #endregion

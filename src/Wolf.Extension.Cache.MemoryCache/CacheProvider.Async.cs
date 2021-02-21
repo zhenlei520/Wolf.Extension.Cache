@@ -1,7 +1,6 @@
 ﻿// Copyright (c) zhenlei520 All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Wolf.Extension.Cache.Abstractions.Configurations;
@@ -15,7 +14,6 @@ namespace Wolf.Extension.Cache.MemoryCache
     /// </summary>
     public partial class CacheProvider
     {
-
         #region 设置缓存（异步）
 
         /// <summary>
@@ -23,16 +21,14 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// </summary>
         /// <param name="key">缓存键</param>
         /// <param name="value">保存的值</param>
-        /// <param name="expiry">过期时间，null：永不过期</param>
         /// <param name="persistentOps">策略</param>
         /// <returns></returns>
         public Task<bool> SetAsync(
             string key,
             string value,
-            TimeSpan? expiry = null,
             PersistentOps persistentOps = null)
         {
-            return Task.FromResult(Set(key, value, expiry, persistentOps));
+            return Task.FromResult(Set(key, value, persistentOps));
         }
 
         #endregion
@@ -43,13 +39,12 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// 设置缓存键值对集合(异步)
         /// </summary>
         /// <param name="list">缓存键值对集合</param>
-        /// <param name="expiry">过期时间，null：永不过期</param>
         /// <param name="persistentOps">策略</param>
         /// <returns></returns>
-        public Task<bool> SetAsync(List<BaseRequest<string>> list, TimeSpan? expiry = null,
+        public Task<bool> SetAsync(List<BaseRequest<string>> list,
             PersistentOps persistentOps = null)
         {
-            return Task.FromResult(Set(list, expiry, persistentOps));
+            return Task.FromResult(Set(list, persistentOps));
         }
 
         #endregion
@@ -61,17 +56,15 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// </summary>
         /// <param name="key">缓存键</param>
         /// <param name="obj">缓存值</param>
-        /// <param name="expiry">过期时间，null：永不过期</param>
         /// <param name="persistentOps">策略</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         public Task<bool> SetAsync<T>(
             string key,
             T obj,
-            TimeSpan? expiry = null,
             PersistentOps persistentOps = null)
         {
-            return Task.FromResult(Set(key, obj, expiry, persistentOps));
+            return Task.FromResult(Set(key, obj, persistentOps));
         }
 
         #endregion
@@ -82,14 +75,13 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// 保存多个对象集合(异步)
         /// </summary>
         /// <param name="list">缓存键值对集合</param>
-        /// <param name="expiry">过期时间，null：永不过期</param>
         /// <param name="persistentOps">策略</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public Task<bool> SetAsync<T>(List<BaseRequest<T>> list, TimeSpan? expiry = null,
+        public Task<bool> SetAsync<T>(List<BaseRequest<T>> list,
             PersistentOps persistentOps = null)
         {
-            return Task.FromResult(Set(list, expiry, persistentOps));
+            return Task.FromResult(Set(list, persistentOps));
         }
 
         #endregion
@@ -115,9 +107,9 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// </summary>
         /// <param name="keys">缓存键集合</param>
         /// <returns></returns>
-        public Task<List<BaseResponse<string>>> GetAsync(IEnumerable<string> keys)
+        public Task<List<BaseResponse<string>>> GetAsync(ICollection<string> keys)
         {
-            return Task.FromResult(Get(keys));
+            return Task.FromResult(Get((ICollection<string>) keys));
         }
 
         #endregion
@@ -144,9 +136,9 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// </summary>
         /// <param name="keys">缓存键集合</param>
         /// <returns></returns>
-        public Task<List<BaseResponse<T>>> GetAsync<T>(IEnumerable<string> keys) where T : class, new()
+        public Task<List<BaseResponse<T>>> GetAsync<T>(ICollection<string> keys) where T : class, new()
         {
-            return Task.FromResult(Get<T>(keys));
+            return Task.FromResult(Get<T>((ICollection<string>) keys));
         }
 
         #endregion
@@ -201,12 +193,11 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// 设置过期时间（异步）
         /// </summary>
         /// <param name="key">缓存key</param>
-        /// <param name="expiry">过期时间</param>
         /// <param name="persistentOps">策略</param>
         /// <returns></returns>
-        public Task<bool> SetExpireAsync(string key, TimeSpan expiry, PersistentOps persistentOps = null)
+        public Task<bool> SetExpireAsync(string key, PersistentOps persistentOps = null)
         {
-            return Task.FromResult(SetExpire(key, expiry, persistentOps));
+            return Task.FromResult(SetExpire(key, persistentOps));
         }
 
         #endregion
@@ -248,7 +239,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// </summary>
         /// <param name="pattern">如：runoob*，不含prefix前辍RedisHelper.Name</param>
         /// <returns></returns>
-        public Task<List<string>> KeysAsync(string pattern="*")
+        public Task<List<string>> KeysAsync(string pattern = "*")
         {
             return Task.FromResult(Keys(pattern));
         }

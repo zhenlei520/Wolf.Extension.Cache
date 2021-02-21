@@ -6,8 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-using Wolf.Extension.Cache.Abstractions.Enum;
-using Wolf.Extension.Cache.Redis.Configurations;
 using Wolf.Systems.Abstracts;
 using Wolf.Systems.Core;
 using Wolf.Systems.Core.Provider.Random;
@@ -435,15 +433,22 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public static string HashSetHashFileExpire<T>(string key, string hashKey, TimeSpan expire, T value)
         {
-            if (expire > TimeSpan.Zero)
+            if (expire.GreaterThan(TimeSpan.Zero))
             {
                 ZAdd(GetCacheFileKey(),
                     (DateTime.Now.AddSeconds(expire.TotalSeconds).ToUnixTimestamp(TimestampType.MilliSecond).ConvertToDouble(0),
                         GetOverTimeExpireValue(key, hashKey, TODO, TODO)));
+                return "OK";
             }
 
-            return HashSetExpire(key, TimeSpan.Zero, hashKey, value);
+            if (expire.Equals(TimeSpan.Zero))
+            {
+                return HashSetExpire(key, TimeSpan.Zero, hashKey, value);
+            }
+
+            return "No Data";
         }
+
 
         /// <summary>
         /// 同时将多个 field-value (域-值)对设置到哈希表 key 中(设置hashkey的过期时间)
@@ -1192,125 +1197,102 @@ namespace Wolf.Extension.Cache.Redis.Common
 
         #region hashKey过期策略
 
-        private static string _cacheKeyPre;
-
-        private static List<string> _cacheKeys;
-
-        /// <summary>
-        /// 得到缓存key前缀（Hash过期策略的缓存key）
-        /// </summary>
-        /// <returns></returns>
-        private static string GetCacheFileKey()
-        {
-            return $"{GetCacheFileKeyPre()}_{GetCacheFile()}";
-        }
-
-        /// <summary>
-        /// 得到全部的缓存key
-        /// </summary>
-        /// <returns></returns>
-        public static List<string> GetCacheFileKeys()
-        {
-            var pre = GetCacheFileKeyPre();
-            return GetCacheFiles().Select(x => pre + "_" + x).ToList();
-        }
-
-        #region 缓存前缀
-
-        /// <summary>
-        /// 得到缓存key前缀
-        /// </summary>
-        /// <returns></returns>
-        private static string GetCacheFileKeyPre()
-        {
-            if (string.IsNullOrEmpty(_cacheKeyPre))
-                _cacheKeyPre = "EInfrastructure.Redis";
-            return _cacheKeyPre;
-        }
-
-        /// <summary>
-        /// 设置 HashKey过期的 缓存key前缀
-        /// </summary>
-        /// <param name="cacheKeyPre"></param>
-        /// <returns></returns>
-        protected static void SetCacheFileKeyPre(string cacheKeyPre)
-        {
-            _cacheKeyPre = cacheKeyPre;
-        }
-
-        #endregion
-
-        #region 缓存key
-
-        /// <summary>
-        /// 设置缓存key
-        /// </summary>
-        /// <param name="cacheKeys"></param>
-        protected static void SetCacheFileKeys(List<string> cacheKeys)
-        {
-            _cacheKeys = cacheKeys;
-        }
-
-        /// <summary>
-        /// 得到缓存key
-        /// </summary>
-        /// <returns></returns>
-        private static List<string> GetCacheFiles()
-        {
-            if (_cacheKeys == null || _cacheKeys.Count == 0)
-            {
-                _cacheKeys = new List<string>();
-                for (int i = 1; i <= 50; i++)
-                {
-                    _cacheKeys.Add(i.ToString());
-                }
-            }
-
-            return _cacheKeys;
-        }
-
-        /// <summary>
-        /// 得到缓存key
-        /// </summary>
-        /// <returns></returns>
-        private static string GetCacheFile()
-        {
-            if (_cacheKeys == null || _cacheKeys.Count == 0)
-            {
-                _cacheKeys = new List<string>();
-                for (int i = 1; i <= 50; i++)
-                {
-                    _cacheKeys.Add(i.ToString());
-                }
-            }
-
-            return _cacheKeys[_randomNumberGenerator.Generate(0, _cacheKeys.Count - 1)];
-        }
-
-        #endregion
-
-        #region 得到自定义HashKey过期的缓存Key
-
-        ///  <summary>
-        /// 得到自定义HashKey过期的缓存Key
-        ///  </summary>
-        ///  <param name="key"></param>
-        ///  <param name="hashKey"></param>
-        ///  <param name="overdueStrategy">过期策略</param>
-        ///  <param name="options">redis配置</param>
-        ///  <returns></returns>
-        internal static string GetOverTimeExpireValue(string key, string hashKey, OverdueStrategy overdueStrategy,
-            RedisOptions options)
-        {
-            if (overdueStrategy == OverdueStrategy.AbsoluteExpiration)
-            {
-                return string.Format(options.OverTimeCacheKeyFormat[0], key, hashKey);
-            }
-
-            return string.Format(options.OverTimeCacheKeyFormat[1], key, hashKey);
-        }
-
-        #endregion
+        // private static string _cacheKeyPre;
+        //
+        // private static List<string> _cacheKeys;
+        //
+        // /// <summary>
+        // /// 得到缓存key前缀（Hash过期策略的缓存key）
+        // /// </summary>
+        // /// <returns></returns>
+        // private static string GetCacheFileKey()
+        // {
+        //     return $"{GetCacheFileKeyPre()}_{GetCacheFile()}";
+        // }
+        //
+        // /// <summary>
+        // /// 得到全部的缓存key
+        // /// </summary>
+        // /// <returns></returns>
+        // public static List<string> GetCacheFileKeys()
+        // {
+        //     var pre = GetCacheFileKeyPre();
+        //     return GetCacheFiles().Select(x => pre + "_" + x).ToList();
+        // }
+        //
+        // #region 缓存前缀
+        //
+        // /// <summary>
+        // /// 得到缓存key前缀
+        // /// </summary>
+        // /// <returns></returns>
+        // private static string GetCacheFileKeyPre()
+        // {
+        //     if (string.IsNullOrEmpty(_cacheKeyPre))
+        //         _cacheKeyPre = "EInfrastructure.Redis";
+        //     return _cacheKeyPre;
+        // }
+        //
+        // /// <summary>
+        // /// 设置 HashKey过期的 缓存key前缀
+        // /// </summary>
+        // /// <param name="cacheKeyPre"></param>
+        // /// <returns></returns>
+        // protected static void SetCacheFileKeyPre(string cacheKeyPre)
+        // {
+        //     _cacheKeyPre = cacheKeyPre;
+        // }
+        //
+        // #endregion
+        //
+        // #region 缓存key
+        //
+        // /// <summary>
+        // /// 设置缓存key
+        // /// </summary>
+        // /// <param name="cacheKeys"></param>
+        // protected static void SetCacheFileKeys(List<string> cacheKeys)
+        // {
+        //     _cacheKeys = cacheKeys;
+        // }
+        //
+        // /// <summary>
+        // /// 得到缓存key
+        // /// </summary>
+        // /// <returns></returns>
+        // private static List<string> GetCacheFiles()
+        // {
+        //     if (_cacheKeys == null || _cacheKeys.Count == 0)
+        //     {
+        //         _cacheKeys = new List<string>();
+        //         for (int i = 1; i <= 50; i++)
+        //         {
+        //             _cacheKeys.Add(i.ToString());
+        //         }
+        //     }
+        //
+        //     return _cacheKeys;
+        // }
+        //
+        // /// <summary>
+        // /// 得到缓存key
+        // /// </summary>
+        // /// <returns></returns>
+        // private static string GetCacheFile()
+        // {
+        //     if (_cacheKeys == null || _cacheKeys.Count == 0)
+        //     {
+        //         _cacheKeys = new List<string>();
+        //         for (int i = 1; i <= 50; i++)
+        //         {
+        //             _cacheKeys.Add(i.ToString());
+        //         }
+        //     }
+        //
+        //     return _cacheKeys[_randomNumberGenerator.Generate(0, _cacheKeys.Count - 1)];
+        // }
+        //
+        // #endregion
 
         #endregion
 

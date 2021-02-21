@@ -62,12 +62,11 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// </summary>
         /// <param name="key">缓存键</param>
         /// <param name="value">保存的值</param>
-        /// <param name="expiry">过期时间，null：永不过期</param>
         /// <param name="persistentOps">策略</param>
         /// <returns></returns>
-        public bool Set(string key, string value, TimeSpan? expiry = null, PersistentOps persistentOps = null)
+        public bool Set(string key, string value, PersistentOps persistentOps = null)
         {
-            return this.Set<string>(key, value, expiry, persistentOps);
+            return this.Set<string>(key, value, persistentOps);
         }
 
         #endregion
@@ -78,13 +77,11 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// 设置缓存键值对集合
         /// </summary>
         /// <param name="list">缓存键值对集合</param>
-        /// <param name="expiry">过期时间，null：永不过期</param>
         /// <param name="persistentOps">策略</param>
         /// <returns></returns>
-        public bool Set(IEnumerable<BaseRequest<string>> list, TimeSpan? expiry = null,
-            PersistentOps persistentOps = null)
+        public bool Set(ICollection<BaseRequest<string>> list, PersistentOps persistentOps = null)
         {
-            return this.Set<string>(list, expiry, persistentOps);
+            return this.Set<string>(list, persistentOps);
         }
 
         #endregion
@@ -96,34 +93,39 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// </summary>
         /// <param name="key">缓存键</param>
         /// <param name="obj">缓存值</param>
-        /// <param name="expiry">过期时间，null：永不过期</param>
         /// <param name="persistentOps">策略</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public bool Set<T>(string key, T obj, TimeSpan? expiry = null, PersistentOps persistentOps = null)
+        public bool Set<T>(string key, T obj, PersistentOps persistentOps = null)
         {
             CheckKey(key);
+            persistentOps = persistentOps.Get();
             var cacheKey = GetCacheKey(key);
-            if (expiry == null)
+            if (persistentOps.OverdueTime == null)
             {
                 this._memoryCache.Set(cacheKey, obj);
             }
             else
             {
                 persistentOps = persistentOps.Get();
-                MemoryCacheEntryOptions memoryCacheEntryOptions;
-                if (persistentOps.Strategy == OverdueStrategy.AbsoluteExpiration)
+                MemoryCacheEntryOptions memoryCacheEntryOptions = new MemoryCacheEntryOptions();
+                if (persistentOps.OverdueTimeSpan != null)
                 {
-                    memoryCacheEntryOptions = new MemoryCacheEntryOptions().SetAbsoluteExpiration(expiry.Value);
-                }
-                else if (persistentOps.Strategy == OverdueStrategy.SlidingExpiration)
-                {
-                    memoryCacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(expiry.Value);
-                }
-                else
-                {
-                    Console.WriteLine("不支持的过期策略");
-                    return false;
+                    if (persistentOps.Strategy == OverdueStrategy.AbsoluteExpiration)
+                    {
+                        memoryCacheEntryOptions =
+                            memoryCacheEntryOptions.SetAbsoluteExpiration(persistentOps.OverdueTimeSpan.Value);
+                    }
+                    else if (persistentOps.Strategy == OverdueStrategy.SlidingExpiration)
+                    {
+                        memoryCacheEntryOptions =
+                            memoryCacheEntryOptions.SetSlidingExpiration(persistentOps.OverdueTimeSpan.Value);
+                    }
+                    else
+                    {
+                        Console.WriteLine("不支持的过期策略");
+                        return false;
+                    }
                 }
 
                 this._memoryCache.Set(cacheKey, obj, memoryCacheEntryOptions);
@@ -140,11 +142,10 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// 保存多个对象集合
         /// </summary>
         /// <param name="list">缓存键值对集合</param>
-        /// <param name="expiry">过期时间，null：永不过期</param>
         /// <param name="persistentOps">策略</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public bool Set<T>(IEnumerable<BaseRequest<T>> list, TimeSpan? expiry = null,
+        public bool Set<T>(ICollection<BaseRequest<T>> list,
             PersistentOps persistentOps = null)
         {
             if (list == null || !list.Any())
@@ -157,7 +158,7 @@ namespace Wolf.Extension.Cache.MemoryCache
             List<string> roleBackList = new List<string>();
             foreach (var item in list)
             {
-                if (!Set(item.Key, item.Value, expiry) && persistentOps.IsAtomic)
+                if (!Set(item.Key, item.Value, persistentOps) && persistentOps.IsAtomic)
                 {
                     roleBackList.Add(item.Key);
                     break;
@@ -196,7 +197,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// </summary>
         /// <param name="keys">缓存键集合</param>
         /// <returns></returns>
-        public List<BaseResponse<string>> Get(IEnumerable<string> keys)
+        public List<BaseResponse<string>> Get(ICollection<string> keys)
         {
             return this.Get<string>(keys);
         }
@@ -226,7 +227,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// </summary>
         /// <param name="keys">缓存键集合</param>
         /// <returns></returns>
-        public List<BaseResponse<T>> Get<T>(IEnumerable<string> keys)
+        public List<BaseResponse<T>> Get<T>(ICollection<string> keys)
         {
             if (keys == null || !keys.Any())
             {
@@ -304,26 +305,33 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// 设置过期时间
         /// </summary>
         /// <param name="key">缓存key</param>
-        /// <param name="expiry">过期时间，null：永不过期</param>
         /// <param name="persistentOps">策略</param>
         /// <returns></returns>
-        public bool SetExpire(string key, TimeSpan expiry, PersistentOps persistentOps = null)
+        public bool SetExpire(string key, PersistentOps persistentOps = null)
         {
             CheckKey(key);
             persistentOps = persistentOps.Get();
             this._memoryCache.GetOrCreate(GetCacheKey(key), cacheEntry =>
             {
-                if (persistentOps.Strategy == OverdueStrategy.AbsoluteExpiration)
+                if (persistentOps.OverdueTimeSpan == null)
                 {
-                    cacheEntry.AbsoluteExpiration = DateTimeOffset.Now.Add(expiry);
-                }
-                else if (persistentOps.Strategy == OverdueStrategy.SlidingExpiration)
-                {
-                    cacheEntry.SetSlidingExpiration(expiry);
+                    cacheEntry.AbsoluteExpiration = null;
+                    cacheEntry.SlidingExpiration=null;
                 }
                 else
                 {
-                    Console.WriteLine("不支持的过期策略");
+                    if (persistentOps.Strategy == OverdueStrategy.AbsoluteExpiration)
+                    {
+                        cacheEntry.AbsoluteExpiration = DateTimeOffset.Now.Add(persistentOps.OverdueTimeSpan.Value);
+                    }
+                    else if (persistentOps.Strategy == OverdueStrategy.SlidingExpiration)
+                    {
+                        cacheEntry.SetSlidingExpiration(persistentOps.OverdueTimeSpan.Value);
+                    }
+                    else
+                    {
+                        Console.WriteLine("不支持的过期策略");
+                    }
                 }
 
                 return DateTimeOffset.Now;
@@ -358,7 +366,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// </summary>
         /// <param name="keys">待删除的Key集合</param>
         /// <returns>返回删除的数量</returns>
-        public bool RemoveRange(IEnumerable<string> keys)
+        public bool RemoveRange(ICollection<string> keys)
         {
             if (keys == null || !keys.Any())
             {

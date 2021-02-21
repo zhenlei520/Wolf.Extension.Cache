@@ -3,7 +3,6 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Wolf.Extension.Cache.MemoryCache.Internal;
 
 namespace Wolf.Extension.Cache.MemoryCache

@@ -241,7 +241,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <param name="key">缓存键</param>
         /// <param name="hashKeys">hash键集合</param>
         /// <returns></returns>
-        public async Task<bool> HashDeleteAsync(string key, List<string> hashKeys)
+        public async Task<bool> HashDeleteAsync(string key, ICollection<string> hashKeys)
         {
             return await QuickHelperBase.HashDeleteAsync(key, hashKeys.ToArray())>=0;
         }

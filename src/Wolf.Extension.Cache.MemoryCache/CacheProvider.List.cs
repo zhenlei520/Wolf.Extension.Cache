@@ -3,7 +3,6 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Wolf.Extension.Cache.MemoryCache
 {
@@ -31,6 +30,7 @@ namespace Wolf.Extension.Cache.MemoryCache
 
         /// <summary>
         /// 入队（先进先出）
+        /// 0代表入队未成功
         /// </summary>
         /// <param name="key">缓存key</param>
         /// <param name="value">值</param>
@@ -47,7 +47,12 @@ namespace Wolf.Extension.Cache.MemoryCache
                 }
 
                 list.Insert(0, value);
-                return list.Count();
+                if (this.Set(key, list))
+                {
+                    return list.Count();
+                }
+
+                return 0;
             }
         }
 
@@ -79,9 +84,16 @@ namespace Wolf.Extension.Cache.MemoryCache
             lock (obj)
             {
                 var list = this.Get<List<T>>(key);
+                T obj = default(T);
                 if (list != null && list.Count > 0)
                 {
-                    return list[0];
+                    obj = list[0];
+                    list.RemoveAt(0);
+                }
+
+                if (this.Set(key, list))
+                {
+                    return obj;
                 }
 
                 return default(T);
@@ -109,6 +121,7 @@ namespace Wolf.Extension.Cache.MemoryCache
 
         /// <summary>
         /// 入栈（先进后出）
+        /// 0代表入栈未成功
         /// </summary>
         /// <param name="key">缓存key</param>
         /// <param name="value">值</param>
@@ -120,7 +133,13 @@ namespace Wolf.Extension.Cache.MemoryCache
             {
                 var list = this.Get<List<T>>(key) ?? new List<T>();
                 list.Insert(list.Count, value);
-                return list.Count();
+
+                if (this.Set(key, list))
+                {
+                    return list.Count();
+                }
+
+                return 0;
             }
         }
 
@@ -152,9 +171,16 @@ namespace Wolf.Extension.Cache.MemoryCache
             lock (obj)
             {
                 var list = this.Get<List<T>>(key);
+                T obj = default(T);
                 if (list != null && list.Count > 0)
                 {
-                    return list[list.Count - 1];
+                    obj = list[list.Count - 1];
+                    list.RemoveAt(0);
+                }
+
+                if (this.Set(key, list))
+                {
+                    return obj;
                 }
 
                 return default(T);
@@ -255,13 +281,15 @@ namespace Wolf.Extension.Cache.MemoryCache
             lock (obj)
             {
                 var list = this.Get<List<T>>(key);
+                var count = 0;
                 if (list != null)
                 {
                     list.RemoveAll(x => x.Equals(value));
-                    return list.Count;
+                    count = list.Count;
+                    this.Set(key, list);
                 }
 
-                return 0;
+                return count;
             }
         }
 

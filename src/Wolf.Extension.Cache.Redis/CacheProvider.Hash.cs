@@ -8,7 +8,6 @@ using Wolf.Extension.Cache.Abstractions.Configurations;
 using Wolf.Extension.Cache.Abstractions.Request.Base;
 using Wolf.Extension.Cache.Abstractions.Request.Hash;
 using Wolf.Extension.Cache.Abstractions.Response.Hash;
-using Wolf.Extension.Cache.Abstractions.Common;
 using Wolf.Extension.Cache.Abstractions.Enum;
 using Wolf.Extension.Cache.Redis.Common;
 
@@ -324,7 +323,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <param name="key">缓存键</param>
         /// <param name="hashKeys">hash键集合</param>
         /// <returns></returns>
-        public bool HashDelete(string key, List<string> hashKeys)
+        public bool HashDelete(string key, ICollection<string> hashKeys)
         {
             return QuickHelperBase.HashDelete(key, hashKeys.ToArray()) >= 0;
         }

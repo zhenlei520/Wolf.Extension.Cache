@@ -3,7 +3,6 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Wolf.Extension.Cache.Abstractions.Configurations;
 using Wolf.Extension.Cache.Abstractions.Request.Base;
 using Wolf.Extension.Cache.Abstractions.Request.Hash;
@@ -162,17 +161,15 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="persistentOps">策略</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public bool HashSet<T>(
-            List<MultHashRequest<HashRequest<T>>> request,
-            HashPersistentOps persistentOps = null)
+        public bool HashSet<T>(ICollection<MultHashRequest<HashRequest<T>>> request, HashPersistentOps persistentOps = null)
         {
             lock (obj)
             {
                 List<BaseRequest<HashSet<HashResponse<T>>>> list = new List<BaseRequest<HashSet<HashResponse<T>>>>();
 
-                var cacheList = this.Get<HashSet<HashResponse<T>>>(request.Select(x => x.Key)) ??
+                var cacheList = Get<HashSet<HashResponse<T>>>((ICollection<string>) request.Select(x => x.Key)) ??
                                 new List<BaseResponse<HashSet<HashResponse<T>>>>(); //得到缓存键对应的hash集合的集合
-                request.ForEach(item =>
+                foreach (var item in request)
                 {
                     var hashSet = cacheList.FirstOrDefault(x => x.Key == item.Key) ??new BaseResponse<HashSet<HashResponse<T>>>(); //指定缓存的hash键值对集合
 
@@ -194,9 +191,9 @@ namespace Wolf.Extension.Cache.MemoryCache
                         Key = hashSet.Key,
                         Value = hashSet.Value
                     });
-                });
+                }
 
-                return this.Set(list, null, persistentOps);
+                return this.Set(list, persistentOps);
             }
         }
 
@@ -225,7 +222,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="key">缓存键</param>
         /// <param name="hashKeys">Hash键集合</param>
         /// <returns></returns>
-        public List<HashResponse<string>> HashGet(string key, List<string> hashKeys)
+        public List<HashResponse<string>> HashGet(string key, ICollection<string> hashKeys)
         {
             return this.HashGet<string>(key, hashKeys);
         }
@@ -239,7 +236,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
-        public List<HashMultResponse<string>> HashGet(List<MultHashRequest<string>> list)
+        public List<HashMultResponse<string>> HashGet(ICollection<MultHashRequest<string>> list)
         {
             return this.HashGet<string>(list);
         }
@@ -276,7 +273,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="key">缓存键</param>
         /// <param name="hashKeys">Hash键集合</param>
         /// <returns></returns>
-        public List<HashResponse<T>> HashGet<T>(string key, List<string> hashKeys)
+        public List<HashResponse<T>> HashGet<T>(string key, ICollection<string> hashKeys)
         {
             var hashInfo = this.Get<HashSet<HashResponse<T>>>(key);
             if (hashInfo == null)
@@ -285,12 +282,12 @@ namespace Wolf.Extension.Cache.MemoryCache
             }
 
             List<HashResponse<T>> list = new List<HashResponse<T>>();
-            hashKeys.ForEach(hashKey =>
+            foreach (var hashKey in hashKeys)
             {
                 list.Add(hashInfo.Any(x=>x.HashKey==hashKey)
                     ? new HashResponse<T>(hashKey,  hashInfo.Where(x=>x.HashKey== hashKey).Select(x=>x.HashValue).FirstOrDefault())
                     : new HashResponse<T>(hashKey, default(T)));
-            });
+            }
             return list;
         }
 
@@ -303,12 +300,12 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
-        public List<HashMultResponse<T>> HashGet<T>(List<MultHashRequest<string>> list)
+        public List<HashMultResponse<T>> HashGet<T>(ICollection<MultHashRequest<string>> list)
         {
             var cacheKeyList = list.Select(x => x.Key).ToList();
             List<BaseResponse<List<BaseResponse<T>>>> cacheList = this.Get<List<BaseResponse<T>>>(cacheKeyList);
             List<HashMultResponse<T>> res = new List<HashMultResponse<T>>();
-            list.ForEach(item =>
+            foreach (var item in list)
             {
                 BaseResponse<List<BaseResponse<T>>> cacheInfo = cacheList.FirstOrDefault(x => x.Key == item.Key);
                 if (cacheInfo?.Value == null)
@@ -345,7 +342,7 @@ namespace Wolf.Extension.Cache.MemoryCache
 
                     res.Add(hash);
                 }
-            });
+            }
             return res;
         }
 
@@ -444,7 +441,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="keys">缓存键集合</param>
         /// <param name="top">得到前top条的Hash键值对集合，默认查询全部</param>
         /// <returns></returns>
-        public List<HashMultResponse<string>> HashMultList(IEnumerable<string> keys, int? top = null)
+        public List<HashMultResponse<string>> HashMultList(ICollection<string> keys, int? top = null)
         {
             return this.HashMultList<string>(keys, top);
         }
@@ -460,14 +457,14 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="top">得到前top条的Hash键值对集合，默认查询全部</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public List<HashMultResponse<T>> HashMultList<T>(IEnumerable<string> keys, int? top = null)
+        public List<HashMultResponse<T>> HashMultList<T>(ICollection<string> keys, int? top = null)
         {
             if (keys == null || !keys.Any())
             {
                 return new List<HashMultResponse<T>>();
             }
 
-            var cacheList = this.Get<HashSet<HashResponse<T>>>(keys);
+            var cacheList = Get<HashSet<HashResponse<T>>>((ICollection<string>) keys);
             if (cacheList == null || !cacheList.Any())
             {
                 return new List<HashMultResponse<T>>();
@@ -545,7 +542,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="key">缓存键</param>
         /// <param name="hashKeys">hash键集合</param>
         /// <returns></returns>
-        public bool HashDelete(string key, List<string> hashKeys)
+        public bool HashDelete(string key, ICollection<string> hashKeys)
         {
             var cacheInfo = this.Get<HashSet<HashResponse<object>>>(key);
             if (cacheInfo == null)
@@ -570,7 +567,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public bool HashRangeDelete(List<BaseRequest<List<string>>> request)
+        public bool HashRangeDelete(ICollection<BaseRequest<List<string>>> request)
         {
             var cacheKeyList = request.Select(x => x.Key).ToList();
             var hashList = this.Get<HashSet<HashResponse<object>>>(cacheKeyList);

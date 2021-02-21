@@ -13,20 +13,37 @@ namespace Wolf.Extension.Cache.Abstractions.Configurations
         ///
         /// </summary>
         /// <param name="isCanHashExpire">是否可以过期，默认不设置过期</param>
-        public HashPersistentOps(bool isCanHashExpire=false)
+        /// <param name="overdueTime">过期时间</param>
+        public HashPersistentOps(bool isCanHashExpire = false, int? overdueTime = null) : base(isCanHashExpire
+            ? null
+            : overdueTime)
         {
-            IsCanHashExpire = isCanHashExpire;
-            TimeSpan = null;
+            if (isCanHashExpire)
+            {
+                this.HashOverdueTime = overdueTime;
+                if (this.HashOverdueTime != null)
+                {
+                    this.HashOverdueTimeSpan = DateTimeOffset.Now.AddSeconds(this.HashOverdueTime.Value) - DateTimeOffset.Now;
+                }
+            }
+
+            this.IsCanHashExpire = isCanHashExpire;
         }
 
         /// <summary>
-        /// 是否可以过期，默认不设置过期
+        /// 是否单个Hash key过期
         /// </summary>
-        public bool IsCanHashExpire { get; set; }
+        public bool IsCanHashExpire { get; private set; }
 
         /// <summary>
-        /// 过期时间，默认永不过期，null：永不过期
+        /// 过期时间，单位：s
+        /// 永不过期：null
         /// </summary>
-        public TimeSpan? TimeSpan { get; set; }
+        public int? HashOverdueTime { get; private set; }
+
+        /// <summary>
+        /// 过期时间
+        /// </summary>
+        public TimeSpan? HashOverdueTimeSpan { get; private set; }
     }
 }

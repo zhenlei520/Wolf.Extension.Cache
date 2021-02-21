@@ -1,7 +1,6 @@
 ﻿// Copyright (c) zhenlei520 All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Wolf.Extension.Cache.Abstractions.Configurations;
@@ -20,23 +19,20 @@ namespace Wolf.Extension.Cache.Abstractions
         /// </summary>
         /// <param name="key">缓存键</param>
         /// <param name="value">保存的值</param>
-        /// <param name="expiry">过期时间，null：永不过期</param>
         /// <param name="persistentOps">策略</param>
         /// <returns></returns>
         Task<bool> SetAsync(
             string key,
             string value,
-            TimeSpan? expiry = null,
             PersistentOps persistentOps = null);
 
         /// <summary>
         /// 设置缓存键值对集合(异步)
         /// </summary>
         /// <param name="list">缓存键值对集合</param>
-        /// <param name="expiry">过期时间，null：永不过期</param>
         /// <param name="persistentOps">策略</param>
         /// <returns></returns>
-        Task<bool> SetAsync(List<BaseRequest<string>> list, TimeSpan? expiry = null,
+        Task<bool> SetAsync(List<BaseRequest<string>> list,
             PersistentOps persistentOps = null);
 
         /// <summary>
@@ -44,25 +40,22 @@ namespace Wolf.Extension.Cache.Abstractions
         /// </summary>
         /// <param name="key">缓存键</param>
         /// <param name="obj">缓存值</param>
-        /// <param name="expiry">过期时间，null：永不过期</param>
         /// <param name="persistentOps">策略</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         Task<bool> SetAsync<T>(
             string key,
             T obj,
-            TimeSpan? expiry = null,
             PersistentOps persistentOps = null);
 
         /// <summary>
         /// 保存多个对象集合(异步)
         /// </summary>
         /// <param name="list">缓存键值对集合</param>
-        /// <param name="expiry">过期时间，null：永不过期</param>
         /// <param name="persistentOps">策略</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        Task<bool> SetAsync<T>(List<BaseRequest<T>> list, TimeSpan? expiry = null,
+        Task<bool> SetAsync<T>(List<BaseRequest<T>> list,
             PersistentOps persistentOps = null);
 
         /// <summary>
@@ -77,7 +70,7 @@ namespace Wolf.Extension.Cache.Abstractions
         /// </summary>
         /// <param name="keys">缓存键集合</param>
         /// <returns></returns>
-        Task<List<BaseResponse<string>>> GetAsync(IEnumerable<string> keys);
+        Task<List<BaseResponse<string>>> GetAsync(ICollection<string> keys);
 
         /// <summary>
         /// 获取指定缓存的值（异步）
@@ -92,7 +85,7 @@ namespace Wolf.Extension.Cache.Abstractions
         /// </summary>
         /// <param name="keys">缓存键集合</param>
         /// <returns></returns>
-        Task<List<BaseResponse<T>>> GetAsync<T>(IEnumerable<string> keys) where T : class, new();
+        Task<List<BaseResponse<T>>> GetAsync<T>(ICollection<string> keys) where T : class, new();
 
         /// <summary>
         /// 为数字增长val（异步）
@@ -121,10 +114,9 @@ namespace Wolf.Extension.Cache.Abstractions
         /// 设置过期时间（异步）
         /// </summary>
         /// <param name="key">缓存key</param>
-        /// <param name="expiry">过期时间</param>
         /// <param name="persistentOps">策略</param>
         /// <returns></returns>
-        Task<bool> SetExpireAsync(string key, TimeSpan expiry, PersistentOps persistentOps = null);
+        Task<bool> SetExpireAsync(string key, PersistentOps persistentOps = null);
 
         /// <summary>
         /// 删除指定Key的缓存（异步）

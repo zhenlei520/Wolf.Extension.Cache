@@ -209,7 +209,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
-        public Task<List<HashMultResponse<T>>> HashGetAsync<T>(List<MultHashRequest<string>> list)
+        public Task<List<HashMultResponse<T>>> HashGetAsync<T>(ICollection<MultHashRequest<string>> list)
         {
             return Task.FromResult(this.HashGet<T>(list));
         }
@@ -269,7 +269,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="keys">缓存键集合</param>
         /// <param name="top">得到前top条的Hash键值对集合，默认查询全部</param>
         /// <returns></returns>
-        public Task<List<HashMultResponse<string>>> HashMultListAsync(IEnumerable<string> keys, int? top = null)
+        public Task<List<HashMultResponse<string>>> HashMultListAsync(ICollection<string> keys, int? top = null)
         {
             return Task.FromResult(this.HashMultList(keys, top));
         }
@@ -285,7 +285,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="top">得到前top条的Hash键值对集合，默认查询全部</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public Task<List<HashMultResponse<T>>> HashMultListAsync<T>(IEnumerable<string> keys, int? top = null)
+        public Task<List<HashMultResponse<T>>> HashMultListAsync<T>(ICollection<string> keys, int? top = null)
         {
             return Task.FromResult(this.HashMultList<T>(keys, top));
         }
@@ -330,7 +330,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="key">缓存键</param>
         /// <param name="hashKeys">hash键集合</param>
         /// <returns></returns>
-        public Task<bool> HashDeleteAsync(string key, List<string> hashKeys)
+        public Task<bool> HashDeleteAsync(string key, ICollection<string> hashKeys)
         {
             return Task.FromResult<bool>(this.HashDelete(key, hashKeys));
         }
@@ -344,7 +344,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public Task<bool> HashRangeDeleteAsync(List<BaseRequest<List<string>>> request)
+        public Task<bool> HashRangeDeleteAsync(ICollection<BaseRequest<List<string>>> request)
         {
             return Task.FromResult(this.HashRangeDelete(request));
         }

@@ -138,7 +138,7 @@ namespace Wolf.Extension.Cache.Redis
         /// </summary>
         /// <param name="keys">缓存键集合</param>
         /// <returns></returns>
-        public List<BaseResponse<string>> Get(IEnumerable<string> keys)
+        public List<BaseResponse<string>> Get(ICollection<string> keys)
         {
             return this.Get<string>(keys);
         }
@@ -168,7 +168,7 @@ namespace Wolf.Extension.Cache.Redis
         /// </summary>
         /// <param name="keys">缓存键集合</param>
         /// <returns></returns>
-        public List<BaseResponse<T>> Get<T>(IEnumerable<string> keys)
+        public List<BaseResponse<T>> Get<T>(ICollection<string> keys)
         {
             var ret = QuickHelperBase.Get((keys ?? new List<string>()).ToArray());
             return ret.Select(x => new BaseResponse<T>(x.Key, base.ConvertObj<T>(x.Value))).ToList();
@@ -260,7 +260,7 @@ namespace Wolf.Extension.Cache.Redis
         /// </summary>
         /// <param name="keys">待删除的Key集合</param>
         /// <returns>返回删除的数量</returns>
-        public bool RemoveRange(IEnumerable<string> keys)
+        public bool RemoveRange(ICollection<string> keys)
         {
             QuickHelperBase.Remove((keys ?? new List<string>()).ToArray());
             return true;

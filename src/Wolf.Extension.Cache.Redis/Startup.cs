@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
-using Wolf.Extension.Cache.Redis.Config;
 using Wolf.Extension.Cache.Redis.Internal;
 
 namespace Wolf.Extension.Cache.Redis

@@ -130,7 +130,7 @@ namespace Wolf.Extension.Cache.Abstractions
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
-        Task<List<HashMultResponse<T>>> HashGetAsync<T>(List<MultHashRequest<string>> list);
+        Task<List<HashMultResponse<T>>> HashGetAsync<T>(ICollection<MultHashRequest<string>> list);
 
         /// <summary>
         /// 得到指定缓存key下的所有hash键集合
@@ -162,7 +162,7 @@ namespace Wolf.Extension.Cache.Abstractions
         /// <param name="keys">缓存键集合</param>
         /// <param name="top">得到前top条的Hash键值对集合，默认查询全部</param>
         /// <returns></returns>
-        Task<List<HashMultResponse<string>>> HashMultListAsync(IEnumerable<string> keys, int? top = null);
+        Task<List<HashMultResponse<string>>> HashMultListAsync(ICollection<string> keys, int? top = null);
 
         /// <summary>
         /// 根据多个缓存key得到缓存key对应缓存key全部的hash键值对集合的集合列表
@@ -171,7 +171,7 @@ namespace Wolf.Extension.Cache.Abstractions
         /// <param name="top">得到前top条的Hash键值对集合，默认查询全部</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        Task<List<HashMultResponse<T>>> HashMultListAsync<T>(IEnumerable<string> keys, int? top = null);
+        Task<List<HashMultResponse<T>>> HashMultListAsync<T>(ICollection<string> keys, int? top = null);
 
         /// <summary>
         /// 判断HashKey是否存在（异步）
@@ -195,14 +195,14 @@ namespace Wolf.Extension.Cache.Abstractions
         /// <param name="key">缓存键</param>
         /// <param name="hashKeys">hash键集合</param>
         /// <returns></returns>
-        Task<bool> HashDeleteAsync(string key, List<string> hashKeys);
+        Task<bool> HashDeleteAsync(string key, ICollection<string> hashKeys);
 
         /// <summary>
         /// 删除多个缓存键对应的hash键集合（异步）
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        Task<bool> HashRangeDeleteAsync(List<BaseRequest<List<string>>> request);
+        Task<bool> HashRangeDeleteAsync(ICollection<BaseRequest<List<string>>> request);
 
         /// <summary>
         /// 为数字增长val（异步）

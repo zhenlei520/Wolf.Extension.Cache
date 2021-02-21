@@ -1,7 +1,6 @@
 ﻿// Copyright (c) zhenlei520 All rights reserved.
 
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Wolf.Extension.Cache.Abstractions
 {
