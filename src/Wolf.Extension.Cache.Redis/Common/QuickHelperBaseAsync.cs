@@ -17,9 +17,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="value">字符串值</param>
         /// <param name="expireSeconds">过期(秒单位)</param>
         /// <returns></returns>
-        public static async Task<bool> SetAsync<T>(string key, T value, int expireSeconds = -1)
+        public async Task<bool> SetAsync<T>(string key, T value, int expireSeconds = -1)
         {
-            key = string.Concat(Prefix, key);
+            key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 if (expireSeconds > 0)
@@ -34,18 +34,19 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="list"></param>
         /// <param name="expireSeconds">过期(秒单位)</param>
         /// <returns></returns>
-        public static async Task<bool> SetAsync<T>(IEnumerable<KeyValuePair<string, T>> list, int expireSeconds = -1)
+        public async Task<bool> SetAsync<T>(IEnumerable<KeyValuePair<string, T>> list, int expireSeconds = -1)
         {
             using (var conn = await Instance.GetConnectionAsync())
             {
                 List<string> successList = new List<string>();
                 foreach (var item in list)
                 {
-                    var key = string.Concat(Prefix, item.Key);
+                    var key = this.GetCacheKey(item.Key);
                     bool isSuccess;
                     if (expireSeconds != -1)
                     {
-                        isSuccess = await conn.Client.SetAsync(key, item.Value, TimeSpan.FromSeconds(expireSeconds)) == "OK";
+                        isSuccess = await conn.Client.SetAsync(key, item.Value, TimeSpan.FromSeconds(expireSeconds)) ==
+                                    "OK";
                     }
                     else
                     {
@@ -78,9 +79,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="value">字节流</param>
         /// <param name="expireSeconds">过期(秒单位)</param>
         /// <returns></returns>
-        public static async Task<bool> SetBytesAsync(string key, byte[] value, int expireSeconds = -1)
+        public async Task<bool> SetBytesAsync(string key, byte[] value, int expireSeconds = -1)
         {
-            key = string.Concat(Prefix, key);
+            key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 if (expireSeconds > 0)
@@ -95,9 +96,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// </summary>
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <returns></returns>
-        public static async Task<string> GetAsync(string key)
+        public async Task<string> GetAsync(string key)
         {
-            key = string.Concat(Prefix, key);
+            key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.GetAsync(key);
@@ -109,11 +110,11 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// </summary>
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <returns></returns>
-        public static async Task<string[]> GetStringsAsync(params string[] key)
+        public async Task<string[]> GetStringsAsync(params string[] key)
         {
             if (key == null || key.Length == 0) return new string[0];
             string[] rkeys = new string[key.Length];
-            for (int a = 0; a < key.Length; a++) rkeys[a] = string.Concat(Prefix, key[a]);
+            for (int a = 0; a < key.Length; a++) rkeys[a] = this.GetCacheKey(key[a]);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.MGetAsync(rkeys);
@@ -125,9 +126,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// </summary>
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <returns></returns>
-        public static async Task<byte[]> GetBytesAsync(string key)
+        public async Task<byte[]> GetBytesAsync(string key)
         {
-            key = string.Concat(Prefix, key);
+            key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.GetBytesAsync(key);
@@ -139,11 +140,11 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// </summary>
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <returns></returns>
-        public static async Task<long> RemoveAsync(params string[] key)
+        public async Task<long> RemoveAsync(params string[] key)
         {
             if (key == null || key.Length == 0) return 0;
             string[] rkeys = new string[key.Length];
-            for (int a = 0; a < key.Length; a++) rkeys[a] = string.Concat(Prefix, key[a]);
+            for (int a = 0; a < key.Length; a++) rkeys[a] = this.GetCacheKey(key[a]);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.DelAsync(rkeys);
@@ -155,9 +156,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// </summary>
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <returns></returns>
-        public static async Task<bool> ExistsAsync(string key)
+        public async Task<bool> ExistsAsync(string key)
         {
-            key = string.Concat(Prefix, key);
+            key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.ExistsAsync(key);
@@ -170,9 +171,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <param name="value">增量值(默认=1)</param>
         /// <returns></returns>
-        public static async Task<long> IncrementAsync(string key, long value = 1)
+        public async Task<long> IncrementAsync(string key, long value = 1)
         {
-            key = string.Concat(Prefix, key);
+            key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.IncrByAsync(key, value);
@@ -185,10 +186,10 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <param name="expire">过期时间</param>
         /// <returns></returns>
-        public static async Task<bool> ExpireAsync(string key, TimeSpan expire)
+        public async Task<bool> ExpireAsync(string key, TimeSpan expire)
         {
             if (expire <= TimeSpan.Zero) return false;
-            key = string.Concat(Prefix, key);
+            key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.ExpireAsync(key, expire);
@@ -200,9 +201,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// </summary>
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <returns></returns>
-        public static async Task<long> TtlAsync(string key)
+        public async Task<long> TtlAsync(string key)
         {
-            key = string.Concat(Prefix, key);
+            key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.TtlAsync(key);
@@ -214,7 +215,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// </summary>
         /// <param name="pattern">如：runoob*</param>
         /// <returns></returns>
-        public static async Task<string[]> KeysAsync(string pattern)
+        public async Task<string[]> KeysAsync(string pattern)
         {
             using (var conn = await Instance.GetConnectionAsync())
             {
@@ -228,7 +229,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="channel">频道名</param>
         /// <param name="data">消息文本</param>
         /// <returns></returns>
-        public static async Task<long> PublishAsync(string channel, string data)
+        public async Task<long> PublishAsync(string channel, string data)
         {
             using (var conn = await Instance.GetConnectionAsync())
             {
@@ -244,7 +245,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <param name="keyValues">field1 value1 [field2 value2]</param>
         /// <returns></returns>
-        public static async Task<string> HashSetAsync(string key, params object[] keyValues)
+        public async Task<string> HashSetAsync(string key, params object[] keyValues)
         {
             return await HashSetExpireAsync(key, TimeSpan.Zero, keyValues);
         }
@@ -256,9 +257,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="expire">过期时间</param>
         /// <param name="keyValues">field1 value1 [field2 value2]</param>
         /// <returns></returns>
-        public static async Task<string> HashSetExpireAsync(string key, TimeSpan expire, params object[] keyValues)
+        public async Task<string> HashSetExpireAsync(string key, TimeSpan expire, params object[] keyValues)
         {
-            key = string.Concat(Prefix, key);
+            key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 var ret = await conn.Client.HMSetAsync(key, keyValues.Select(a => string.Concat(a)).ToArray());
@@ -273,9 +274,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <param name="field">字段</param>
         /// <returns></returns>
-        public static async Task<string> HashGetAsync(string key, string field)
+        public async Task<string> HashGetAsync(string key, string field)
         {
-            key = string.Concat(Prefix, key);
+            key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.HGetAsync(key, field);
@@ -289,9 +290,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="field">字段</param>
         /// <param name="value">增量值(默认=1)</param>
         /// <returns></returns>
-        public static async Task<long> HashIncrementAsync(string key, string field, long value = 1)
+        public async Task<long> HashIncrementAsync(string key, string field, long value = 1)
         {
-            key = string.Concat(Prefix, key);
+            key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.HIncrByAsync(key, field, value);
@@ -304,10 +305,10 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <param name="fields">字段</param>
         /// <returns></returns>
-        public static async Task<long> HashDeleteAsync(string key, params string[] fields)
+        public async Task<long> HashDeleteAsync(string key, params string[] fields)
         {
             if (fields == null || fields.Length == 0) return 0;
-            key = string.Concat(Prefix, key);
+            key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.HDelAsync(key, fields);
@@ -320,9 +321,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <param name="field">字段</param>
         /// <returns></returns>
-        public static async Task<bool> HashExistsAsync(string key, string field)
+        public async Task<bool> HashExistsAsync(string key, string field)
         {
-            key = string.Concat(Prefix, key);
+            key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.HExistsAsync(key, field);
@@ -334,9 +335,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// </summary>
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <returns></returns>
-        public static async Task<long> HashLengthAsync(string key)
+        public async Task<long> HashLengthAsync(string key)
         {
-            key = string.Concat(Prefix, key);
+            key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.HLenAsync(key);
@@ -348,9 +349,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// </summary>
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <returns></returns>
-        public static async Task<Dictionary<string, string>> HashGetAllAsync(string key)
+        public async Task<Dictionary<string, string>> HashGetAllAsync(string key)
         {
-            key = string.Concat(Prefix, key);
+            key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.HGetAllAsync(key);
@@ -362,9 +363,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// </summary>
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <returns></returns>
-        public static async Task<string[]> HashKeysAsync(string key)
+        public async Task<string[]> HashKeysAsync(string key)
         {
-            key = string.Concat(Prefix, key);
+            key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.HKeysAsync(key);
@@ -376,9 +377,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// </summary>
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <returns></returns>
-        public static async Task<string[]> HashValsAsync(string key)
+        public async Task<string[]> HashValsAsync(string key)
         {
-            key = string.Concat(Prefix, key);
+            key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.HValsAsync(key);
@@ -395,9 +396,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <param name="index">索引</param>
         /// <returns></returns>
-        public static async Task<string> LIndexAsync(string key, long index)
+        public async Task<string> LIndexAsync(string key, long index)
         {
-            key = string.Concat(Prefix, key);
+            key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.LIndexAsync(key, index);
@@ -411,9 +412,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="pivot">列表的元素</param>
         /// <param name="value">新元素</param>
         /// <returns></returns>
-        public static async Task<long> LInsertBeforeAsync(string key, string pivot, string value)
+        public async Task<long> LInsertBeforeAsync(string key, string pivot, string value)
         {
-            key = string.Concat(Prefix, key);
+            key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.LInsertAsync(key, RedisInsert.Before, pivot, value);
@@ -427,9 +428,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="pivot">列表的元素</param>
         /// <param name="value">新元素</param>
         /// <returns></returns>
-        public static async Task<long> LInsertAfterAsync(string key, string pivot, string value)
+        public async Task<long> LInsertAfterAsync(string key, string pivot, string value)
         {
-            key = string.Concat(Prefix, key);
+            key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.LInsertAsync(key, RedisInsert.After, pivot, value);
@@ -441,9 +442,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// </summary>
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <returns></returns>
-        public static async Task<long> LLenAsync(string key)
+        public async Task<long> LLenAsync(string key)
         {
-            key = string.Concat(Prefix, key);
+            key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.LLenAsync(key);
@@ -455,9 +456,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// </summary>
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <returns></returns>
-        public static async Task<string> LPopAsync(string key)
+        public async Task<string> LPopAsync(string key)
         {
-            key = string.Concat(Prefix, key);
+            key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.LPopAsync(key);
@@ -469,9 +470,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// </summary>
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <returns></returns>
-        public static async Task<string> RPopAsync(string key)
+        public async Task<string> RPopAsync(string key)
         {
-            key = string.Concat(Prefix, key);
+            key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.RPopAsync(key);
@@ -484,9 +485,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <param name="value">一个或多个值</param>
         /// <returns></returns>
-        public static async Task<long> LPushAsync(string key, string[] value)
+        public async Task<long> LPushAsync(string key, string[] value)
         {
-            key = string.Concat(Prefix, key);
+            key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.LPushAsync(key, value);
@@ -499,9 +500,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <param name="value">一个或多个值</param>
         /// <returns></returns>
-        public static async Task<long> RPushAsync(string key, string[] value)
+        public async Task<long> RPushAsync(string key, string[] value)
         {
-            key = string.Concat(Prefix, key);
+            key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.RPushAsync(key, value);
@@ -515,9 +516,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="start">开始位置，0表示第一个元素，-1表示最后一个元素</param>
         /// <param name="stop">结束位置，0表示第一个元素，-1表示最后一个元素</param>
         /// <returns></returns>
-        public static async Task<string[]> LRangAsync(string key, long start, long stop)
+        public async Task<string[]> LRangAsync(string key, long start, long stop)
         {
-            key = string.Concat(Prefix, key);
+            key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.LRangeAsync(key, start, stop);
@@ -531,9 +532,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="count">移除的数量，大于0时从表头删除数量count，小于0时从表尾删除数量-count，等于0移除所有</param>
         /// <param name="value">元素</param>
         /// <returns></returns>
-        public static async Task<long> LRemAsync(string key, long count, string value)
+        public async Task<long> LRemAsync(string key, long count, string value)
         {
-            key = string.Concat(Prefix, key);
+            key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.LRemAsync(key, count, value);
@@ -547,9 +548,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="index">索引</param>
         /// <param name="value">值</param>
         /// <returns></returns>
-        public static async Task<bool> LSetAsync(string key, long index, string value)
+        public async Task<bool> LSetAsync(string key, long index, string value)
         {
-            key = string.Concat(Prefix, key);
+            key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.LSetAsync(key, index, value) == "OK";
@@ -563,9 +564,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="start">开始位置，0表示第一个元素，-1表示最后一个元素</param>
         /// <param name="stop">结束位置，0表示第一个元素，-1表示最后一个元素</param>
         /// <returns></returns>
-        public static async Task<bool> LTrimAsync(string key, long start, long stop)
+        public async Task<bool> LTrimAsync(string key, long start, long stop)
         {
-            key = string.Concat(Prefix, key);
+            key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.LTrimAsync(key, start, stop) == "OK";
@@ -583,9 +584,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <param name="memberScores">一个或多个成员分数</param>
         /// <returns></returns>
-        public static async Task<long> ZAddAsync(string key, params (double, string)[] memberScores)
+        public async Task<long> ZAddAsync(string key, params (double, string)[] memberScores)
         {
-            key = string.Concat(Prefix, key);
+            key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.ZAddAsync<double, string>(key,
@@ -598,9 +599,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// </summary>
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <returns></returns>
-        public static async Task<long> ZCardAsync(string key)
+        public async Task<long> ZCardAsync(string key)
         {
-            key = string.Concat(Prefix, key);
+            key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.ZCardAsync(key);
@@ -614,9 +615,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="min">分数最小值</param>
         /// <param name="max">分数最大值</param>
         /// <returns></returns>
-        public static async Task<long> ZCountAsync(string key, double min, double max)
+        public async Task<long> ZCountAsync(string key, double min, double max)
         {
-            key = string.Concat(Prefix, key);
+            key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.ZCountAsync(key, min, max);
@@ -630,9 +631,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="memeber">成员</param>
         /// <param name="increment">增量值(默认=1)</param>
         /// <returns></returns>
-        public static async Task<double> ZIncrByAsync(string key, string memeber, double increment = 1)
+        public async Task<double> ZIncrByAsync(string key, string memeber, double increment = 1)
         {
-            key = string.Concat(Prefix, key);
+            key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.ZIncrByAsync(key, increment, memeber);
@@ -647,7 +648,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="destinationKey">新的有序集合，不含prefix前辍RedisHelper.Name</param>
         /// <param name="keys">一个或多个有序集合，不含prefix前辍RedisHelper.Name</param>
         /// <returns></returns>
-        public static async Task<long> ZInterStoreMaxAsync(string destinationKey, params string[] keys)
+        public async Task<long> ZInterStoreMaxAsync(string destinationKey, params string[] keys)
         {
             return await ZInterStoreAsync(destinationKey, RedisAggregate.Max, keys);
         }
@@ -658,7 +659,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="destinationKey">新的有序集合，不含prefix前辍RedisHelper.Name</param>
         /// <param name="keys">一个或多个有序集合，不含prefix前辍RedisHelper.Name</param>
         /// <returns></returns>
-        public static async Task<long> ZInterStoreMinAsync(string destinationKey, params string[] keys)
+        public async Task<long> ZInterStoreMinAsync(string destinationKey, params string[] keys)
         {
             return await ZInterStoreAsync(destinationKey, RedisAggregate.Min, keys);
         }
@@ -669,17 +670,17 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="destinationKey">新的有序集合，不含prefix前辍RedisHelper.Name</param>
         /// <param name="keys">一个或多个有序集合，不含prefix前辍RedisHelper.Name</param>
         /// <returns></returns>
-        public static async Task<long> ZInterStoreSumAsync(string destinationKey, params string[] keys)
+        public async Task<long> ZInterStoreSumAsync(string destinationKey, params string[] keys)
         {
             return await ZInterStoreAsync(destinationKey, RedisAggregate.Sum, keys);
         }
 
-        async private static Task<long> ZInterStoreAsync(string destinationKey, RedisAggregate aggregate,
+        async private Task<long> ZInterStoreAsync(string destinationKey, RedisAggregate aggregate,
             params string[] keys)
         {
-            destinationKey = string.Concat(Prefix, destinationKey);
+            destinationKey = this.GetCacheKey(destinationKey);
             string[] rkeys = new string[keys.Length];
-            for (int a = 0; a < keys.Length; a++) rkeys[a] = string.Concat(Prefix, keys[a]);
+            for (int a = 0; a < keys.Length; a++) rkeys[a] = this.GetCacheKey(keys[a]);
             if (rkeys.Length == 0) return 0;
             using (var conn = await Instance.GetConnectionAsync())
             {
@@ -697,7 +698,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="destinationKey">新的有序集合，不含prefix前辍RedisHelper.Name</param>
         /// <param name="keys">一个或多个有序集合，不含prefix前辍RedisHelper.Name</param>
         /// <returns></returns>
-        public static async Task<long> ZUnionStoreMaxAsync(string destinationKey, params string[] keys)
+        public async Task<long> ZUnionStoreMaxAsync(string destinationKey, params string[] keys)
         {
             return await ZUnionStoreAsync(destinationKey, RedisAggregate.Max, keys);
         }
@@ -708,7 +709,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="destinationKey">新的有序集合，不含prefix前辍RedisHelper.Name</param>
         /// <param name="keys">一个或多个有序集合，不含prefix前辍RedisHelper.Name</param>
         /// <returns></returns>
-        public static async Task<long> ZUnionStoreMinAsync(string destinationKey, params string[] keys)
+        public async Task<long> ZUnionStoreMinAsync(string destinationKey, params string[] keys)
         {
             return await ZUnionStoreAsync(destinationKey, RedisAggregate.Min, keys);
         }
@@ -719,17 +720,17 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="destinationKey">新的有序集合，不含prefix前辍RedisHelper.Name</param>
         /// <param name="keys">一个或多个有序集合，不含prefix前辍RedisHelper.Name</param>
         /// <returns></returns>
-        public static async Task<long> ZUnionStoreSumAsync(string destinationKey, params string[] keys)
+        public async Task<long> ZUnionStoreSumAsync(string destinationKey, params string[] keys)
         {
             return await ZUnionStoreAsync(destinationKey, RedisAggregate.Sum, keys);
         }
 
-        async private static Task<long> ZUnionStoreAsync(string destinationKey, RedisAggregate aggregate,
+        async private Task<long> ZUnionStoreAsync(string destinationKey, RedisAggregate aggregate,
             params string[] keys)
         {
-            destinationKey = string.Concat(Prefix, destinationKey);
+            destinationKey = this.GetCacheKey(destinationKey);
             string[] rkeys = new string[keys.Length];
-            for (int a = 0; a < keys.Length; a++) rkeys[a] = string.Concat(Prefix, keys[a]);
+            for (int a = 0; a < keys.Length; a++) rkeys[a] = this.GetCacheKey(keys[a]);
             if (rkeys.Length == 0) return 0;
             using (var conn = await Instance.GetConnectionAsync())
             {
@@ -746,9 +747,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="start">开始位置，0表示第一个元素，-1表示最后一个元素</param>
         /// <param name="stop">结束位置，0表示第一个元素，-1表示最后一个元素</param>
         /// <returns></returns>
-        public static async Task<string[]> ZRangeAsync(string key, long start, long stop)
+        public async Task<string[]> ZRangeAsync(string key, long start, long stop)
         {
-            key = string.Concat(Prefix, key);
+            key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.ZRangeAsync(key, start, stop, false);
@@ -764,10 +765,10 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="limit">返回多少成员</param>
         /// <param name="offset">返回条件偏移位置</param>
         /// <returns></returns>
-        public static async Task<string[]> ZRangeByScoreAsync(string key, double minScore, double maxScore,
+        public async Task<string[]> ZRangeByScoreAsync(string key, double minScore, double maxScore,
             long? limit = null, long offset = 0)
         {
-            key = string.Concat(Prefix, key);
+            key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.ZRangeByScoreAsync(key, minScore, maxScore, false, false, false, offset,
@@ -781,9 +782,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <param name="member">成员</param>
         /// <returns></returns>
-        public static async Task<long?> ZRankAsync(string key, string member)
+        public async Task<long?> ZRankAsync(string key, string member)
         {
-            key = string.Concat(Prefix, key);
+            key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.ZRankAsync(key, member);
@@ -796,9 +797,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <param name="member">一个或多个成员</param>
         /// <returns></returns>
-        public static async Task<long> ZRemAsync(string key, params string[] member)
+        public async Task<long> ZRemAsync(string key, params string[] member)
         {
-            key = string.Concat(Prefix, key);
+            key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.ZRemAsync(key, member);
@@ -812,9 +813,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="start">开始位置，0表示第一个元素，-1表示最后一个元素</param>
         /// <param name="stop">结束位置，0表示第一个元素，-1表示最后一个元素</param>
         /// <returns></returns>
-        public static async Task<long> ZRemRangeByRankAsync(string key, long start, long stop)
+        public async Task<long> ZRemRangeByRankAsync(string key, long start, long stop)
         {
-            key = string.Concat(Prefix, key);
+            key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.ZRemRangeByRankAsync(key, start, stop);
@@ -828,9 +829,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="minScore">最小分数</param>
         /// <param name="maxScore">最大分数</param>
         /// <returns></returns>
-        public static async Task<long> ZRemRangeByScoreAsync(string key, double minScore, double maxScore)
+        public async Task<long> ZRemRangeByScoreAsync(string key, double minScore, double maxScore)
         {
-            key = string.Concat(Prefix, key);
+            key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.ZRemRangeByScoreAsync(key, minScore, maxScore);
@@ -844,9 +845,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="start">开始位置，0表示第一个元素，-1表示最后一个元素</param>
         /// <param name="stop">结束位置，0表示第一个元素，-1表示最后一个元素</param>
         /// <returns></returns>
-        public static async Task<string[]> ZRevRangeAsync(string key, long start, long stop)
+        public async Task<string[]> ZRevRangeAsync(string key, long start, long stop)
         {
-            key = string.Concat(Prefix, key);
+            key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.ZRevRangeAsync(key, start, stop, false);
@@ -862,10 +863,10 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="limit">返回多少成员</param>
         /// <param name="offset">返回条件偏移位置</param>
         /// <returns></returns>
-        public static async Task<string[]> ZRevRangeByScoreAsync(string key, double maxScore, double minScore,
+        public async Task<string[]> ZRevRangeByScoreAsync(string key, double maxScore, double minScore,
             long? limit = null, long? offset = null)
         {
-            key = string.Concat(Prefix, key);
+            key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.ZRevRangeByScoreAsync(key, maxScore, minScore, false, false, false, offset,
@@ -879,9 +880,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <param name="member">成员</param>
         /// <returns></returns>
-        public static async Task<long?> ZRevRankAsync(string key, string member)
+        public async Task<long?> ZRevRankAsync(string key, string member)
         {
-            key = string.Concat(Prefix, key);
+            key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.ZRevRankAsync(key, member);
@@ -894,9 +895,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <param name="member">成员</param>
         /// <returns></returns>
-        public static async Task<double?> ZScoreAsync(string key, string member)
+        public async Task<double?> ZScoreAsync(string key, string member)
         {
-            key = string.Concat(Prefix, key);
+            key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.ZScoreAsync(key, member);
