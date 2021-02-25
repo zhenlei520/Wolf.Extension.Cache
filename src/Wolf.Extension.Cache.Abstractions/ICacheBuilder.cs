@@ -1,6 +1,7 @@
 ﻿// Copyright (c) zhenlei520 All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using Wolf.DependencyInjection.Abstracts.Service;
 
 namespace Wolf.Extension.Cache.Abstractions
@@ -10,6 +11,12 @@ namespace Wolf.Extension.Cache.Abstractions
     /// </summary>
     public interface ICacheBuilder : IIdentify
     {
+        /// <summary>
+        /// 创建缓存服务
+        /// </summary>
+        /// <returns></returns>
+        IEnumerable<ICacheProvider> CreateProviders();
+
         /// <summary>
         /// 创建缓存服务
         /// </summary>

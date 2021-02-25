@@ -42,6 +42,19 @@ namespace Wolf.Extension.Cache.MemoryCache
         public override int Weights => 98;
 
         /// <summary>
+        ///
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<ICacheProvider> CreateProviders()
+        {
+            var memoryCache = new Microsoft.Extensions.Caching.Memory.MemoryCache(new MemoryCacheOptions());
+            return new List<ICacheProvider>()
+            {
+                new CacheProvider(memoryCache, GetOptions())
+            };
+        }
+
+        /// <summary>
         /// 创建缓存服务
         /// </summary>
         /// <param name="serviceId">服务id</param>
@@ -50,7 +63,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         {
             var memoryCache = new Microsoft.Extensions.Caching.Memory.MemoryCache(new MemoryCacheOptions());
 
-            return new CacheProvider(memoryCache, GetOptions(serviceId));
+            return new CacheProvider(memoryCache, GetOptions());
         }
 
         #region 得到配置文件
@@ -58,9 +71,8 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <summary>
         /// 得到配置文件
         /// </summary>
-        /// <param name="serviceId">服务id（无作用）</param>
         /// <returns></returns>
-        private Wolf.Extension.Cache.MemoryCache.Configurations.MemoryCacheOptions GetOptions(string serviceId)
+        private Wolf.Extension.Cache.MemoryCache.Configurations.MemoryCacheOptions GetOptions()
         {
             var options =
                 _options.FirstOrDefault(x => x.ServiceName.Equals(Identify, StringComparison.OrdinalIgnoreCase));

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) zhenlei520 All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using Wolf.DependencyInjection.Service;
 using Wolf.Extension.Cache.Abstractions;
 
@@ -15,6 +16,15 @@ namespace Wolf.Extension.Cache
         ///
         /// </summary>
         public string Identify => "Null";
+
+        /// <summary>
+        /// 创建缓存服务
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<ICacheProvider> CreateProviders()
+        {
+            return new List<ICacheProvider>();
+        }
 
         #region 创建缓存服务
 

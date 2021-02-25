@@ -27,14 +27,13 @@ namespace Wolf.Extension.Cache.Redis
         /// <summary>
         ///
         /// </summary>
-        /// <param name="jsonProvider"></param>
-        /// <param name="redisOptions"></param>
-        /// <param name="serviceId"></param>
-        public CacheProvider(IJsonProvider jsonProvider, RedisOptions redisOptions, string serviceId) : base(
-            jsonProvider)
+        /// <param name="jsonFactory"></param>
+        /// <param name="cacheOptions"></param>
+        public CacheProvider(IJsonFactory jsonFactory, CacheOptions cacheOptions) : base(
+            jsonFactory.Create())
         {
-            this._redisOptions = redisOptions;
-            this._quickHelperBase = new QuickHelperBase(serviceId);
+            this._redisOptions = cacheOptions.Configuration as RedisOptions;
+            this._quickHelperBase = new QuickHelperBase(cacheOptions.ServiecId, this._redisOptions);
         }
 
         #region 设置缓存

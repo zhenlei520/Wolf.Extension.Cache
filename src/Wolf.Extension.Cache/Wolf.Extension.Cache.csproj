@@ -16,4 +16,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Wolf.Extension.Cache.Abstractions\Wolf.Extension.Cache.Abstractions.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Wolf.Systems.Core" Version="0.0.1-preview-t002" />
+  </ItemGroup>
 </Project>

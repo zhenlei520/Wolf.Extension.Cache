@@ -22,6 +22,6 @@ namespace Wolf.Extension.Cache.Abstractions.Configurations
         /// <summary>
         /// 配置信息
         /// </summary>
-        public object Configuration { get; set; }
+        public dynamic Configuration { get; set; }
     }
 }

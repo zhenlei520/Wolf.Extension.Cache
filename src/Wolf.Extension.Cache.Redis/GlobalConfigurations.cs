@@ -15,5 +15,10 @@ namespace Wolf.Extension.Cache.Redis
         ///
         /// </summary>
         public static List<RedisConnectionPoolConfigs> Instance { get; internal set; }
+
+        /// <summary>
+        /// Redis服务
+        /// </summary>
+        public const string ServiceName = "Redis";
     }
 }
