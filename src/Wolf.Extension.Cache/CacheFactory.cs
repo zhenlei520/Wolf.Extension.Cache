@@ -57,7 +57,7 @@ namespace Wolf.Extension.Cache
         /// <returns></returns>
         public ICacheProvider CreateProvider()
         {
-            return this._cacheBuilders.FirstOrDefault()?.CreateProviders() ?? throw new NotImplementedException();
+            return this.CreateProviders().FirstOrDefault();
         }
 
         #endregion
