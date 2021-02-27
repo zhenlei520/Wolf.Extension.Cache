@@ -84,8 +84,7 @@ namespace Wolf.Extension.Cache.Redis.Common
                     var ret = conn.Client.Set(cacheKey, value) == "OK";
                     if (ret && overdueStrategy == OverdueStrategy.SlidingExpiration)
                     {
-                        var slidingInfo = this.GetSlidingOverTimeExpireValue(key);
-                        this.ZAdd(slidingInfo.Key, (GetExpireTime(timeSpan), slidingInfo.Value));
+                        this.SetSlidingExpiration(cacheKey, timeSpan);
                     }
 
                     return ret;
@@ -135,8 +134,7 @@ namespace Wolf.Extension.Cache.Redis.Common
 
                         if (overdueStrategy == OverdueStrategy.SlidingExpiration)
                         {
-                            var slidingInfo = this.GetSlidingOverTimeExpireValue(item.Key);
-                            this.ZAdd(slidingInfo.Key, (GetExpireTime(timeSpan), slidingInfo.Value));
+                            this.SetSlidingExpiration(cacheKey, timeSpan);
                         }
 
                         successList.Add(item.Key);
@@ -146,13 +144,14 @@ namespace Wolf.Extension.Cache.Redis.Common
                 {
                     foreach (var item in list)
                     {
-                        if (conn.Client.Set(item.Key, item.Value, timeSpan) != "OK" && IsAtomic)
+                        var cacheKey = GetCacheKey(item.Key);
+                        if (conn.Client.Set(cacheKey, item.Value, timeSpan) != "OK" && IsAtomic)
                         {
                             isRollback = true;
                             break;
                         }
 
-                        successList.Add(item.Key);
+                        successList.Add(cacheKey);
                     }
                 }
 
@@ -196,11 +195,14 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public string Get(string key)
         {
-             key = this.GetCacheKey(key);
-            using (var conn = Instance.GetConnection())
+            var cacheKey = this.GetCacheKey(key);
+            return this.GetResultAndRenewalTime(cacheKey, () =>
             {
-                return conn.Client.Get(key);
-            }
+                using (var conn = Instance.GetConnection())
+                {
+                    return conn.Client.Get(cacheKey);
+                }
+            });
         }
 
         #endregion
@@ -220,7 +222,8 @@ namespace Wolf.Extension.Cache.Redis.Common
                 foreach (var key in keys)
                 {
                     var cacheKey = this.GetCacheKey(key);
-                    list.Add(new KeyValuePair<string, string>(cacheKey, conn.Client.Get(cacheKey)));
+                    var cacheValue = this.GetResultAndRenewalTime(cacheKey, () => conn.Client.Get(cacheKey));
+                    list.Add(new KeyValuePair<string, string>(cacheKey, cacheValue));
                 }
 
                 return list;
@@ -229,21 +232,25 @@ namespace Wolf.Extension.Cache.Redis.Common
 
         #endregion
 
-        /// <summary>
-        /// 获取多个指定 key 的值(数组)
-        /// </summary>
-        /// <param name="key">不含prefix前辍RedisHelper.Name</param>
-        /// <returns></returns>
-        public string[] GetStrings(params string[] key)
-        {
-            if (key == null || key.Length == 0) return new string[0];
-            string[] rkeys = new string[key.Length];
-            for (int a = 0; a < key.Length; a++) rkeys[a] = this.GetCacheKey(key[a]);
-            using (var conn = Instance.GetConnection())
-            {
-                return conn.Client.MGet(rkeys);
-            }
-        }
+        #region 针对非延迟过期的缓存可以用（暂时注释）
+
+        // /// <summary>
+        // /// 获取多个指定 key 的值(数组)
+        // /// </summary>
+        // /// <param name="key">不含prefix前辍RedisHelper.Name</param>
+        // /// <returns></returns>
+        // public string[] GetStrings(params string[] key)
+        // {
+        //     if (key == null || key.Length == 0) return new string[0];
+        //     string[] rkeys = new string[key.Length];
+        //     for (int a = 0; a < key.Length; a++) rkeys[a] = this.GetCacheKey(key[a]);
+        //     using (var conn = Instance.GetConnection())
+        //     {
+        //         return conn.Client.MGet(rkeys);
+        //     }
+        // }
+
+        #endregion
 
         /// <summary>
         /// 获取指定 key 的值(字节流)
@@ -297,7 +304,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public long Increment(string key, long value = 1)
         {
-            key = this.GetCacheKey( key);
+            key = this.GetCacheKey(key);
             using (var conn = Instance.GetConnection())
             {
                 return conn.Client.IncrBy(key, value);
@@ -310,10 +317,10 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <param name="expire">过期时间</param>
         /// <returns></returns>
-        public  bool Expire(string key, TimeSpan expire)
+        public bool Expire(string key, TimeSpan expire)
         {
             if (expire <= TimeSpan.Zero) return false;
-            key = this.GetCacheKey( key);
+            key = this.GetCacheKey(key);
             using (var conn = Instance.GetConnection())
             {
                 return conn.Client.Expire(key, expire);
@@ -325,9 +332,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// </summary>
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <returns></returns>
-        public  long Ttl(string key)
+        public long Ttl(string key)
         {
-            key =this.GetCacheKey( key);
+            key = this.GetCacheKey(key);
             using (var conn = Instance.GetConnection())
             {
                 return conn.Client.Ttl(key);
@@ -353,7 +360,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="channel">频道名</param>
         /// <param name="data">消息文本</param>
         /// <returns></returns>
-        public  long Publish(string channel, string data)
+        public long Publish(string channel, string data)
         {
             using (var conn = Instance.GetConnection())
             {
@@ -371,7 +378,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="expire">过期时间</param>
         /// <param name="keyValues">key dataKey,value</param>
         /// <returns></returns>
-        public string HashSetExpire(Dictionary<string, object[]> keyValues, TimeSpan expire)
+        public string HashSetExpire(Dictionary<string, string[]> keyValues, TimeSpan expire)
         {
             using (var conn = Instance.GetConnection())
             {
@@ -380,7 +387,7 @@ namespace Wolf.Extension.Cache.Redis.Common
                 {
                     foreach (var item in keyValues)
                     {
-                        string key = this.GetCacheKey( item.Key);
+                        string key = this.GetCacheKey(item.Key);
                         if (expire.LessThan(TimeSpan.Zero))
                         {
                             return "Empty Data";
@@ -405,7 +412,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="expire">过期时间</param>
         /// <param name="keyValues">key dataKey,value</param>
         /// <returns></returns>
-        public  string HashSetHashFileExpire(Dictionary<string, object[]> keyValues, TimeSpan expire)
+        public string HashSetHashFileExpire(Dictionary<string, string[]> keyValues, TimeSpan expire)
         {
             if (expire.GreaterThan(TimeSpan.Zero))
             {
@@ -451,10 +458,27 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="expire">过期时间</param>
         /// <param name="hashkeyValues">field1 value1 [field2 value2]</param>
         /// <returns></returns>
+        public string HashSet(string key,
+            params string[] hashkeyValues)
+        {
+            key = this.GetCacheKey(key);
+            using (var conn = Instance.GetConnection())
+            {
+                return conn.Client.HMSet(key, hashkeyValues.Select(a => string.Concat(a)).ToArray());
+            }
+        }
+
+        /// <summary>
+        /// 同时将多个 field-value (域-值)对设置到哈希表 key 中
+        /// </summary>
+        /// <param name="key">不含prefix前辍RedisHelper.Name</param>
+        /// <param name="expire">过期时间</param>
+        /// <param name="hashkeyValues">field1 value1 [field2 value2]</param>
+        /// <returns></returns>
         public string HashSetExpire(string key, TimeSpan expire,
             params object[] hashkeyValues)
         {
-            key = this.GetCacheKey( key);
+            key = this.GetCacheKey(key);
             using (var conn = Instance.GetConnection())
             {
                 var ret = conn.Client.HMSet(key, hashkeyValues.Select(a => string.Concat(a)).ToArray());
@@ -472,7 +496,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="expire">过期时间</param>
         /// <param name="value">结果</param>
         /// <returns></returns>
-        public  string HashSetHashFileExpire<T>(string key, string hashKey, TimeSpan expire, T value)
+        public string HashSetHashFileExpire<T>(string key, string hashKey, TimeSpan expire, T value)
         {
             if (expire.GreaterThan(TimeSpan.Zero))
             {
@@ -498,7 +522,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="expire">过期时间</param>
         /// <param name="kvalues">结果</param>
         /// <returns></returns>
-        public  string HashSetHashFileExpire(string key, TimeSpan expire, params object[] kvalues)
+        public string HashSetHashFileExpire(string key, TimeSpan expire, params object[] kvalues)
         {
             if (expire > TimeSpan.Zero)
             {
@@ -541,7 +565,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="key"></param>
         /// <param name="fields"></param>
         /// <returns></returns>
-        public  string[] HashGet(string key, params string[] fields)
+        public string[] HashGet(string key, params string[] fields)
         {
             key = this.GetCacheKey(key);
             using (var conn = Instance.GetConnection())
@@ -562,7 +586,7 @@ namespace Wolf.Extension.Cache.Redis.Common
             {
                 foreach (var item in keyDic)
                 {
-                    string key =this.GetCacheKey(item.Key);
+                    string key = this.GetCacheKey(item.Key);
                     result.Add(key, conn.Client.HMGet(key, item.Value));
                 }
             }
@@ -610,7 +634,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public bool HashExists(string key, string field)
         {
-            key = this.GetCacheKey( key);
+            key = this.GetCacheKey(key);
             using (var conn = Instance.GetConnection())
             {
                 return conn.Client.HExists(key, field);
@@ -638,7 +662,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public Dictionary<string, string> HashGetAll(string key)
         {
-            key = this.GetCacheKey( key);
+            key = this.GetCacheKey(key);
             using (var conn = Instance.GetConnection())
             {
                 return conn.Client.HGetAll(key);
@@ -664,9 +688,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// </summary>
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <returns></returns>
-        public  string[] HashVals(string key)
+        public string[] HashVals(string key)
         {
-            key = this.GetCacheKey( key);
+            key = this.GetCacheKey(key);
             using (var conn = Instance.GetConnection())
             {
                 return conn.Client.HVals(key);
@@ -683,9 +707,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <param name="index">索引</param>
         /// <returns></returns>
-        public  string LIndex(string key, long index)
+        public string LIndex(string key, long index)
         {
-            key = this.GetCacheKey( key);
+            key = this.GetCacheKey(key);
             using (var conn = Instance.GetConnection())
             {
                 return conn.Client.LIndex(key, index);
@@ -699,9 +723,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="pivot">列表的元素</param>
         /// <param name="value">新元素</param>
         /// <returns></returns>
-        public  long LInsertBefore(string key, string pivot, string value)
+        public long LInsertBefore(string key, string pivot, string value)
         {
-            key = this.GetCacheKey( key);
+            key = this.GetCacheKey(key);
             using (var conn = Instance.GetConnection())
             {
                 return conn.Client.LInsert(key, RedisInsert.Before, pivot, value);
@@ -715,9 +739,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="pivot">列表的元素</param>
         /// <param name="value">新元素</param>
         /// <returns></returns>
-        public  long LInsertAfter(string key, string pivot, string value)
+        public long LInsertAfter(string key, string pivot, string value)
         {
-            key = this.GetCacheKey( key);
+            key = this.GetCacheKey(key);
             using (var conn = Instance.GetConnection())
             {
                 return conn.Client.LInsert(key, RedisInsert.After, pivot, value);
@@ -729,9 +753,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// </summary>
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <returns></returns>
-        public  long LLen(string key)
+        public long LLen(string key)
         {
-            key = this.GetCacheKey( key);
+            key = this.GetCacheKey(key);
             using (var conn = Instance.GetConnection())
             {
                 return conn.Client.LLen(key);
@@ -743,9 +767,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// </summary>
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <returns></returns>
-        public  string LPop(string key)
+        public string LPop(string key)
         {
-            key = this.GetCacheKey( key);
+            key = this.GetCacheKey(key);
             using (var conn = Instance.GetConnection())
             {
                 return conn.Client.LPop(key);
@@ -757,9 +781,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// </summary>
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <returns></returns>
-        public  string RPop(string key)
+        public string RPop(string key)
         {
-            key = this.GetCacheKey( key);
+            key = this.GetCacheKey(key);
             using (var conn = Instance.GetConnection())
             {
                 return conn.Client.RPop(key);
@@ -772,9 +796,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <param name="value">一个或多个值</param>
         /// <returns></returns>
-        public  long LPush(string key, string[] value)
+        public long LPush(string key, string[] value)
         {
-            key = this.GetCacheKey( key);
+            key = this.GetCacheKey(key);
             using (var conn = Instance.GetConnection())
             {
                 return conn.Client.LPush(key, value);
@@ -787,9 +811,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <param name="value">一个或多个值</param>
         /// <returns></returns>
-        public  long RPush(string key, string[] value)
+        public long RPush(string key, string[] value)
         {
-            key = this.GetCacheKey( key);
+            key = this.GetCacheKey(key);
             using (var conn = Instance.GetConnection())
             {
                 return conn.Client.RPush(key, value);
@@ -803,9 +827,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="start">开始位置，0表示第一个元素，-1表示最后一个元素</param>
         /// <param name="stop">结束位置，0表示第一个元素，-1表示最后一个元素</param>
         /// <returns></returns>
-        public  string[] LRang(string key, long start, long stop)
+        public string[] LRang(string key, long start, long stop)
         {
-            key = this.GetCacheKey( key);
+            key = this.GetCacheKey(key);
             using (var conn = Instance.GetConnection())
             {
                 return conn.Client.LRange(key, start, stop);
@@ -816,12 +840,12 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// 根据参数 count 的值，移除列表中与参数 value 相等的元素
         /// </summary>
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
-        /// <param name="count">移除的数量，大于0时从表头删除数量count，小于0时从表尾删除数量-count，等于0移除所有</param>
         /// <param name="value">元素</param>
+        /// <param name="count">移除的数量，大于0时从表头删除数量count，小于0时从表尾删除数量-count，等于0移除所有</param>
         /// <returns></returns>
-        public  long LRem(string key, long count, string value)
+        public long LRem(string key, string value, long count)
         {
-            key = this.GetCacheKey( key);
+            key = this.GetCacheKey(key);
             using (var conn = Instance.GetConnection())
             {
                 return conn.Client.LRem(key, count, value);
@@ -835,9 +859,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="index">索引</param>
         /// <param name="value">值</param>
         /// <returns></returns>
-        public  bool LSet(string key, long index, string value)
+        public bool LSet(string key, long index, string value)
         {
-            key = this.GetCacheKey( key);
+            key = this.GetCacheKey(key);
             using (var conn = Instance.GetConnection())
             {
                 return conn.Client.LSet(key, index, value) == "OK";
@@ -851,9 +875,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="start">开始位置，0表示第一个元素，-1表示最后一个元素</param>
         /// <param name="stop">结束位置，0表示第一个元素，-1表示最后一个元素</param>
         /// <returns></returns>
-        public  bool LTrim(string key, long start, long stop)
+        public bool LTrim(string key, long start, long stop)
         {
-            key = this.GetCacheKey( key);
+            key = this.GetCacheKey(key);
             using (var conn = Instance.GetConnection())
             {
                 return conn.Client.LTrim(key, start, stop) == "OK";
@@ -870,13 +894,13 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <param name="memberScores">一个或多个成员分数</param>
         /// <returns></returns>
-        public long ZAdd(string key, params (double, string)[] memberScores)
+        public long ZAdd(string key, params (string, double)[] memberScores)
         {
             using (var conn = Instance.GetConnection())
             {
                 string cacheKey = this.GetCacheKey(key);
                 return conn.Client.ZAdd(cacheKey,
-                    memberScores.Select(a => new Tuple<double, string>(a.Item1, a.Item2)).ToArray());
+                    memberScores.Select(a => new Tuple<double, string>(a.Item2, a.Item1)).ToArray());
             }
         }
 
@@ -885,14 +909,14 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// </summary>
         /// <param name="memberScores">一个或多个成员分数</param>
         /// <returns></returns>
-        public  long ZAdd(Dictionary<string, List<(double, string)>> memberScores)
+        public long ZAdd(Dictionary<string, List<(double, string)>> memberScores)
         {
             using (var conn = Instance.GetConnection())
             {
                 long result = 0;
                 foreach (var item in memberScores)
                 {
-                    string key = this.GetCacheKey( item.Key);
+                    string key = this.GetCacheKey(item.Key);
                     result += conn.Client.ZAdd<double, string>(key,
                         item.Value.Select(a => new Tuple<double, string>(a.Item1, a.Item2)).ToArray());
                 }
@@ -906,9 +930,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// </summary>
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <returns></returns>
-        public  long ZCard(string key)
+        public long ZCard(string key)
         {
-            key = this.GetCacheKey( key);
+            key = this.GetCacheKey(key);
             using (var conn = Instance.GetConnection())
             {
                 return conn.Client.ZCard(key);
@@ -922,9 +946,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="min">分数最小值</param>
         /// <param name="max">分数最大值</param>
         /// <returns></returns>
-        public  long ZCount(string key, double min, double max)
+        public long ZCount(string key, double min, double max)
         {
-            key = this.GetCacheKey( key);
+            key = this.GetCacheKey(key);
             using (var conn = Instance.GetConnection())
             {
                 return conn.Client.ZCount(key, min, max);
@@ -938,9 +962,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="memeber">成员</param>
         /// <param name="increment">增量值(默认=1)</param>
         /// <returns></returns>
-        public  double ZIncrBy(string key, string memeber, double increment = 1)
+        public double ZIncrBy(string key, string memeber, double increment = 1)
         {
-            key = this.GetCacheKey( key);
+            key = this.GetCacheKey(key);
             using (var conn = Instance.GetConnection())
             {
                 return conn.Client.ZIncrBy(key, increment, memeber);
@@ -955,7 +979,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="destinationKey">新的有序集合，不含prefix前辍RedisHelper.Name</param>
         /// <param name="keys">一个或多个有序集合，不含prefix前辍RedisHelper.Name</param>
         /// <returns></returns>
-        public  long ZInterStoreMax(string destinationKey, params string[] keys)
+        public long ZInterStoreMax(string destinationKey, params string[] keys)
         {
             return ZInterStore(destinationKey, RedisAggregate.Max, keys);
         }
@@ -966,7 +990,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="destinationKey">新的有序集合，不含prefix前辍RedisHelper.Name</param>
         /// <param name="keys">一个或多个有序集合，不含prefix前辍RedisHelper.Name</param>
         /// <returns></returns>
-        public  long ZInterStoreMin(string destinationKey, params string[] keys)
+        public long ZInterStoreMin(string destinationKey, params string[] keys)
         {
             return ZInterStore(destinationKey, RedisAggregate.Min, keys);
         }
@@ -977,16 +1001,16 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="destinationKey">新的有序集合，不含prefix前辍RedisHelper.Name</param>
         /// <param name="keys">一个或多个有序集合，不含prefix前辍RedisHelper.Name</param>
         /// <returns></returns>
-        public  long ZInterStoreSum(string destinationKey, params string[] keys)
+        public long ZInterStoreSum(string destinationKey, params string[] keys)
         {
             return ZInterStore(destinationKey, RedisAggregate.Sum, keys);
         }
 
-        private  long ZInterStore(string destinationKey, RedisAggregate aggregate, params string[] keys)
+        private long ZInterStore(string destinationKey, RedisAggregate aggregate, params string[] keys)
         {
-            destinationKey = this.GetCacheKey( destinationKey);
+            destinationKey = this.GetCacheKey(destinationKey);
             string[] rkeys = new string[keys.Length];
-            for (int a = 0; a < keys.Length; a++) rkeys[a] = this.GetCacheKey( keys[a]);
+            for (int a = 0; a < keys.Length; a++) rkeys[a] = this.GetCacheKey(keys[a]);
             if (rkeys.Length == 0) return 0;
             using (var conn = Instance.GetConnection())
             {
@@ -1004,7 +1028,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="destinationKey">新的有序集合，不含prefix前辍RedisHelper.Name</param>
         /// <param name="keys">一个或多个有序集合，不含prefix前辍RedisHelper.Name</param>
         /// <returns></returns>
-        public  long ZUnionStoreMax(string destinationKey, params string[] keys)
+        public long ZUnionStoreMax(string destinationKey, params string[] keys)
         {
             return ZUnionStore(destinationKey, RedisAggregate.Max, keys);
         }
@@ -1015,7 +1039,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="destinationKey">新的有序集合，不含prefix前辍RedisHelper.Name</param>
         /// <param name="keys">一个或多个有序集合，不含prefix前辍RedisHelper.Name</param>
         /// <returns></returns>
-        public  long ZUnionStoreMin(string destinationKey, params string[] keys)
+        public long ZUnionStoreMin(string destinationKey, params string[] keys)
         {
             return ZUnionStore(destinationKey, RedisAggregate.Min, keys);
         }
@@ -1026,16 +1050,16 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="destinationKey">新的有序集合，不含prefix前辍RedisHelper.Name</param>
         /// <param name="keys">一个或多个有序集合，不含prefix前辍RedisHelper.Name</param>
         /// <returns></returns>
-        public  long ZUnionStoreSum(string destinationKey, params string[] keys)
+        public long ZUnionStoreSum(string destinationKey, params string[] keys)
         {
             return ZUnionStore(destinationKey, RedisAggregate.Sum, keys);
         }
 
-        private  long ZUnionStore(string destinationKey, RedisAggregate aggregate, params string[] keys)
+        private long ZUnionStore(string destinationKey, RedisAggregate aggregate, params string[] keys)
         {
-            destinationKey = this.GetCacheKey( destinationKey);
+            destinationKey = this.GetCacheKey(destinationKey);
             string[] rkeys = new string[keys.Length];
-            for (int a = 0; a < keys.Length; a++) rkeys[a] = this.GetCacheKey( keys[a]);
+            for (int a = 0; a < keys.Length; a++) rkeys[a] = this.GetCacheKey(keys[a]);
             if (rkeys.Length == 0) return 0;
             using (var conn = Instance.GetConnection())
             {
@@ -1052,9 +1076,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="start">开始位置，0表示第一个元素，-1表示最后一个元素</param>
         /// <param name="stop">结束位置，0表示第一个元素，-1表示最后一个元素</param>
         /// <returns></returns>
-        public  string[] ZRange(string key, long start, long stop)
+        public string[] ZRange(string key, long start, long stop)
         {
-            key = this.GetCacheKey( key);
+            key = this.GetCacheKey(key);
             using (var conn = Instance.GetConnection())
             {
                 return conn.Client.ZRange(key, start, stop, false);
@@ -1070,10 +1094,10 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="limit">返回多少成员</param>
         /// <param name="offset">返回条件偏移位置</param>
         /// <returns></returns>
-        public  string[] ZRangeByScore(string key, double minScore, double maxScore, long? limit = null,
+        public string[] ZRangeByScore(string key, double minScore, double maxScore, long? limit = null,
             long offset = 0)
         {
-            key = this.GetCacheKey( key);
+            key = this.GetCacheKey(key);
             using (var conn = Instance.GetConnection())
             {
                 return conn.Client.ZRangeByScore(key, minScore, maxScore, false, false, false, offset, limit);
@@ -1086,9 +1110,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <param name="member">成员</param>
         /// <returns></returns>
-        public  long? ZRank(string key, string member)
+        public long? ZRank(string key, string member)
         {
-            key = this.GetCacheKey( key);
+            key = this.GetCacheKey(key);
             using (var conn = Instance.GetConnection())
             {
                 return conn.Client.ZRank(key, member);
@@ -1101,9 +1125,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <param name="member">一个或多个成员</param>
         /// <returns></returns>
-        public  long ZRem(string key, params string[] member)
+        public long ZRem(string key, params string[] member)
         {
-            key = this.GetCacheKey( key);
+            key = this.GetCacheKey(key);
             using (var conn = Instance.GetConnection())
             {
                 return conn.Client.ZRem(key, member);
@@ -1117,9 +1141,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="start">开始位置，0表示第一个元素，-1表示最后一个元素</param>
         /// <param name="stop">结束位置，0表示第一个元素，-1表示最后一个元素</param>
         /// <returns></returns>
-        public  long ZRemRangeByRank(string key, long start, long stop)
+        public long ZRemRangeByRank(string key, long start, long stop)
         {
-            key = this.GetCacheKey( key);
+            key = this.GetCacheKey(key);
             using (var conn = Instance.GetConnection())
             {
                 return conn.Client.ZRemRangeByRank(key, start, stop);
@@ -1133,9 +1157,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="minScore">最小分数</param>
         /// <param name="maxScore">最大分数</param>
         /// <returns></returns>
-        public  long ZRemRangeByScore(string key, double minScore, double maxScore)
+        public long ZRemRangeByScore(string key, double minScore, double maxScore)
         {
-            key = this.GetCacheKey( key);
+            key = this.GetCacheKey(key);
             using (var conn = Instance.GetConnection())
             {
                 return conn.Client.ZRemRangeByScore(key, minScore, maxScore);
@@ -1149,9 +1173,9 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="start">开始位置，0表示第一个元素，-1表示最后一个元素</param>
         /// <param name="stop">结束位置，0表示第一个元素，-1表示最后一个元素</param>
         /// <returns></returns>
-        public  string[] ZRevRange(string key, long start, long stop)
+        public string[] ZRevRange(string key, long start, long stop)
         {
-            key = this.GetCacheKey( key);
+            key = this.GetCacheKey(key);
             using (var conn = Instance.GetConnection())
             {
                 return conn.Client.ZRevRange(key, start, stop, false);
@@ -1170,7 +1194,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         public string[] ZRevRangeByScore(string key, double maxScore, double minScore, long? limit = null,
             long? offset = null)
         {
-            key = this.GetCacheKey( key);
+            key = this.GetCacheKey(key);
             using (var conn = Instance.GetConnection())
             {
                 return conn.Client.ZRevRangeByScore(key, maxScore, minScore, false, false, false, offset, limit);
@@ -1195,7 +1219,7 @@ namespace Wolf.Extension.Cache.Redis.Common
             {
                 keys.ForEach(key =>
                 {
-                    key = this.GetCacheKey( key);
+                    key = this.GetCacheKey(key);
                     list.Add((key,
                         conn.Client.ZRevRangeByScore(key, maxScore, minScore, false, false, false, offset, limit)));
                 });
@@ -1211,7 +1235,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public long? ZRevRank(string key, string member)
         {
-            key = this.GetCacheKey( key);
+            key = this.GetCacheKey(key);
             using (var conn = Instance.GetConnection())
             {
                 return conn.Client.ZRevRank(key, member);
@@ -1226,7 +1250,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public double? ZScore(string key, string member)
         {
-            key = this.GetCacheKey( key);
+            key = this.GetCacheKey(key);
             using (var conn = Instance.GetConnection())
             {
                 return conn.Client.ZScore(key, member);
@@ -1236,6 +1260,73 @@ namespace Wolf.Extension.Cache.Redis.Common
         #endregion
 
         #region private methods
+
+        /// <summary>
+        /// SortSet类型的缓存key
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        private static string GetExpireKeyBySortSet(string key)
+        {
+            return $"sortset_{key}";
+        }
+
+        /// <summary>
+        /// HashSet类型的缓存key
+        /// 存储滑动过期的时间
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        private static string GetExpireKeyByHashSet(string key)
+        {
+            return $"hashset_{key}";
+        }
+
+        #region 设置滑动过期
+
+        /// <summary>
+        /// 设置滑动过期
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <param name="timeSpan">时间戳</param>
+        private void SetSlidingExpiration(string key, TimeSpan timeSpan)
+        {
+            var slidingInfo = this.GetSlidingOverTimeExpireValue(key);
+
+            var sortSetCacheKey = GetExpireKeyBySortSet(slidingInfo.Key);
+            this.LRem(sortSetCacheKey, slidingInfo.Value, 0);
+            this.ZAdd(sortSetCacheKey, (slidingInfo.Value, GetExpireTime(timeSpan)));
+
+            var hashSetCacheKey = GetExpireKeyByHashSet(slidingInfo.Key);
+            this.HashDelete(hashSetCacheKey, slidingInfo.Value);
+            this.HashSet(hashSetCacheKey, slidingInfo.Value, timeSpan.TotalSeconds + ""); //设置HashSet过期时间，存储过期时长
+        }
+
+        #endregion
+
+        #region 判断是否滑动过期并延长过期时间
+
+        /// <summary>
+        /// 判断是否滑动过期并延长过期时间
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <param name="func">回调函数</param>
+        /// <returns></returns>
+        private T GetResultAndRenewalTime<T>(string key, Func<T> func)
+        {
+            var slidingInfo = this.GetSlidingOverTimeExpireValue(key);
+            var hashSetCacheKey = GetExpireKeyByHashSet(slidingInfo.Key);
+            var hashValue = HashGet(hashSetCacheKey, slidingInfo.Value);
+            if (!string.IsNullOrWhiteSpace(hashValue))
+            {
+                var totalSecond = hashValue.ConvertToInt(0); //得到滑动过期的时间
+                this.SetSlidingExpiration(key, TimeSpan.FromSeconds(totalSecond)); //延长时间
+            }
+
+            return func.Invoke();
+        }
+
+        #endregion
 
         #region 得到缓存键
 
@@ -1261,7 +1352,8 @@ namespace Wolf.Extension.Cache.Redis.Common
         private KeyValuePair<string, string> GetSlidingOverTimeExpireValue(string key)
         {
             int hashCode = GuidGeneratorCommon.GetHashCode(key);
-            string cacheKey = string.Format(this._redisOptions.SlidingOverTimeCacheKeyFormat[0], hashCode);
+            string cacheKey = string.Format(this._redisOptions.SlidingOverTimeCacheKeyFormat[0],
+                hashCode % this._redisOptions.SlidingOverTimeCacheCount);
             string cacheValue = string.Format(this._redisOptions.SlidingOverTimeCacheKeyFormat[1], key);
             return new KeyValuePair<string, string>(cacheKey, cacheValue);
         }

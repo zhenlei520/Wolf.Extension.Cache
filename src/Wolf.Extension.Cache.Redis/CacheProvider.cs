@@ -81,18 +81,7 @@ namespace Wolf.Extension.Cache.Redis
         public bool Set<T>(string key, T obj, PersistentOps persistentOps = null)
         {
             persistentOps = persistentOps.Get();
-            return base.Execute(persistentOps.Strategy,
-                () => this._quickHelperBase.Set(key, obj, this._redisOptions.Pre, persistentOps.OverdueTimeSpan), () =>
-                {
-                    var res = this._quickHelperBase.Set(key, obj, this._redisOptions.Pre,
-                        persistentOps.OverdueTimeSpan);
-                    if (expiry != null)
-                    {
-                        //需要过期
-                    }
-
-                    return res;
-                });
+            return _quickHelperBase.Set(key, obj, persistentOps.Strategy, persistentOps.OverdueTimeSpan);
         }
 
         #endregion
@@ -110,9 +99,8 @@ namespace Wolf.Extension.Cache.Redis
             PersistentOps persistentOps = null)
         {
             persistentOps = persistentOps.Get();
-            return base.Execute(persistentOps.Strategy, () => QuickHelperBase.Set(
-                list.Select(x => new KeyValuePair<string, T>(x.Key, x.Value)),
-                expiry.HasValue ? Convert.ToInt32(expiry.Value.TotalSeconds) : -1), () => false);
+            return this._quickHelperBase.Set(list.Select(x => new KeyValuePair<string, T>(x.Key, x.Value)),
+                persistentOps.Strategy, persistentOps.IsAtomic, persistentOps.OverdueTimeSpan);
         }
 
         #endregion
@@ -155,7 +143,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <returns></returns>
         public T Get<T>(string key)
         {
-            var res = QuickHelperBase.Get(key);
+            var res = this._quickHelperBase.Get(key);
             return base.ConvertObj<T>(res);
         }
 
@@ -170,7 +158,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <returns></returns>
         public List<BaseResponse<T>> Get<T>(ICollection<string> keys)
         {
-            var ret = QuickHelperBase.Get((keys ?? new List<string>()).ToArray());
+            var ret = this._quickHelperBase.Get((keys ?? new List<string>()).ToArray());
             return ret.Select(x => new BaseResponse<T>(x.Key, base.ConvertObj<T>(x.Value))).ToList();
         }
 
@@ -186,7 +174,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <returns>原value+val</returns>
         public long Increment(string key, long val = 1)
         {
-            return QuickHelperBase.Increment(key, val);
+            return this._quickHelperBase.Increment(key, val);
         }
 
         #endregion

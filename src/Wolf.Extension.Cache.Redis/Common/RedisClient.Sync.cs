@@ -547,7 +547,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         public string HMSet<T>(string key, T obj)
             where T : class
         {
-            return Write(RedisCommands.HMSet<T>(key, obj));
+            return Write(RedisCommands.HMSet(key, obj));
         }
 
         /// <summary>

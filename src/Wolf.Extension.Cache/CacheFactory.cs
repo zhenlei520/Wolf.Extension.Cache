@@ -75,7 +75,7 @@ namespace Wolf.Extension.Cache
         {
             if (string.IsNullOrWhiteSpace(serviceId))
             {
-                return this.CreateBuilder(serviceName).CreateProviders();
+                return this.CreateBuilder(serviceName).CreateProvider();
             }
 
             return this.CreateBuilder(serviceName).CreateProvider(serviceId);
