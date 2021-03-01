@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Wolf.Extension.Cache.Abstractions.Configurations;
+using Wolf.Extension.Cache.Abstractions.Enum;
 
 namespace Wolf.Extension.Cache.Redis.Common
 {
@@ -15,16 +17,35 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// </summary>
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <param name="value">字符串值</param>
-        /// <param name="expireSeconds">过期(秒单位)</param>
+        /// <param name="overdueStrategy">过期策略</param>
+        /// <param name="timeSpan">过期时间</param>
         /// <returns></returns>
-        public async Task<bool> SetAsync<T>(string key, T value, int expireSeconds = -1)
+        public async Task<bool> SetAsync<T>(string key, T value, OverdueStrategy overdueStrategy, TimeSpan timeSpan)
         {
-            key = this.GetCacheKey(key);
+            if (timeSpan < TimeSpan.Zero)
+            {
+                return false;
+            }
+
+            string cacheKey = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
-                if (expireSeconds > 0)
-                    return await conn.Client.SetAsync(key, value, TimeSpan.FromSeconds(expireSeconds)) == "OK";
-                return await conn.Client.SetAsync(key, value) == "OK";
+                if (timeSpan == TimeSpan.Zero || (overdueStrategy == OverdueStrategy.SlidingExpiration &&
+                                                  this._redisOptions.IsOpenSlidingExpiration))
+                {
+                    var ret = await conn.Client.SetAsync(key, value) == "OK";
+                    if (ret && overdueStrategy == OverdueStrategy.SlidingExpiration &&
+                        this._redisOptions.IsOpenSlidingExpiration)
+                    {
+                        await this.SetSlidingExpirationAsync(cacheKey, timeSpan);
+                    }
+
+                    return ret;
+                }
+                else
+                {
+                    return await conn.Client.SetAsync(cacheKey, value, timeSpan) == "OK";
+                }
             }
         }
 
@@ -32,40 +53,62 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// 设置指定 key 的值
         /// </summary>
         /// <param name="list"></param>
-        /// <param name="expireSeconds">过期(秒单位)</param>
+        /// <param name="overdueStrategy">过期策略</param>
+        /// <param name="isAtomic">是否确保原子性，一个失败就回退</param>
+        /// <param name="timeSpan">过期时间</param>
         /// <returns></returns>
-        public async Task<bool> SetAsync<T>(IEnumerable<KeyValuePair<string, T>> list, int expireSeconds = -1)
+        public async Task<bool> SetAsync<T>(IEnumerable<KeyValuePair<string, T>> list, OverdueStrategy overdueStrategy,
+            bool isAtomic, TimeSpan timeSpan)
         {
+            if (timeSpan < TimeSpan.Zero)
+            {
+                return false;
+            }
+
+            bool isRollback = false; //是否回滚
             using (var conn = await Instance.GetConnectionAsync())
             {
                 List<string> successList = new List<string>();
-                foreach (var item in list)
+                if (timeSpan == TimeSpan.Zero || (overdueStrategy == OverdueStrategy.SlidingExpiration &&
+                                                  this._redisOptions.IsOpenSlidingExpiration))
                 {
-                    var key = this.GetCacheKey(item.Key);
-                    bool isSuccess;
-                    if (expireSeconds != -1)
+                    foreach (var item in list)
                     {
-                        isSuccess = await conn.Client.SetAsync(key, item.Value, TimeSpan.FromSeconds(expireSeconds)) ==
-                                    "OK";
-                    }
-                    else
-                    {
-                        isSuccess = await conn.Client.SetAsync(key, item.Value) == "OK";
-                    }
-
-                    if (isSuccess)
-                    {
-                        successList.Add(key);
-                    }
-                    else
-                    {
-                        foreach (var cacheKey in successList)
+                        var cacheKey = GetCacheKey(item.Key);
+                        if (await conn.Client.SetAsync(cacheKey, item.Value) != "OK" && isAtomic)
                         {
-                            conn.Client.DelAsync(cacheKey);
+                            isRollback = true;
+                            break;
                         }
 
-                        return false;
+                        if (overdueStrategy == OverdueStrategy.SlidingExpiration &&
+                            this._redisOptions.IsOpenSlidingExpiration)
+                        {
+                            await this.SetSlidingExpirationAsync(cacheKey, timeSpan);
+                        }
+
+                        successList.Add(item.Key);
                     }
+                }
+                else
+                {
+                    foreach (var item in list)
+                    {
+                        var cacheKey = GetCacheKey(item.Key);
+                        if (await conn.Client.SetAsync(cacheKey, item.Value, timeSpan) != "OK" && isAtomic)
+                        {
+                            isRollback = true;
+                            break;
+                        }
+
+                        successList.Add(cacheKey);
+                    }
+                }
+
+                if (isRollback)
+                {
+                    successList.ForEach(key => { conn.Client.DelAsync(key); });
+                    return false;
                 }
 
                 return true;
@@ -91,35 +134,66 @@ namespace Wolf.Extension.Cache.Redis.Common
             }
         }
 
+        #region 获取指定 key 的值
+
         /// <summary>
         /// 获取指定 key 的值
         /// </summary>
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <returns></returns>
-        public async Task<string> GetAsync(string key)
+        public Task<string> GetAsync(string key)
         {
             key = this.GetCacheKey(key);
-            using (var conn = await Instance.GetConnectionAsync())
+            return this.GetResultAndRenewalTimeAsync<string>(key, async () =>
             {
-                return await conn.Client.GetAsync(key);
-            }
+                using (var conn = await Instance.GetConnectionAsync())
+                {
+                    return await conn.Client.GetAsync(key);
+                }
+            });
         }
+
+        #endregion
+
+        #region 获取指定 keys集合的值
 
         /// <summary>
         /// 获取多个指定 key 的值(数组)
         /// </summary>
-        /// <param name="key">不含prefix前辍RedisHelper.Name</param>
+        /// <param name="keys">不含prefix前辍RedisHelper.Name</param>
         /// <returns></returns>
-        public async Task<string[]> GetStringsAsync(params string[] key)
+        public async Task<List<KeyValuePair<string, string>>> GetAsync(List<string> keys)
         {
-            if (key == null || key.Length == 0) return new string[0];
-            string[] rkeys = new string[key.Length];
-            for (int a = 0; a < key.Length; a++) rkeys[a] = this.GetCacheKey(key[a]);
+            var cacheKeys = keys.Select(this.GetCacheKey).ToArray();
             using (var conn = await Instance.GetConnectionAsync())
             {
-                return await conn.Client.MGetAsync(rkeys);
+                List<KeyValuePair<string, string>> list = new List<KeyValuePair<string, string>>();
+
+                var ret = await conn.Client.MGetAsync(cacheKeys);
+                for (int i = 0; i < keys.Count; i = i + 2)
+                {
+                    if (this.GetCacheKey(keys[i]) == ret[i])
+                    {
+                        list.Add(new KeyValuePair<string, string>(keys[i], ret[i + 1]));
+                    }
+                }
+
+                if (this._redisOptions.IsOpenSlidingExpiration)
+                {
+                    foreach (var key in keys)
+                    {
+                        var cacheKey = this.GetCacheKey(key);
+                        this.GetResultAndRenewalTime(cacheKey);
+                    }
+
+                    return list;
+                }
+
+                return list;
             }
         }
+
+        #endregion
 
         /// <summary>
         /// 获取指定 key 的值(字节流)
@@ -134,6 +208,8 @@ namespace Wolf.Extension.Cache.Redis.Common
                 return await conn.Client.GetBytesAsync(key);
             }
         }
+
+        #region 用于在 key 存在时删除 key
 
         /// <summary>
         /// 用于在 key 存在时删除 key
@@ -151,6 +227,10 @@ namespace Wolf.Extension.Cache.Redis.Common
             }
         }
 
+        #endregion
+
+        #region 检查给定 key 是否存在
+
         /// <summary>
         /// 检查给定 key 是否存在
         /// </summary>
@@ -164,6 +244,10 @@ namespace Wolf.Extension.Cache.Redis.Common
                 return await conn.Client.ExistsAsync(key);
             }
         }
+
+        #endregion
+
+        #region 将 key 所储存的值加上给定的增量值（increment）
 
         /// <summary>
         /// 将 key 所储存的值加上给定的增量值（increment）
@@ -180,21 +264,44 @@ namespace Wolf.Extension.Cache.Redis.Common
             }
         }
 
+        #endregion
+
+        #region 为给定 key 设置过期时间
+
         /// <summary>
         /// 为给定 key 设置过期时间
         /// </summary>
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
-        /// <param name="expire">过期时间</param>
+        /// <param name="basePersistentOps">策略</param>
         /// <returns></returns>
-        public async Task<bool> ExpireAsync(string key, TimeSpan expire)
+        public async Task<bool> ExpireAsync(string key, BasePersistentOps basePersistentOps)
         {
-            if (expire <= TimeSpan.Zero) return false;
-            key = this.GetCacheKey(key);
-            using (var conn = await Instance.GetConnectionAsync())
+            if (basePersistentOps.OverdueTimeSpan <= TimeSpan.Zero)
+                return false;
+            string cacheKey = this.GetCacheKey(key);
+            var ret = await this.ExpireAsync(cacheKey, basePersistentOps.OverdueTimeSpan);
+            if (this._redisOptions.IsOpenSlidingExpiration)
             {
-                return await conn.Client.ExpireAsync(key, expire);
+                if (basePersistentOps.Strategy == OverdueStrategy.AbsoluteExpiration)
+                {
+                    //绝对过期
+                    this.DeleteSlidingExpiration(cacheKey);
+                }
+                else if (basePersistentOps.Strategy == OverdueStrategy.SlidingExpiration)
+                {
+                    //滑动过期
+                    this.SetSlidingExpiration(cacheKey, basePersistentOps.OverdueTimeSpan);
+                }
+                else
+                {
+                    throw new NotSupportedException("不支持的过期方式");
+                }
             }
+
+            return ret;
         }
+
+        #endregion
 
         /// <summary>
         /// 以秒为单位，返回给定 key 的剩余生存时间
@@ -529,10 +636,10 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// 根据参数 count 的值，移除列表中与参数 value 相等的元素
         /// </summary>
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
-        /// <param name="count">移除的数量，大于0时从表头删除数量count，小于0时从表尾删除数量-count，等于0移除所有</param>
         /// <param name="value">元素</param>
+        /// <param name="count">移除的数量，大于0时从表头删除数量count，小于0时从表尾删除数量-count，等于0移除所有</param>
         /// <returns></returns>
-        public async Task<long> LRemAsync(string key, long count, string value)
+        public async Task<long> LRemAsync(string key, string value, long count)
         {
             key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
@@ -584,13 +691,13 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <param name="memberScores">一个或多个成员分数</param>
         /// <returns></returns>
-        public async Task<long> ZAddAsync(string key, params (double, string)[] memberScores)
+        public async Task<long> ZAddAsync(string key, params (string, double)[] memberScores)
         {
             key = this.GetCacheKey(key);
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.ZAddAsync<double, string>(key,
-                    memberScores.Select(a => new Tuple<double, string>(a.Item1, a.Item2)).ToArray());
+                    memberScores.Select(a => new Tuple<double, string>(a.Item2, a.Item1)).ToArray());
             }
         }
 
@@ -901,6 +1008,68 @@ namespace Wolf.Extension.Cache.Redis.Common
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.ZScoreAsync(key, member);
+            }
+        }
+
+        #endregion
+
+        #region private methods
+
+        #region 设置滑动过期
+
+        /// <summary>
+        /// 设置滑动过期
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <param name="timeSpan">时间戳</param>
+        private async Task SetSlidingExpirationAsync(string key, TimeSpan timeSpan)
+        {
+            var slidingInfo = this.GetSlidingOverTimeExpireValue(key);
+
+            var sortSetCacheKey = GetExpireKeyBySortSet(slidingInfo.Key);
+            await this.LRemAsync(sortSetCacheKey, slidingInfo.Value, 0);
+            await this.ZAddAsync(sortSetCacheKey, (slidingInfo.Value, GetExpireTime(timeSpan)));
+
+            var hashSetCacheKey = GetExpireKeyByHashSet(slidingInfo.Key);
+            await this.HashDeleteAsync(hashSetCacheKey, slidingInfo.Value);
+            await this.HashSetAsync(hashSetCacheKey, slidingInfo.Value,
+                timeSpan.TotalSeconds + ""); //设置HashSet过期时间，存储过期时长
+        }
+
+        #endregion
+
+        #region 判断是否滑动过期并延长过期时间
+
+        /// <summary>
+        /// 判断是否滑动过期并延长过期时间
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <param name="func">回调函数</param>
+        /// <returns></returns>
+        private Task<T> GetResultAndRenewalTimeAsync<T>(string key, Func<Task<T>> func)
+        {
+            int? totalSecond = this.GetSlidingExpirationTime(key);
+            if (totalSecond != null)
+            {
+                this.SetSlidingExpiration(key, TimeSpan.FromSeconds(totalSecond.Value)); //延长时间
+            }
+
+            return func.Invoke();
+        }
+
+        #endregion
+
+        /// <summary>
+        /// 为给定 key 设置过期时间
+        /// </summary>
+        /// <param name="key">缓存键(带前缀)</param>
+        /// <param name="expire">过期时间</param>
+        /// <returns></returns>
+        public async Task<bool> ExpireAsync(string key, TimeSpan expire)
+        {
+            using (var conn = await Instance.GetConnectionAsync())
+            {
+                return await conn.Client.ExpireAsync(key, expire);
             }
         }
 

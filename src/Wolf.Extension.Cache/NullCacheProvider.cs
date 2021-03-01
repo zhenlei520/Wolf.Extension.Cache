@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Wolf.Extension.Cache.Abstractions;
 using Wolf.Extension.Cache.Abstractions.Configurations;
+using Wolf.Extension.Cache.Abstractions.Enum;
 using Wolf.Extension.Cache.Abstractions.Request.Base;
 using Wolf.Extension.Cache.Abstractions.Request.Hash;
 using Wolf.Extension.Cache.Abstractions.Response.Base;
@@ -313,17 +314,17 @@ namespace Wolf.Extension.Cache
             throw new System.NotImplementedException();
         }
 
-        public bool SetExpire(string key, PersistentOps persistentOps = null)
+        public bool SetExpire(string key, OverdueStrategy strategy, PersistentOps persistentOps = null)
         {
             throw new System.NotImplementedException();
         }
 
-        public bool Remove(string key)
+        public long Remove(string key)
         {
             throw new System.NotImplementedException();
         }
 
-        public bool RemoveRange(ICollection<string> keys)
+        public long RemoveRange(ICollection<string> keys)
         {
             throw new System.NotImplementedException();
         }
@@ -388,17 +389,17 @@ namespace Wolf.Extension.Cache
             throw new System.NotImplementedException();
         }
 
-        public Task<bool> SetExpireAsync(string key, PersistentOps persistentOps = null)
+        public Task<bool> SetExpireAsync(string key, BasePersistentOps persistentOps = null)
         {
             throw new System.NotImplementedException();
         }
 
-        public Task<bool> RemoveAsync(string key)
+        public Task<long> RemoveAsync(string key)
         {
             throw new System.NotImplementedException();
         }
 
-        public Task<bool> RemoveRangeAsync(List<string> keys)
+        public Task<long> RemoveRangeAsync(List<string> keys)
         {
             throw new System.NotImplementedException();
         }

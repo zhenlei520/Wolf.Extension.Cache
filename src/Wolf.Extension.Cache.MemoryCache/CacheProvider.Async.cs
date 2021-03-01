@@ -122,7 +122,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="key">缓存键</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public Task<T> GetAsync<T>(string key) where T : class, new()
+        public Task<T> GetAsync<T>(string key)
         {
             return Task.FromResult(Get<T>(key));
         }
@@ -136,7 +136,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// </summary>
         /// <param name="keys">缓存键集合</param>
         /// <returns></returns>
-        public Task<List<BaseResponse<T>>> GetAsync<T>(ICollection<string> keys) where T : class, new()
+        public Task<List<BaseResponse<T>>> GetAsync<T>(ICollection<string> keys)
         {
             return Task.FromResult(Get<T>((ICollection<string>) keys));
         }
@@ -195,7 +195,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="key">缓存key</param>
         /// <param name="persistentOps">策略</param>
         /// <returns></returns>
-        public Task<bool> SetExpireAsync(string key, PersistentOps persistentOps = null)
+        public Task<bool> SetExpireAsync(string key, BasePersistentOps persistentOps = null)
         {
             return Task.FromResult(SetExpire(key, persistentOps));
         }
@@ -210,7 +210,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// </summary>
         /// <param name="key">缓存key</param>
         /// <returns>返回删除的数量</returns>
-        public Task<bool> RemoveAsync(string key)
+        public Task<long> RemoveAsync(string key)
         {
             return Task.FromResult(Remove(key));
         }
@@ -225,7 +225,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// </summary>
         /// <param name="keys">待删除的Key集合</param>
         /// <returns>返回删除的数量</returns>
-        public Task<bool> RemoveRangeAsync(List<string> keys)
+        public Task<long> RemoveRangeAsync(List<string> keys)
         {
             return Task.FromResult(RemoveRange(keys));
         }

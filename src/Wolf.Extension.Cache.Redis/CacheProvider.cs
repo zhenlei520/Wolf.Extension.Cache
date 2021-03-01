@@ -189,7 +189,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <returns>原value-val</returns>
         public long Decrement(string key, long val = 1)
         {
-            return QuickHelperBase.Increment(key, -val);
+            return this._quickHelperBase.Increment(key, -val);
         }
 
         #endregion
@@ -203,7 +203,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <returns></returns>
         public bool Exist(string key)
         {
-            return QuickHelperBase.Exists(key);
+            return this._quickHelperBase.Exists(key);
         }
 
         #endregion
@@ -214,12 +214,11 @@ namespace Wolf.Extension.Cache.Redis
         /// 设置过期时间（需调整）
         /// </summary>
         /// <param name="key">缓存key</param>
-        /// <param name="expiry">过期时间，null：永不过期</param>
-        /// <param name="persistentOps">策略</param>
+        /// <param name="basePersistentOps">策略</param>
         /// <returns></returns>
-        public bool SetExpire(string key, PersistentOps persistentOps = null)
+        public bool SetExpire(string key, BasePersistentOps basePersistentOps = null)
         {
-            return QuickHelperBase.Expire(key, persistentOps);
+            return this._quickHelperBase.Expire(key, basePersistentOps);
         }
 
         #endregion
@@ -232,10 +231,9 @@ namespace Wolf.Extension.Cache.Redis
         /// </summary>
         /// <param name="key">缓存key</param>
         /// <returns>返回删除的数量</returns>
-        public bool Remove(string key)
+        public long Remove(string key)
         {
-            QuickHelperBase.Remove(key);
-            return true;
+            return this._quickHelperBase.Remove(key);
         }
 
         #endregion
@@ -248,10 +246,9 @@ namespace Wolf.Extension.Cache.Redis
         /// </summary>
         /// <param name="keys">待删除的Key集合</param>
         /// <returns>返回删除的数量</returns>
-        public bool RemoveRange(ICollection<string> keys)
+        public long RemoveRange(ICollection<string> keys)
         {
-            QuickHelperBase.Remove((keys ?? new List<string>()).ToArray());
-            return true;
+            return this._quickHelperBase.Remove((keys ?? new List<string>()).ToArray());
         }
 
         #endregion
@@ -267,7 +264,7 @@ namespace Wolf.Extension.Cache.Redis
         public List<string> Keys(string pattern = "*")
         {
             var keys = new List<string>();
-            QuickHelperBase.Keys(this._redisOptions.Pre + pattern).ToList().ForEach(p =>
+            this._quickHelperBase.Keys(this._redisOptions.Pre + pattern).ToList().ForEach(p =>
             {
                 keys.Add(p.Substring(this._redisOptions.Pre.Length));
             });

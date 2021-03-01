@@ -78,14 +78,14 @@ namespace Wolf.Extension.Cache.Abstractions
         /// <param name="key">缓存键</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        Task<T> GetAsync<T>(string key) where T : class, new();
+        Task<T> GetAsync<T>(string key);
 
         /// <summary>
         /// 获取多组缓存键集合（异步）
         /// </summary>
         /// <param name="keys">缓存键集合</param>
         /// <returns></returns>
-        Task<List<BaseResponse<T>>> GetAsync<T>(ICollection<string> keys) where T : class, new();
+        Task<List<BaseResponse<T>>> GetAsync<T>(ICollection<string> keys);
 
         /// <summary>
         /// 为数字增长val（异步）
@@ -116,7 +116,7 @@ namespace Wolf.Extension.Cache.Abstractions
         /// <param name="key">缓存key</param>
         /// <param name="persistentOps">策略</param>
         /// <returns></returns>
-        Task<bool> SetExpireAsync(string key, PersistentOps persistentOps = null);
+        Task<bool> SetExpireAsync(string key, BasePersistentOps persistentOps = null);
 
         /// <summary>
         /// 删除指定Key的缓存（异步）
@@ -124,7 +124,7 @@ namespace Wolf.Extension.Cache.Abstractions
         /// </summary>
         /// <param name="key">缓存key</param>
         /// <returns>返回删除的数量</returns>
-        Task<bool> RemoveAsync(string key);
+        Task<long> RemoveAsync(string key);
 
         /// <summary>
         /// 删除指定Key的缓存（异步）
@@ -132,7 +132,7 @@ namespace Wolf.Extension.Cache.Abstractions
         /// </summary>
         /// <param name="keys">待删除的Key集合</param>
         /// <returns>返回删除的数量</returns>
-        Task<bool> RemoveRangeAsync(List<string> keys);
+        Task<long> RemoveRangeAsync(List<string> keys);
 
         /// <summary>
         /// 查找所有符合给定模式( pattern)的 key（异步）

@@ -25,16 +25,14 @@ namespace Wolf.Extension.Cache.Redis
         /// </summary>
         /// <param name="key">缓存键</param>
         /// <param name="value">保存的值</param>
-        /// <param name="expiry">过期时间，null：永不过期</param>
         /// <param name="persistentOps">策略</param>
         /// <returns></returns>
         public Task<bool> SetAsync(
             string key,
             string value,
-            TimeSpan? expiry = null,
             PersistentOps persistentOps = null)
         {
-            return this.SetAsync<string>(key, value, expiry, persistentOps);
+            return this.SetAsync<string>(key, value, persistentOps);
         }
 
         #endregion
@@ -45,13 +43,12 @@ namespace Wolf.Extension.Cache.Redis
         /// 设置缓存键值对集合(异步)
         /// </summary>
         /// <param name="list">缓存键值对集合</param>
-        /// <param name="expiry">过期时间，null：永不过期</param>
         /// <param name="persistentOps">策略</param>
         /// <returns></returns>
-        public Task<bool> SetAsync(List<BaseRequest<string>> list, TimeSpan? expiry = null,
+        public Task<bool> SetAsync(List<BaseRequest<string>> list,
             PersistentOps persistentOps = null)
         {
-            return Task.FromResult(this.Set(list, expiry, persistentOps));
+            return Task.FromResult(this.Set(list, persistentOps));
         }
 
         #endregion
@@ -63,19 +60,17 @@ namespace Wolf.Extension.Cache.Redis
         /// </summary>
         /// <param name="key">缓存键</param>
         /// <param name="obj">缓存值</param>
-        /// <param name="expiry">过期时间，null：永不过期</param>
         /// <param name="persistentOps">策略</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         public Task<bool> SetAsync<T>(
             string key,
             T obj,
-            TimeSpan? expiry = null,
             PersistentOps persistentOps = null)
         {
             persistentOps = persistentOps.Get();
-            return base.Execute(persistentOps.Strategy, () => QuickHelperBase.SetAsync(key, obj,
-                expiry.HasValue ? Convert.ToInt32(expiry.Value.TotalSeconds) : -1), () => Task.FromResult(false));
+            return this._quickHelperBase.SetAsync(key, obj, persistentOps.Strategy,
+                persistentOps.OverdueTimeSpan);
         }
 
         #endregion
@@ -86,16 +81,15 @@ namespace Wolf.Extension.Cache.Redis
         /// 保存多个对象集合(异步)
         /// </summary>
         /// <param name="list">缓存键值对集合</param>
-        /// <param name="expiry">过期时间，null：永不过期</param>
         /// <param name="persistentOps">策略</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public async Task<bool> SetAsync<T>(List<BaseRequest<T>> list, TimeSpan? expiry = null,
+        public Task<bool> SetAsync<T>(List<BaseRequest<T>> list,
             PersistentOps persistentOps = null)
         {
             persistentOps = persistentOps.Get();
-            return await QuickHelperBase.SetAsync(list.Select(x => new KeyValuePair<string, T>(x.Key, x.Value)),
-                expiry.HasValue ? Convert.ToInt32(expiry.Value.TotalSeconds) : -1);
+            return this._quickHelperBase.SetAsync(list.Select(x => new KeyValuePair<string, T>(x.Key, x.Value)),
+                persistentOps.Strategy, persistentOps.IsAtomic, persistentOps.OverdueTimeSpan);
         }
 
         #endregion
@@ -109,7 +103,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <returns></returns>
         public Task<string> GetAsync(string key)
         {
-            return Task.FromResult(this.Get(key));
+            return this._quickHelperBase.GetAsync(key);
         }
 
         #endregion
@@ -123,7 +117,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <returns></returns>
         public Task<List<BaseResponse<string>>> GetAsync(ICollection<string> keys)
         {
-            return Task.FromResult(Get((ICollection<string>) keys));
+            return this.GetAsync<string>(keys);
         }
 
         #endregion
@@ -136,9 +130,10 @@ namespace Wolf.Extension.Cache.Redis
         /// <param name="key">缓存键</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public Task<T> GetAsync<T>(string key) where T : class, new()
+        public async Task<T> GetAsync<T>(string key)
         {
-            return Task.FromResult(this.Get<T>(key));
+            var ret = await this._quickHelperBase.GetAsync(key);
+            return this.ConvertObj<T>(ret);
         }
 
         #endregion
@@ -150,9 +145,10 @@ namespace Wolf.Extension.Cache.Redis
         /// </summary>
         /// <param name="keys">缓存键集合</param>
         /// <returns></returns>
-        public Task<List<BaseResponse<T>>> GetAsync<T>(ICollection<string> keys) where T : class, new()
+        public async Task<List<BaseResponse<T>>> GetAsync<T>(ICollection<string> keys)
         {
-            return Task.FromResult(Get<T>((ICollection<string>) keys));
+            var ret = await this._quickHelperBase.GetAsync(keys?.ToList() ?? new List<string>());
+            return ret.Select(x => new BaseResponse<T>(x.Key, base.ConvertObj<T>(x.Value))).ToList();
         }
 
         #endregion
@@ -167,7 +163,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <returns></returns>
         public Task<long> IncrementAsync(string key, long val = 1)
         {
-            return Task.FromResult(this.Increment(key, val));
+            return this._quickHelperBase.IncrementAsync(key, val);
         }
 
         #endregion
@@ -182,7 +178,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <returns></returns>
         public Task<long> DecrementAsync(string key, long val = 1)
         {
-            return Task.FromResult(this.Decrement(key, val));
+            return this._quickHelperBase.IncrementAsync(key, -val);
         }
 
         #endregion
@@ -207,12 +203,11 @@ namespace Wolf.Extension.Cache.Redis
         /// 设置过期时间（异步）
         /// </summary>
         /// <param name="key">缓存key</param>
-        /// <param name="expiry">过期时间</param>
         /// <param name="persistentOps">策略</param>
         /// <returns></returns>
-        public Task<bool> SetExpireAsync(string key, TimeSpan expiry, PersistentOps persistentOps = null)
+        public Task<bool> SetExpireAsync(string key, BasePersistentOps persistentOps = null)
         {
-            return Task.FromResult(this.SetExpire(key, expiry, persistentOps));
+            return this._quickHelperBase.ExpireAsync(key, persistentOps);
         }
 
         #endregion
@@ -225,9 +220,9 @@ namespace Wolf.Extension.Cache.Redis
         /// </summary>
         /// <param name="key">缓存key</param>
         /// <returns>返回删除的数量</returns>
-        public Task<bool> RemoveAsync(string key)
+        public Task<long> RemoveAsync(string key)
         {
-            return Task.FromResult(this.Remove(key));
+            return this._quickHelperBase.RemoveAsync(key);
         }
 
         #endregion
@@ -240,9 +235,9 @@ namespace Wolf.Extension.Cache.Redis
         /// </summary>
         /// <param name="keys">待删除的Key集合</param>
         /// <returns>返回删除的数量</returns>
-        public Task<bool> RemoveRangeAsync(List<string> keys)
+        public Task<long> RemoveRangeAsync(List<string> keys)
         {
-            return Task.FromResult(this.RemoveRange(keys));
+            return this._quickHelperBase.RemoveAsync((keys ?? new List<string>()).ToArray());
         }
 
         #endregion

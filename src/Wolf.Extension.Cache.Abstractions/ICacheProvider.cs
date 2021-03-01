@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using Wolf.Extension.Cache.Abstractions.Configurations;
+using Wolf.Extension.Cache.Abstractions.Enum;
 using Wolf.Extension.Cache.Abstractions.Request.Base;
 using Wolf.Extension.Cache.Abstractions.Response.Base;
 
@@ -107,7 +108,7 @@ namespace Wolf.Extension.Cache.Abstractions
         /// <param name="key">缓存key</param>
         /// <param name="persistentOps">策略</param>
         /// <returns></returns>
-        bool SetExpire(string key,  PersistentOps persistentOps = null);
+        bool SetExpire(string key, BasePersistentOps persistentOps = null);
 
         /// <summary>
         /// 删除指定Key的缓存
@@ -115,7 +116,7 @@ namespace Wolf.Extension.Cache.Abstractions
         /// </summary>
         /// <param name="key">缓存key</param>
         /// <returns>返回删除的数量</returns>
-        bool Remove(string key);
+        long Remove(string key);
 
         /// <summary>
         /// 删除指定Key的缓存
@@ -123,7 +124,7 @@ namespace Wolf.Extension.Cache.Abstractions
         /// </summary>
         /// <param name="keys">待删除的Key集合</param>
         /// <returns>返回删除的数量</returns>
-        bool RemoveRange(ICollection<string> keys);
+        long RemoveRange(ICollection<string> keys);
 
         /// <summary>
         /// 查找所有符合给定模式( pattern)的 key

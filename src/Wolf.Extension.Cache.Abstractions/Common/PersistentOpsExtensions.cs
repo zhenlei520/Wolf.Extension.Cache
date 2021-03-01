@@ -19,5 +19,15 @@ namespace Wolf.Extension.Cache.Abstractions.Common
         {
             return persistentOps ?? new PersistentOps();
         }
+
+        /// <summary>
+        /// 得到策略
+        /// </summary>
+        /// <param name="persistentOps"></param>
+        /// <returns></returns>
+        public static BasePersistentOps Get(this BasePersistentOps persistentOps)
+        {
+            return persistentOps ?? new BasePersistentOps();
+        }
     }
 }

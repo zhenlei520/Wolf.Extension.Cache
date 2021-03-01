@@ -307,7 +307,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="key">缓存key</param>
         /// <param name="persistentOps">策略</param>
         /// <returns></returns>
-        public bool SetExpire(string key, PersistentOps persistentOps = null)
+        public bool SetExpire(string key,  BasePersistentOps persistentOps = null)
         {
             CheckKey(key);
             persistentOps = persistentOps.Get();
@@ -316,7 +316,7 @@ namespace Wolf.Extension.Cache.MemoryCache
                 if (persistentOps.OverdueTimeSpan == TimeSpan.Zero)
                 {
                     cacheEntry.AbsoluteExpiration = null;
-                    cacheEntry.SlidingExpiration=null;
+                    cacheEntry.SlidingExpiration = null;
                 }
                 else
                 {
@@ -349,11 +349,11 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// </summary>
         /// <param name="key">缓存key</param>
         /// <returns>返回删除的数量</returns>
-        public bool Remove(string key)
+        public long Remove(string key)
         {
             CheckKey(key);
             this._memoryCache.Remove(GetCacheKey(key));
-            return true;
+            return 1;
         }
 
         #endregion
@@ -366,20 +366,21 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// </summary>
         /// <param name="keys">待删除的Key集合</param>
         /// <returns>返回删除的数量</returns>
-        public bool RemoveRange(ICollection<string> keys)
+        public long RemoveRange(ICollection<string> keys)
         {
             if (keys == null || !keys.Any())
             {
-                return true;
+                return 0;
             }
 
+            long success = 0;
             keys.ToList().ForEach(CheckKey);
             foreach (var key in keys)
             {
-                Remove(key);
+                success += Remove(key);
             }
 
-            return true;
+            return success;
         }
 
         #endregion

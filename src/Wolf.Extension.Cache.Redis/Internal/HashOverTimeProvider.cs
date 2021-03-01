@@ -82,14 +82,14 @@ namespace Wolf.Extension.Cache.Redis.Internal
         #region 得到自定义HashKey过期的缓存Key
 
         ///  <summary>
-        /// 得到自定义HashKey过期的缓存Key
+        /// 得到自定义HashKey过期的缓存Key（单键过期）
         ///  </summary>
         ///  <param name="key"></param>
         ///  <param name="hashKey"></param>
         ///  <param name="overdueStrategy">过期策略</param>
         ///  <param name="options">redis配置</param>
         ///  <returns></returns>
-        internal KeyValuePair<string, string> GetOverTimeExpireValue(string key, string hashKey,
+        internal KeyValuePair<string, string> GetOverTimeExpireValueBy(string key, string hashKey,
             OverdueStrategy overdueStrategy,
             RedisOptions options)
         {
@@ -102,6 +102,8 @@ namespace Wolf.Extension.Cache.Redis.Internal
                 : string.Format(options.HashOverTimeCacheKeyFormat[3], key, hashKey);
             return new KeyValuePair<string, string>(cacheKey, cacheValue);
         }
+
+
 
         #endregion
     }

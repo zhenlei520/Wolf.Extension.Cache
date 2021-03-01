@@ -92,6 +92,17 @@ namespace Wolf.Extension.Cache.Redis
         {
             persistentOps = persistentOps.Get();
             string cacheValue = "";
+            if (persistentOps.IsCanHashExpire)
+            {
+                //指定hash过期
+
+            }
+            else
+            {
+                //指定键过期
+            }
+
+
             if (persistentOps.Strategy == OverdueStrategy.AbsoluteExpiration)
             {
                 if (!persistentOps.IsCanHashExpire)
@@ -137,7 +148,7 @@ namespace Wolf.Extension.Cache.Redis
                 if (!persistentOps.IsCanHashExpire)
                 {
                     cacheValue =
-                        QuickHelperBase.HashSetExpire(key, TimeSpan.Zero, hashKey, value);
+                        this._redisOptions.HashSetExpire(key, TimeSpan.Zero, hashKey, value);
                 }
                 else
                 {

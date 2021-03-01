@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Wolf.Extension.Cache.Abstractions.Configurations;
 using Wolf.Extension.Cache.Abstractions.Enum;
 using Wolf.Extension.Cache.Redis.Configurations;
 using Wolf.Systems.Abstracts;
@@ -79,10 +80,12 @@ namespace Wolf.Extension.Cache.Redis.Common
             string cacheKey = GetCacheKey(key);
             using (var conn = Instance.GetConnection())
             {
-                if (timeSpan == TimeSpan.Zero || overdueStrategy == OverdueStrategy.SlidingExpiration)
+                if (timeSpan == TimeSpan.Zero || (overdueStrategy == OverdueStrategy.SlidingExpiration &&
+                                                  this._redisOptions.IsOpenSlidingExpiration))
                 {
                     var ret = conn.Client.Set(cacheKey, value) == "OK";
-                    if (ret && overdueStrategy == OverdueStrategy.SlidingExpiration)
+                    if (ret && overdueStrategy == OverdueStrategy.SlidingExpiration &&
+                        this._redisOptions.IsOpenSlidingExpiration)
                     {
                         this.SetSlidingExpiration(cacheKey, timeSpan);
                     }
@@ -105,11 +108,11 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// </summary>
         /// <param name="list"></param>
         /// <param name="overdueStrategy">过期策略</param>
-        /// <param name="IsAtomic">是否确保原子性，一个失败就回退</param>
+        /// <param name="isAtomic">是否确保原子性，一个失败就回退</param>
         /// <param name="timeSpan">过期时间</param>
         /// <returns></returns>
         public bool Set<T>(IEnumerable<KeyValuePair<string, T>> list, OverdueStrategy overdueStrategy,
-            bool IsAtomic,
+            bool isAtomic,
             TimeSpan timeSpan)
         {
             if (timeSpan < TimeSpan.Zero)
@@ -121,18 +124,20 @@ namespace Wolf.Extension.Cache.Redis.Common
             using (var conn = Instance.GetConnection())
             {
                 List<string> successList = new List<string>();
-                if (timeSpan == TimeSpan.Zero || overdueStrategy == OverdueStrategy.SlidingExpiration)
+                if (timeSpan == TimeSpan.Zero || (overdueStrategy == OverdueStrategy.SlidingExpiration &&
+                                                  this._redisOptions.IsOpenSlidingExpiration))
                 {
                     foreach (var item in list)
                     {
                         var cacheKey = GetCacheKey(item.Key);
-                        if (conn.Client.Set(cacheKey, item.Value) != "OK" && IsAtomic)
+                        if (conn.Client.Set(cacheKey, item.Value) != "OK" && isAtomic)
                         {
                             isRollback = true;
                             break;
                         }
 
-                        if (overdueStrategy == OverdueStrategy.SlidingExpiration)
+                        if (overdueStrategy == OverdueStrategy.SlidingExpiration &&
+                            this._redisOptions.IsOpenSlidingExpiration)
                         {
                             this.SetSlidingExpiration(cacheKey, timeSpan);
                         }
@@ -145,7 +150,7 @@ namespace Wolf.Extension.Cache.Redis.Common
                     foreach (var item in list)
                     {
                         var cacheKey = GetCacheKey(item.Key);
-                        if (conn.Client.Set(cacheKey, item.Value, timeSpan) != "OK" && IsAtomic)
+                        if (conn.Client.Set(cacheKey, item.Value, timeSpan) != "OK" && isAtomic)
                         {
                             isRollback = true;
                             break;
@@ -195,12 +200,12 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public string Get(string key)
         {
-            var cacheKey = this.GetCacheKey(key);
-            return this.GetResultAndRenewalTime(cacheKey, () =>
+            key = this.GetCacheKey(key);
+            return this.GetResultAndRenewalTime(key, () =>
             {
                 using (var conn = Instance.GetConnection())
                 {
-                    return conn.Client.Get(cacheKey);
+                    return conn.Client.Get(key);
                 }
             });
         }
@@ -216,14 +221,29 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         public List<KeyValuePair<string, string>> Get(params string[] keys)
         {
+            var cacheKeys = keys.Select(this.GetCacheKey).ToArray();
             using (var conn = Instance.GetConnection())
             {
                 List<KeyValuePair<string, string>> list = new List<KeyValuePair<string, string>>();
-                foreach (var key in keys)
+
+                var ret = conn.Client.MGet(cacheKeys);
+                for (int i = 0; i < keys.Length; i = i + 2)
                 {
-                    var cacheKey = this.GetCacheKey(key);
-                    var cacheValue = this.GetResultAndRenewalTime(cacheKey, () => conn.Client.Get(cacheKey));
-                    list.Add(new KeyValuePair<string, string>(cacheKey, cacheValue));
+                    if (this.GetCacheKey(keys[i]) == ret[i])
+                    {
+                        list.Add(new KeyValuePair<string, string>(keys[i], ret[i + 1]));
+                    }
+                }
+
+                if (this._redisOptions.IsOpenSlidingExpiration)
+                {
+                    foreach (var key in keys)
+                    {
+                        var cacheKey = this.GetCacheKey(key);
+                        this.GetResultAndRenewalTime(cacheKey);
+                    }
+
+                    return list;
                 }
 
                 return list;
@@ -252,6 +272,8 @@ namespace Wolf.Extension.Cache.Redis.Common
 
         #endregion
 
+        #region 获取指定 key 的值(字节流)
+
         /// <summary>
         /// 获取指定 key 的值(字节流)
         /// </summary>
@@ -265,6 +287,10 @@ namespace Wolf.Extension.Cache.Redis.Common
                 return conn.Client.GetBytes(key);
             }
         }
+
+        #endregion
+
+        #region 用于在 key 存在时删除 key
 
         /// <summary>
         /// 用于在 key 存在时删除 key
@@ -282,6 +308,10 @@ namespace Wolf.Extension.Cache.Redis.Common
             }
         }
 
+        #endregion
+
+        #region 检查给定 key 是否存在
+
         /// <summary>
         /// 检查给定 key 是否存在
         /// </summary>
@@ -295,6 +325,10 @@ namespace Wolf.Extension.Cache.Redis.Common
                 return conn.Client.Exists(key);
             }
         }
+
+        #endregion
+
+        #region 将 key 所储存的值加上给定的增量值（increment）
 
         /// <summary>
         /// 将 key 所储存的值加上给定的增量值（increment）
@@ -311,21 +345,46 @@ namespace Wolf.Extension.Cache.Redis.Common
             }
         }
 
+        #endregion
+
+        #region 为给定 key 设置过期时间
+
         /// <summary>
         /// 为给定 key 设置过期时间
         /// </summary>
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
-        /// <param name="expire">过期时间</param>
+        /// <param name="basePersistentOps">策略</param>
         /// <returns></returns>
-        public bool Expire(string key, TimeSpan expire)
+        public bool Expire(string key, BasePersistentOps basePersistentOps)
         {
-            if (expire <= TimeSpan.Zero) return false;
-            key = this.GetCacheKey(key);
-            using (var conn = Instance.GetConnection())
+            if (basePersistentOps.OverdueTimeSpan <= TimeSpan.Zero)
+                return false;
+            string cacheKey = this.GetCacheKey(key);
+            bool ret = this.Expire(cacheKey, basePersistentOps.OverdueTimeSpan);
+            if (this._redisOptions.IsOpenSlidingExpiration)
             {
-                return conn.Client.Expire(key, expire);
+                if (basePersistentOps.Strategy == OverdueStrategy.AbsoluteExpiration)
+                {
+                    //绝对过期
+                    this.DeleteSlidingExpiration(cacheKey);
+                }
+                else if (basePersistentOps.Strategy == OverdueStrategy.SlidingExpiration)
+                {
+                    //滑动过期
+                    this.SetSlidingExpiration(cacheKey, basePersistentOps.OverdueTimeSpan);
+                }
+                else
+                {
+                    throw new NotSupportedException("不支持的过期方式");
+                }
             }
+
+            return ret;
         }
+
+        #endregion
+
+        #region 以秒为单位，返回给定 key 的剩余生存时间
 
         /// <summary>
         /// 以秒为单位，返回给定 key 的剩余生存时间
@@ -341,6 +400,10 @@ namespace Wolf.Extension.Cache.Redis.Common
             }
         }
 
+        #endregion
+
+        #region 查找所有符合给定模式( pattern)的 key
+
         /// <summary>
         /// 查找所有符合给定模式( pattern)的 key
         /// </summary>
@@ -353,6 +416,8 @@ namespace Wolf.Extension.Cache.Redis.Common
                 return conn.Client.Keys(pattern);
             }
         }
+
+        #endregion
 
         /// <summary>
         /// Redis Publish 命令用于将信息发送到指定的频道
@@ -372,80 +437,129 @@ namespace Wolf.Extension.Cache.Redis.Common
 
         #region 同时将多个 field-value (域-值)对设置到哈希表 key 中
 
+        #region 整个缓存单键过期
+
         /// <summary>
-        /// 同时将多个 field-value (域-值)对设置到哈希表 key 中
+        /// 同时将多个 field-value (域-值)对设置到哈希表 key 中（整个缓存单键过期）
         /// </summary>
-        /// <param name="expire">过期时间</param>
         /// <param name="keyValues">key dataKey,value</param>
+        /// <param name="persistentOps">策略</param>
         /// <returns></returns>
-        public string HashSetExpire(Dictionary<string, string[]> keyValues, TimeSpan expire)
+        public string HashSetExpire(Dictionary<string, string[]> keyValues, HashPersistentOps persistentOps)
         {
-            using (var conn = Instance.GetConnection())
+            string result = "Empty Data";
+            if (persistentOps.HashOverdueTimeSpan.LessThan(TimeSpan.Zero) || keyValues == null || keyValues.Count > 0)
             {
-                string result = "Empty Data";
-                if (keyValues != null && keyValues.Count > 0)
-                {
-                    foreach (var item in keyValues)
-                    {
-                        string key = this.GetCacheKey(item.Key);
-                        if (expire.LessThan(TimeSpan.Zero))
-                        {
-                            return "Empty Data";
-                        }
-
-                        var ret = conn.Client.HMSet(key, item.Value.Select(a => string.Concat(a)).ToArray());
-                        if (expire > TimeSpan.Zero) conn.Client.Expire(key, expire);
-                        if (ret == "OK")
-                        {
-                            result = "OK";
-                        }
-                    }
-                }
-
                 return result;
             }
-        }
 
-        /// <summary>
-        /// 同时将多个 field-value (域-值)对设置到哈希表 key 中
-        /// </summary>
-        /// <param name="expire">过期时间</param>
-        /// <param name="keyValues">key dataKey,value</param>
-        /// <returns></returns>
-        public string HashSetHashFileExpire(Dictionary<string, string[]> keyValues, TimeSpan expire)
-        {
-            if (expire.GreaterThan(TimeSpan.Zero))
+            using (var conn = Instance.GetConnection())
             {
-                Dictionary<string, List<(double, string)>> dics = new Dictionary<string, List<(double, string)>>();
-                double expireTime = (DateTime.Now.AddSeconds(expire.TotalSeconds)
-                    .ToUnixTimestamp(TimestampType.MilliSecond).ConvertToDouble(0));
                 foreach (var item in keyValues)
                 {
-                    var cacheKey = GetCacheFileKey();
-                    if (!dics.ContainsKey(cacheKey))
+                    string cacheKey = this.GetCacheKey(item.Key);
+                    var ret = conn.Client.HMSet(cacheKey, item.Value);
+                    if (persistentOps.HashOverdueTimeSpan > TimeSpan.Zero)
                     {
-                        dics.Add(cacheKey, new List<(double, string)>());
+                        if (this._redisOptions.IsOpenSlidingExpiration &&
+                            persistentOps.Strategy == OverdueStrategy.SlidingExpiration)
+                        {
+                            //滑动过期,整个hash都使用一个缓存key的过期时间
+                            this.SetSlidingExpiration(cacheKey, persistentOps.HashOverdueTimeSpan);
+                        }
+                        else
+                        {
+                            conn.Client.Expire(cacheKey, persistentOps.HashOverdueTimeSpan);
+                        }
                     }
 
-                    var memberScores = dics[cacheKey];
-                    for (int i = 0; i < item.Value.Length; i += 2)
+                    if (ret == "OK")
                     {
-                        memberScores.Add(new ValueTuple<double, string>(expireTime,
-                            GetSlidingOverTimeExpireValue(item.Key, item.Value[i].ToString(), TODO, TODO)));
+                        result = "OK";
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        #endregion
+
+        #region 指定hash键过期（指定hash键过期）
+
+        /// <summary>
+        /// 同时将多个 field-value (域-值)对设置到哈希表 key 中（指定hash键过期）
+        /// </summary>
+        /// <param name="keyValues">key dataKey,value</param>
+        /// <param name="persistentOps">策略</param>
+        /// <returns></returns>
+        public string HashSetExpireByHash(Dictionary<string, string[]> keyValues, HashPersistentOps persistentOps)
+        {
+            string result = "Empty Data";
+            if (persistentOps.HashOverdueTimeSpan.LessThan(TimeSpan.Zero) || keyValues == null || keyValues.Count > 0)
+            {
+                return result;
+            }
+
+            using (var conn = Instance.GetConnection())
+            {
+                foreach (var item in keyValues)
+                {
+                    string cacheKey = this.GetCacheKey(item.Key);
+                    var ret = conn.Client.HMSet(cacheKey, item.Value);
+                    if (persistentOps.HashOverdueTimeSpan > TimeSpan.Zero)
+                    {
+                        if (this._redisOptions.IsOpenSlidingExpiration &&
+                            persistentOps.Strategy == OverdueStrategy.SlidingExpiration)
+                        {
+                            //滑动过期,每个hash单独有一个过期时间
+                            this.SetSlidingExpiration(cacheKey, item.Value[0], persistentOps.HashOverdueTimeSpan);
+                        }
+                        else
+                        {
+                            conn.Client.Expire(cacheKey, persistentOps.HashOverdueTimeSpan);
+                        }
                     }
 
-                    dics[cacheKey] = memberScores;
+                    if (ret == "OK")
+                    {
+                        result = "OK";
+                    }
+                }
+            }
+
+            Dictionary<string, List<(double, string)>> dics = new Dictionary<string, List<(double, string)>>();
+            double expireTime = (DateTime.Now.AddSeconds(expire.TotalSeconds)
+                .ToUnixTimestamp(TimestampType.MilliSecond).ConvertToDouble(0));
+            foreach (var item in keyValues)
+            {
+                var cacheKey = GetCacheFileKey();
+                if (!dics.ContainsKey(cacheKey))
+                {
+                    dics.Add(cacheKey, new List<(double, string)>());
                 }
 
-                ZAdd(dics);
+                var memberScores = dics[cacheKey];
+                for (int i = 0; i < item.Value.Length; i += 2)
+                {
+                    memberScores.Add(new ValueTuple<double, string>(expireTime,
+                        GetSlidingOverTimeExpireValue(item.Key, item.Value[i].ToString(), TODO, TODO)));
+                }
+
+                dics[cacheKey] = memberScores;
             }
-            else if (expire.Equals(TimeSpan.Zero))
+
+            ZAdd(dics);
+
+            if (expire.Equals(TimeSpan.Zero))
             {
                 return HashSetExpire(keyValues, TimeSpan.Zero);
             }
 
             return "Empty Data";
         }
+
+        #endregion
 
         #endregion
 
@@ -1261,6 +1375,10 @@ namespace Wolf.Extension.Cache.Redis.Common
 
         #region private methods
 
+        #region 非Hash类型
+
+        #region SortSet类型的缓存key
+
         /// <summary>
         /// SortSet类型的缓存key
         /// </summary>
@@ -1270,6 +1388,10 @@ namespace Wolf.Extension.Cache.Redis.Common
         {
             return $"sortset_{key}";
         }
+
+        #endregion
+
+        #region HashSet类型的缓存key
 
         /// <summary>
         /// HashSet类型的缓存key
@@ -1281,6 +1403,8 @@ namespace Wolf.Extension.Cache.Redis.Common
         {
             return $"hashset_{key}";
         }
+
+        #endregion
 
         #region 设置滑动过期
 
@@ -1314,30 +1438,71 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         private T GetResultAndRenewalTime<T>(string key, Func<T> func)
         {
-            var slidingInfo = this.GetSlidingOverTimeExpireValue(key);
-            var hashSetCacheKey = GetExpireKeyByHashSet(slidingInfo.Key);
-            var hashValue = HashGet(hashSetCacheKey, slidingInfo.Value);
-            if (!string.IsNullOrWhiteSpace(hashValue))
+            int? totalSecond = this.GetSlidingExpirationTime(key);
+            if (totalSecond != null)
             {
-                var totalSecond = hashValue.ConvertToInt(0); //得到滑动过期的时间
-                this.SetSlidingExpiration(key, TimeSpan.FromSeconds(totalSecond)); //延长时间
+                this.SetSlidingExpiration(key, TimeSpan.FromSeconds(totalSecond.Value)); //延长时间
+            }
+
+            if (func == null)
+            {
+                return default(T);
             }
 
             return func.Invoke();
         }
 
+        /// <summary>
+        /// 判断是否滑动过期并延长过期时间
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <returns></returns>
+        private void GetResultAndRenewalTime(string key)
+        {
+            int? totalSecond = this.GetSlidingExpirationTime(key);
+            if (totalSecond != null)
+            {
+                this.SetSlidingExpiration(key, TimeSpan.FromSeconds(totalSecond.Value)); //延长时间
+            }
+        }
+
         #endregion
 
-        #region 得到缓存键
+        #region 得到滑动过期时间
 
         /// <summary>
-        /// 得到缓存键
+        /// 得到滑动过期时间
         /// </summary>
-        /// <param name="key">缓存键</param>
+        /// <param name="key">缓存key</param>
         /// <returns></returns>
-        private string GetCacheKey(string key)
+        private int? GetSlidingExpirationTime(string key)
         {
-            return string.Concat(this._redisOptions.Pre, key);
+            if (!this._redisOptions.IsOpenSlidingExpiration)
+            {
+                return null;
+            }
+
+            var slidingInfo = this.GetSlidingOverTimeExpireValue(key);
+            var hashSetCacheKey = GetExpireKeyByHashSet(slidingInfo.Key);
+            var hashValue = HashGet(hashSetCacheKey, slidingInfo.Value);
+            return hashValue.ConvertToInt();
+        }
+
+        #endregion
+
+        #region 删除滑动过期信息
+
+        /// <summary>
+        /// 删除滑动过期信息
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        private void DeleteSlidingExpiration(string key)
+        {
+            var slidingInfo = this.GetSlidingOverTimeExpireValue(key);
+            var sortSetCacheKey = GetExpireKeyBySortSet(slidingInfo.Key);
+            this.LRem(sortSetCacheKey, slidingInfo.Value, 0);
+            var hashSetCacheKey = GetExpireKeyByHashSet(slidingInfo.Key);
+            this.HashDelete(hashSetCacheKey, slidingInfo.Value);
         }
 
         #endregion
@@ -1360,6 +1525,88 @@ namespace Wolf.Extension.Cache.Redis.Common
 
         #endregion
 
+        #endregion
+
+        #region Hash类型
+
+        #region 指定键过期
+
+        #region HashSet类型的缓存key
+
+        /// <summary>
+        /// HashSet类型的缓存key
+        /// 存储滑动过期的时间
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <param name="hashKey">hashKey</param>
+        /// <returns></returns>
+        private static string GetExpireKeyByHashSet(string key, string hashKey)
+        {
+            return $"hashset_{key}_{hashKey}";
+        }
+
+        #endregion
+
+        #region 设置滑动过期
+
+        /// <summary>
+        /// 设置滑动过期
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <param name="hashKey">缓存键</param>
+        /// <param name="timeSpan">时间戳</param>
+        private void SetSlidingExpiration(string key, string hashKey, TimeSpan timeSpan)
+        {
+            var slidingInfo = this.GetSlidingOverTimeExpireValue(key, hashKey);
+
+            var sortSetCacheKey = GetExpireKeyBySortSet(slidingInfo.Key);
+            this.LRem(sortSetCacheKey, slidingInfo.Value, 0);
+            this.ZAdd(sortSetCacheKey, (slidingInfo.Value, GetExpireTime(timeSpan)));
+
+            var hashSetCacheKey = GetExpireKeyByHashSet(slidingInfo.Key);
+            this.HashDelete(hashSetCacheKey, slidingInfo.Value);
+            this.HashSet(hashSetCacheKey, slidingInfo.Value, timeSpan.TotalSeconds + ""); //设置HashSet过期时间，存储过期时长
+        }
+
+        #endregion
+
+        #region 得到滑动过期的缓存Key与值
+
+        ///  <summary>
+        /// 得到滑动过期的缓存Key与值
+        ///  </summary>
+        ///  <param name="key">缓存键</param>
+        ///  <param name="hashKey">hash键</param>
+        ///  <returns></returns>
+        private KeyValuePair<string, string> GetSlidingOverTimeExpireValue(string key, string hashKey)
+        {
+            int hashCode = GuidGeneratorCommon.GetHashCode(key);
+            string cacheKey = string.Format(this._redisOptions.SlidingOverTimeCacheKeyFormat[0],
+                hashCode % this._redisOptions.SlidingOverTimeCacheCount);
+            string cacheValue = string.Format(this._redisOptions.SlidingOverTimeCacheKeyFormat[1], key + hashKey);
+            return new KeyValuePair<string, string>(cacheKey, cacheValue);
+        }
+
+        #endregion
+
+        #endregion
+
+        #endregion
+
+        #region 得到缓存键
+
+        /// <summary>
+        /// 得到缓存键
+        /// </summary>
+        /// <param name="key">缓存键</param>
+        /// <returns></returns>
+        private string GetCacheKey(string key)
+        {
+            return string.Concat(this._redisOptions.Pre, key);
+        }
+
+        #endregion
+
         #region 得到过期时间 13位时间戳
 
         /// <summary>
@@ -1370,6 +1617,24 @@ namespace Wolf.Extension.Cache.Redis.Common
         private long GetExpireTime(TimeSpan timeSpan)
         {
             return (DateTime.Now + timeSpan).ToUnixTimestamp(TimestampType.MilliSecond);
+        }
+
+        #endregion
+
+        #region 设置绝对过期
+
+        /// <summary>
+        /// 设置绝对过期
+        /// </summary>
+        /// <param name="key">缓存键(带前缀)</param>
+        /// <param name="expire">过期时间</param>
+        /// <returns></returns>
+        private bool Expire(string key, TimeSpan expire)
+        {
+            using (var conn = Instance.GetConnection())
+            {
+                return conn.Client.Expire(key, expire);
+            }
         }
 
         #endregion

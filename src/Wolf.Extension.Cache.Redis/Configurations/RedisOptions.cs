@@ -9,15 +9,17 @@ namespace Wolf.Extension.Cache.Redis.Configurations
     public class RedisOptions
     {
         /// <summary>
-        ///
+        /// 是否开启滑动过期
         /// </summary>
-        public RedisOptions()
+        /// <param name="isOpenSlidingExpiration"></param>
+        public RedisOptions(bool isOpenSlidingExpiration = false)
         {
-            this.SlidingOverTimeCacheKeyFormat = new []{"Sliding_{0}","{0}"};
+            this.SlidingOverTimeCacheKeyFormat = new[] {"Sliding_{0}", "{0}"};
             this.SlidingOverTimeCacheCount = 50;
             this.HashOverTimeCacheKeyFormat = new[]
                 {"Absolute_{0}", "Absolute_{0}~_~{1}", "Sliding_{0}", "Sliding_{0}~_~{1}"};
             this.HashOverTimeCacheCount = 50;
+            this.IsOpenSlidingExpiration = isOpenSlidingExpiration;
         }
 
         /// <summary>
@@ -83,5 +85,10 @@ namespace Wolf.Extension.Cache.Redis.Configurations
         /// 定时清理Hash的时间 默认为500ms
         /// </summary>
         public int Timer { get; set; }
+
+        /// <summary>
+        /// 是否开启滑动过期
+        /// </summary>
+        public bool IsOpenSlidingExpiration { get; set; }
     }
 }
