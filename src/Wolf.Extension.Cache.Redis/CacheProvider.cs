@@ -33,7 +33,7 @@ namespace Wolf.Extension.Cache.Redis
             jsonFactory.Create())
         {
             this._redisOptions = cacheOptions.Configuration as RedisOptions;
-            this._quickHelperBase = new QuickHelperBase(cacheOptions.ServiecId, this._redisOptions);
+            this._quickHelperBase = new QuickHelperBase(_jsonProvider,cacheOptions.ServiecId, this._redisOptions);
         }
 
         #region 设置缓存

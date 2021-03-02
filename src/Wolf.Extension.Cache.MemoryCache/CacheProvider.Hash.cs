@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Wolf.Extension.Cache.Abstractions.Configurations;
+using Wolf.Extension.Cache.Abstractions.Enum;
 using Wolf.Extension.Cache.Abstractions.Request.Base;
 using Wolf.Extension.Cache.Abstractions.Request.Hash;
 using Wolf.Extension.Cache.Abstractions.Response.Base;
@@ -111,7 +112,7 @@ namespace Wolf.Extension.Cache.MemoryCache
                 return this.Set(key, hashSet, new PersistentOps(persistentOps.HashOverdueTime)
                 {
                     IsAtomic = false,
-                    Strategy = persistentOps.Strategy
+                    Strategy = OverdueStrategy.AbsoluteExpiration
                 });
             }
         }
@@ -152,7 +153,7 @@ namespace Wolf.Extension.Cache.MemoryCache
                 return this.Set(request.Key, hashSet, new PersistentOps(persistentOps.HashOverdueTime)
                 {
                     IsAtomic = false,
-                    Strategy = persistentOps.Strategy
+                    Strategy = OverdueStrategy.AbsoluteExpiration
                 });
             }
         }
@@ -204,7 +205,7 @@ namespace Wolf.Extension.Cache.MemoryCache
                 return this.Set(list, new PersistentOps(persistentOps.HashOverdueTime)
                 {
                     IsAtomic = false,
-                    Strategy = persistentOps.Strategy
+                    Strategy = OverdueStrategy.AbsoluteExpiration
                 });
             }
         }

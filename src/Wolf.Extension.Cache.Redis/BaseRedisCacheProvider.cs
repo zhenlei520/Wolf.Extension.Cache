@@ -14,7 +14,7 @@ namespace Wolf.Extension.Cache.Redis
     /// </summary>
     public class BaseRedisCacheProvider
     {
-        private readonly IJsonProvider _jsonProvider;
+        protected readonly IJsonProvider _jsonProvider;
 
         /// <summary>
         ///

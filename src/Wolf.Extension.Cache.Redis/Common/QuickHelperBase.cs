@@ -7,6 +7,8 @@ using System.Diagnostics;
 using System.Linq;
 using Wolf.Extension.Cache.Abstractions.Configurations;
 using Wolf.Extension.Cache.Abstractions.Enum;
+using Wolf.Extension.Cache.Abstractions.Request.Hash;
+using Wolf.Extension.Cache.Abstractions.Response.Hash;
 using Wolf.Extension.Cache.Redis.Configurations;
 using Wolf.Extensions.Serialize.Json.Abstracts;
 using Wolf.Systems.Abstracts;
@@ -464,16 +466,16 @@ namespace Wolf.Extension.Cache.Redis.Common
                     var ret = conn.Client.HMSet(cacheKey, item.Value);
                     if (persistentOps.HashOverdueTimeSpan > TimeSpan.Zero)
                     {
-                        if (this._redisOptions.IsOpenSlidingExpiration &&
-                            persistentOps.Strategy == OverdueStrategy.SlidingExpiration)
-                        {
-                            //滑动过期,整个hash都使用一个缓存key的过期时间
-                            this.SetSlidingExpiration(cacheKey, persistentOps.HashOverdueTimeSpan);
-                        }
-                        else
-                        {
-                            conn.Client.Expire(cacheKey, persistentOps.HashOverdueTimeSpan);
-                        }
+                        // if (this._redisOptions.IsOpenSlidingExpiration &&
+                        //     persistentOps.Strategy == OverdueStrategy.SlidingExpiration)
+                        // {
+                        //     //滑动过期,整个hash都使用一个缓存key的过期时间
+                        //     this.SetSlidingExpiration(cacheKey, persistentOps.HashOverdueTimeSpan);
+                        // }
+                        // else
+                        // {
+                        conn.Client.Expire(cacheKey, persistentOps.HashOverdueTimeSpan);
+                        // }
                     }
 
                     if (ret == "OK")
@@ -572,49 +574,62 @@ namespace Wolf.Extension.Cache.Redis.Common
         public string HashGet(string key, string hashKey)
         {
             key = this.GetCacheKey(key);
-            return this.GetResultAndRenewalTime(key, hashKey, () =>
+            using (var conn = Instance.GetConnection())
             {
-                using (var conn = Instance.GetConnection())
-                {
-                    return conn.Client.HGet(key, hashKey);
-                }
-            });
+                return conn.Client.HGet(key, hashKey);
+            }
         }
 
         /// <summary>
         /// 根据缓存key以及hashKey得到值
         /// </summary>
-        /// <param name="keyDic">缓存信息</param>
+        /// <param name="key">缓存key</param>
+        /// <param name="hashKeys">HashKey集合</param>
         /// <returns></returns>
-        public Dictionary<string, List<KeyValuePair<string, string>>> HashGet(Dictionary<string, string[]> keyDic)
+        public List<KeyValuePair<string, string>> HashGet(string key, string[] hashKeys)
         {
-            Dictionary<string, List<KeyValuePair<string, string>>> dictionary =
-                new Dictionary<string, List<KeyValuePair<string, string>>>();
+            List<KeyValuePair<string, string>> list = new List<KeyValuePair<string, string>>();
+            string cacheKey = this.GetCacheKey(key);
             using (var conn = Instance.GetConnection())
             {
-                foreach (var item in keyDic)
+                var hashValueArray = conn.Client.HMGet(cacheKey, hashKeys);
+                for (int i = 0; i < hashKeys.Length; i++)
                 {
+                    list.Add(new KeyValuePair<string, string>(hashKeys[i], hashValueArray[i]));
+                }
+
+                return list;
+            }
+        }
+
+        /// <summary>
+        /// 根据缓存key以及hashKey得到值
+        /// </summary>
+        /// <param name="requests">缓存信息</param>
+        /// <returns></returns>
+        public List<HashMultResponse<string>> HashGet(ICollection<MultHashRequest<string>> requests)
+        {
+            List<HashMultResponse<string>> list = new List<HashMultResponse<string>>();
+            using (var conn = Instance.GetConnection())
+            {
+                foreach (var item in requests)
+                {
+                    HashMultResponse<string> response = new HashMultResponse<string>()
+                    {
+                        Key = item.Key,
+                        List = new List<HashResponse<string>>()
+                    };
                     string key = this.GetCacheKey(item.Key);
-                    List<KeyValuePair<string, string>> list = new List<KeyValuePair<string, string>>();
-                    var hashValueArray = conn.Client.HMGet(key, item.Value);
-                    for (int i = 0; i < item.Value.Length; i++)
+                    var hashValueArray = conn.Client.HMGet(key, item.List.ToArray());
+                    for (int i = 0; i < item.List.Count(); i++)
                     {
-                        list.Add(new KeyValuePair<string, string>(item.Value[i], hashValueArray[i]));
+                        response.List.Add(new HashResponse<string>(item.List.ToList()[i], hashValueArray[i]));
                     }
 
-                    dictionary.Add(key, list);
+                    list.Add(response);
                 }
 
-                if (this._redisOptions.IsOpenSlidingExpiration)
-                {
-                    foreach (var key in keys)
-                    {
-                        var cacheKey = this.GetCacheKey(key);
-                        this.GetResultAndRenewalTime(cacheKey);
-                    }
-                }
-
-                return dictionary;
+                return list;
             }
         }
 

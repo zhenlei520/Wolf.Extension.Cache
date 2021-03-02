@@ -7,6 +7,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Wolf.Extension.Cache.Abstractions.Configurations;
 using Wolf.Extension.Cache.Abstractions.Enum;
+using Wolf.Extension.Cache.Abstractions.Request.Hash;
+using Wolf.Extension.Cache.Abstractions.Response.Hash;
 
 namespace Wolf.Extension.Cache.Redis.Common
 {
@@ -387,6 +389,59 @@ namespace Wolf.Extension.Cache.Redis.Common
             using (var conn = await Instance.GetConnectionAsync())
             {
                 return await conn.Client.HGetAsync(key, field);
+            }
+        }
+
+        /// <summary>
+        /// 根据缓存key以及hashKey得到值
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <param name="hashKeys">HashKey集合</param>
+        /// <returns></returns>
+        public async Task<List<KeyValuePair<string, string>>> HashGetAsync(string key, string[] hashKeys)
+        {
+            List<KeyValuePair<string, string>> list = new List<KeyValuePair<string, string>>();
+            string cacheKey = this.GetCacheKey(key);
+            using (var conn = await Instance.GetConnectionAsync())
+            {
+                var hashValueArray = await conn.Client.HMGetAsync(cacheKey, hashKeys);
+                for (int i = 0; i < hashKeys.Length; i++)
+                {
+                    list.Add(new KeyValuePair<string, string>(hashKeys[i], hashValueArray[i]));
+                }
+
+                return list;
+            }
+        }
+
+        /// <summary>
+        /// 根据缓存key以及hashKey得到值
+        /// </summary>
+        /// <param name="requests">缓存信息</param>
+        /// <returns></returns>
+        public async Task<List<HashMultResponse<string>>> HashGetAsync(ICollection<MultHashRequest<string>> requests)
+        {
+            List<HashMultResponse<string>> list = new List<HashMultResponse<string>>();
+            using (var conn = await Instance.GetConnectionAsync())
+            {
+                foreach (var item in requests)
+                {
+                    HashMultResponse<string> response = new HashMultResponse<string>()
+                    {
+                        Key = item.Key,
+                        List = new List<HashResponse<string>>()
+                    };
+                    string key = this.GetCacheKey(item.Key);
+                    var hashValueArray =await conn.Client.HMGetAsync(key, item.List.ToArray());
+                    for (int i = 0; i < item.List.Count(); i++)
+                    {
+                        response.List.Add(new HashResponse<string>(item.List.ToList()[i], hashValueArray[i]));
+                    }
+
+                    list.Add(response);
+                }
+
+                return list;
             }
         }
 
@@ -1048,7 +1103,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <returns></returns>
         private Task<T> GetResultAndRenewalTimeAsync<T>(string key, Func<Task<T>> func)
         {
-            int? totalSecond = this.GetSlidingExpirationTime(key);
+            long? totalSecond = this.GetSlidingExpirationTime(key);
             if (totalSecond != null)
             {
                 this.SetSlidingExpiration(key, TimeSpan.FromSeconds(totalSecond.Value)); //延长时间
