@@ -108,7 +108,11 @@ namespace Wolf.Extension.Cache.MemoryCache
                 }
 
                 hashSet.Add(new HashResponse<T>(hashKey, value));
-                return this.Set(key, hashSet, persistentOps: persistentOps);
+                return this.Set(key, hashSet, new PersistentOps(persistentOps.HashOverdueTime)
+                {
+                    IsAtomic = false,
+                    Strategy = persistentOps.Strategy
+                });
             }
         }
 
@@ -145,7 +149,11 @@ namespace Wolf.Extension.Cache.MemoryCache
                     hashSet.Add(new HashResponse<T>(item.HashKey, item.Value));
                 }
 
-                return this.Set(request.Key, hashSet, persistentOps: persistentOps);
+                return this.Set(request.Key, hashSet, new PersistentOps(persistentOps.HashOverdueTime)
+                {
+                    IsAtomic = false,
+                    Strategy = persistentOps.Strategy
+                });
             }
         }
 
@@ -193,7 +201,11 @@ namespace Wolf.Extension.Cache.MemoryCache
                     });
                 }
 
-                return this.Set(list, persistentOps);
+                return this.Set(list, new PersistentOps(persistentOps.HashOverdueTime)
+                {
+                    IsAtomic = false,
+                    Strategy = persistentOps.Strategy
+                });
             }
         }
 

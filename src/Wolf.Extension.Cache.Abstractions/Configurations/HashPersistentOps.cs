@@ -26,10 +26,10 @@ namespace Wolf.Extension.Cache.Abstractions.Configurations
             this.IsCanHashExpire = isCanHashExpire;
         }
 
-        /// <summary>
-        /// 过期策略
-        /// </summary>
-        public OverdueStrategy Strategy { get; set; }
+        // /// <summary>
+        // /// 过期策略
+        // /// </summary>
+        // public OverdueStrategy Strategy { get; set; }
 
         /// <summary>
         /// 是否单个Hash key过期

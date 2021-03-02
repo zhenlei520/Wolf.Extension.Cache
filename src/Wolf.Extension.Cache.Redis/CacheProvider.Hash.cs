@@ -91,40 +91,16 @@ namespace Wolf.Extension.Cache.Redis
             HashPersistentOps persistentOps = null)
         {
             persistentOps = persistentOps.Get();
+            Dictionary<string, string[]> dictionary = new Dictionary<string, string[]>()
+            {
+                {key, new[] {hashKey, ConvertJson(value)}}
+            };
             string cacheValue = "";
-            if (persistentOps.IsCanHashExpire)
-            {
-                //指定hash过期
-
-            }
-            else
-            {
-                //指定键过期
-            }
-
-
-            if (persistentOps.Strategy == OverdueStrategy.AbsoluteExpiration)
-            {
-                if (!persistentOps.IsCanHashExpire)
-                {
-                    cacheValue =
-                        QuickHelperBase.HashSetExpire(key, TimeSpan.Zero, hashKey, value);
-                }
-                else
-                {
-                    cacheValue = QuickHelperBase.HashSetHashFileExpire<T>(key, hashKey, persistentOps.TimeSpan.Value,
-                        value);
-                }
-
-                bool result = string.Equals(cacheValue, "OK",
-                    StringComparison.OrdinalIgnoreCase);
-                return result;
-            }
-            else
-            {
-                //滑动过期
-                return false;
-            }
+            cacheValue = persistentOps.IsCanHashExpire
+                ? this._quickHelperBase.HashSetExpireByHash(dictionary, persistentOps)
+                : this._quickHelperBase.HashSetExpire(dictionary, persistentOps);
+            return string.Equals(cacheValue, "OK",
+                StringComparison.OrdinalIgnoreCase);
         }
 
         #endregion
@@ -142,32 +118,26 @@ namespace Wolf.Extension.Cache.Redis
             HashPersistentOps persistentOps = null)
         {
             persistentOps = persistentOps.Get();
-            string cacheValue = "";
-            if (persistentOps.Strategy == OverdueStrategy.AbsoluteExpiration)
+            Dictionary<string, string[]> dictionary = new Dictionary<string, string[]>()
             {
-                if (!persistentOps.IsCanHashExpire)
                 {
-                    cacheValue =
-                        this._redisOptions.HashSetExpire(key, TimeSpan.Zero, hashKey, value);
+                    request.Key,request.List.SelectMany(x=>new List<string>()
+                    {
+                        x.HashKey,
+                        ConvertJson(x.Value)
+                    }).ToArray()
                 }
-                else
-                {
-                    cacheValue = QuickHelperBase.HashSetHashFileExpire<T>(key, hashKey, persistentOps.TimeSpan.Value,
-                        value);
-                }
-
-                bool result = string.Equals(cacheValue, "OK",
-                    StringComparison.OrdinalIgnoreCase);
-                return result;
-            }
-            else
-            {
-                //滑动过期
-                return false;
-            }
+            };
+            var cacheValue = persistentOps.IsCanHashExpire
+                ? this._quickHelperBase.HashSetExpireByHash(dictionary, persistentOps)
+                : this._quickHelperBase.HashSetExpire(dictionary, persistentOps);
+            return string.Equals(cacheValue, "OK",
+                StringComparison.OrdinalIgnoreCase);
         }
 
         #endregion
+
+        #region 存储数据到Hash表
 
         /// <summary>
         /// 存储数据到Hash表
@@ -176,9 +146,28 @@ namespace Wolf.Extension.Cache.Redis
         /// <param name="persistentOps">策略</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        bool HashSet<T>(
+        public bool HashSet<T>(
             List<MultHashRequest<HashRequest<T>>> request,
-            HashPersistentOps persistentOps = null);
+            HashPersistentOps persistentOps = null)
+        {
+            persistentOps = persistentOps.Get();
+            Dictionary<string, string[]> dictionary = new Dictionary<string, string[]>();
+            request.ToList().ForEach(item =>
+            {
+                dictionary.Add(item.Key,item.List.SelectMany(x=>new List<string>()
+                {
+                    x.HashKey,
+                    ConvertJson(x.Value)
+                }).ToArray());
+            });
+            var cacheValue = persistentOps.IsCanHashExpire
+                ? this._quickHelperBase.HashSetExpireByHash(dictionary, persistentOps)
+                : this._quickHelperBase.HashSetExpire(dictionary, persistentOps);
+            return string.Equals(cacheValue, "OK",
+                StringComparison.OrdinalIgnoreCase);
+        }
+
+        #endregion
 
         #region 根据缓存key以及hash key找到唯一对应的值
 
@@ -190,7 +179,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <returns></returns>
         public string HashGet(string key, string hashKey)
         {
-            return QuickHelperBase.HashGet(key, hashKey);
+            return this._quickHelperBase.HashGet(key, hashKey);
         }
 
         #endregion
