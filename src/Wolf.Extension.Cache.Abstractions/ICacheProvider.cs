@@ -3,7 +3,6 @@
 
 using System.Collections.Generic;
 using Wolf.Extension.Cache.Abstractions.Configurations;
-using Wolf.Extension.Cache.Abstractions.Enum;
 using Wolf.Extension.Cache.Abstractions.Request.Base;
 using Wolf.Extension.Cache.Abstractions.Response.Base;
 

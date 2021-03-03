@@ -1,7 +1,6 @@
 ﻿// Copyright (c) zhenlei520 All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,7 +8,6 @@ using Wolf.Extension.Cache.Abstractions.Configurations;
 using Wolf.Extension.Cache.Abstractions.Request.Base;
 using Wolf.Extension.Cache.Abstractions.Response.Base;
 using Wolf.Extension.Cache.Abstractions.Common;
-using Wolf.Extension.Cache.Redis.Common;
 
 namespace Wolf.Extension.Cache.Redis
 {

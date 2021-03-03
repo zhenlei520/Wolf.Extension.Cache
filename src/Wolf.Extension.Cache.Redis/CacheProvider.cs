@@ -1,7 +1,6 @@
 ﻿// Copyright (c) zhenlei520 All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Wolf.Extension.Cache.Abstractions;
@@ -10,7 +9,6 @@ using Wolf.Extension.Cache.Abstractions.Request.Base;
 using Wolf.Extension.Cache.Abstractions.Response.Base;
 using Wolf.Extension.Cache.Redis.Common;
 using Wolf.Extension.Cache.Abstractions.Common;
-using Wolf.Extension.Cache.Abstractions.Enum;
 using Wolf.Extension.Cache.Redis.Configurations;
 using Wolf.Extensions.Serialize.Json.Abstracts;
 

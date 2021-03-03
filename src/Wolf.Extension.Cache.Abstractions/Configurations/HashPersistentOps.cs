@@ -1,7 +1,6 @@
 ﻿// Copyright (c) zhenlei520 All rights reserved.
 
 using System;
-using Wolf.Extension.Cache.Abstractions.Enum;
 
 namespace Wolf.Extension.Cache.Abstractions.Configurations
 {

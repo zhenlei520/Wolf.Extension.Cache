@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Wolf.Extension.Cache.Abstractions;
 using Wolf.Extension.Cache.Abstractions.Configurations;
-using Wolf.Extension.Cache.Abstractions.Enum;
 using Wolf.Extension.Cache.Abstractions.Request.Base;
 using Wolf.Extension.Cache.Abstractions.Request.Hash;
 using Wolf.Extension.Cache.Abstractions.Response.Base;
