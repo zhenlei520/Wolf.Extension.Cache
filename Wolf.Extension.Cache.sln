@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wolf.Extension.Cache.Memory
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wolf.Extension.Cache.Redis2", "src\Wolf.Extension.Cache.Redis2\Wolf.Extension.Cache.Redis2.csproj", "{3227578E-4C5E-4B2E-9F9A-46681DFCF3B1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wolf.Extension.Cache.UnitTest", "test\Wolf.Extension.Cache.UnitTest\Wolf.Extension.Cache.UnitTest.csproj", "{E07541DC-C58C-49F4-BF5C-B6C004E4B14F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,6 +27,7 @@ Global
 		{5942A92C-4551-487D-8CE7-D1E6ED65972A} = {5BAD409D-3957-4009-9B05-3DC51A5D33B4}
 		{D731E9AD-CAA2-49AE-8C59-C3CE06188764} = {5BAD409D-3957-4009-9B05-3DC51A5D33B4}
 		{3227578E-4C5E-4B2E-9F9A-46681DFCF3B1} = {5BAD409D-3957-4009-9B05-3DC51A5D33B4}
+		{E07541DC-C58C-49F4-BF5C-B6C004E4B14F} = {157F59B7-1E06-4AC1-948B-56B61DC2E28E}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{7B305C78-9E40-4F3C-A7D7-51B0E56C8738}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -47,5 +50,9 @@ Global
 		{3227578E-4C5E-4B2E-9F9A-46681DFCF3B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3227578E-4C5E-4B2E-9F9A-46681DFCF3B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3227578E-4C5E-4B2E-9F9A-46681DFCF3B1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E07541DC-C58C-49F4-BF5C-B6C004E4B14F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E07541DC-C58C-49F4-BF5C-B6C004E4B14F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E07541DC-C58C-49F4-BF5C-B6C004E4B14F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E07541DC-C58C-49F4-BF5C-B6C004E4B14F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

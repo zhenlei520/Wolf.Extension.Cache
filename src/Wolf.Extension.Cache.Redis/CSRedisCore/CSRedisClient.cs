@@ -31,26 +31,6 @@ namespace CSRedis
         private object NodesLock = new object();
         public ConcurrentDictionary<ushort, ushort> SlotCache = new ConcurrentDictionary<ushort, ushort>();
 
-        /// <summary>
-        /// 自定义序列化(全局默认)
-        /// </summary>
-        public static Func<object, string> Serialize;
-
-        /// <summary>
-        /// 自定义反序列化(全局默认)
-        /// </summary>
-        public static Func<string, Type, object> Deserialize;
-
-        /// <summary>
-        /// 自定义序列化
-        /// </summary>
-        public Func<object, string> CurrentSerialize;
-
-        /// <summary>
-        /// 自定义反序列化
-        /// </summary>
-        public Func<string, Type, object> CurrentDeserialize;
-
         DateTime _dt1970 = new DateTime(1970, 1, 1);
         Random _rnd = new Random();
 
@@ -58,18 +38,16 @@ namespace CSRedis
 
         private readonly IJsonProvider _jsonProvider;
 
+        #region 对象序列化字符串
+
+        /// <summary>
+        /// 对象序列化字符串
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         internal string SerializeObject(object value)
         {
-            if (CurrentSerialize != null) return CurrentSerialize(value);
-            if (Serialize != null) return Serialize(value);
             return this._jsonProvider.Serializer(value);
-        }
-
-        internal T DeserializeObject<T>(string value)
-        {
-            if (CurrentDeserialize != null) return (T) CurrentDeserialize(value, typeof(T));
-            if (Deserialize != null) return (T) Deserialize(value, typeof(T));
-            return (T) this._jsonProvider.Deserialize(value, typeof(T));
         }
 
         internal object SerializeRedisValueInternal(object value)
@@ -111,6 +89,22 @@ namespace CSRedis
 
             return this.SerializeObject(value);
         }
+
+        #endregion
+
+        #region 反序列化为对象
+
+        /// <summary>
+        /// 反序列化为对象
+        /// </summary>
+        /// <param name="value"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        internal T DeserializeObject<T>(string value)
+        {
+            return (T) this._jsonProvider.Deserialize(value, typeof(T));
+        }
+
 
         internal T DeserializeRedisValueInternal<T>(byte[] value)
         {
@@ -236,6 +230,8 @@ namespace CSRedis
             foreach (var kv in value) dic.Add(kv.Key, this.DeserializeRedisValueInternal<TValue>(kv.Value));
             return dic;
         }
+
+        #endregion
 
         #endregion
 

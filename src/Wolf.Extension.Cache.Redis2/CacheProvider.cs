@@ -1,6 +1,7 @@
 ﻿// Copyright (c) zhenlei520 All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Wolf.Extension.Cache.Abstractions;
@@ -9,6 +10,7 @@ using Wolf.Extension.Cache.Abstractions.Request.Base;
 using Wolf.Extension.Cache.Abstractions.Response.Base;
 using Wolf.Extension.Cache.Redis.Common;
 using Wolf.Extension.Cache.Abstractions.Common;
+using Wolf.Extension.Cache.Abstractions.Enum;
 using Wolf.Extension.Cache.Redis.Configurations;
 using Wolf.Extensions.Serialize.Json.Abstracts;
 
@@ -43,7 +45,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <param name="value">保存的值</param>
         /// <param name="persistentOps">策略</param>
         /// <returns></returns>
-        public bool Set(string key, string value, PersistentOps persistentOps = null)
+        public bool Set(string key, string value, BasePersistentOps persistentOps = null)
         {
             return this.Set<string>(key, value, persistentOps);
         }
@@ -76,7 +78,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <param name="persistentOps">策略</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public bool Set<T>(string key, T obj, PersistentOps persistentOps = null)
+        public bool Set<T>(string key, T obj, BasePersistentOps persistentOps = null)
         {
             persistentOps = persistentOps.Get();
             return _quickHelperBase.Set(key, obj, persistentOps.Strategy, persistentOps.OverdueTimeSpan);
@@ -212,9 +214,11 @@ namespace Wolf.Extension.Cache.Redis
         /// 设置过期时间（需调整）
         /// </summary>
         /// <param name="key">缓存key</param>
-        /// <param name="basePersistentOps">策略</param>
+        /// <param name="Strategy"></param>
+        /// <param name="timeSpan"></param>
         /// <returns></returns>
-        public bool SetExpire(string key, BasePersistentOps basePersistentOps = null)
+        public bool SetExpire(string key, OverdueStrategy Strategy = OverdueStrategy.AbsoluteExpiration,
+            TimeSpan timeSpan)
         {
             return this._quickHelperBase.Expire(key, basePersistentOps);
         }

@@ -1,8 +1,10 @@
 ﻿// Copyright (c) zhenlei520 All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using Wolf.Extension.Cache.Abstractions.Configurations;
+using Wolf.Extension.Cache.Abstractions.Enum;
 using Wolf.Extension.Cache.Abstractions.Request.Base;
 using Wolf.Extension.Cache.Abstractions.Response.Base;
 
@@ -20,7 +22,7 @@ namespace Wolf.Extension.Cache.Abstractions
         /// <param name="value">保存的值</param>
         /// <param name="persistentOps">策略</param>
         /// <returns></returns>
-        bool Set(string key, string value, PersistentOps persistentOps = null);
+        bool Set(string key, string value, BasePersistentOps persistentOps = null);
 
         /// <summary>
         /// 设置缓存键值对集合
@@ -38,7 +40,7 @@ namespace Wolf.Extension.Cache.Abstractions
         /// <param name="persistentOps">策略</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        bool Set<T>(string key, T obj, PersistentOps persistentOps = null);
+        bool Set<T>(string key, T obj, BasePersistentOps persistentOps = null);
 
         /// <summary>
         /// 保存多个对象集合
@@ -105,9 +107,11 @@ namespace Wolf.Extension.Cache.Abstractions
         /// 设置过期时间
         /// </summary>
         /// <param name="key">缓存key</param>
-        /// <param name="persistentOps">策略</param>
+        /// <param name="timeSpan">过期时间，永久保存：TimeSpan.Zero</param>
+        /// <param name="strategy">过期策略,默认绝对过期</param>
         /// <returns></returns>
-        bool SetExpire(string key, BasePersistentOps persistentOps = null);
+        bool SetExpire(string key,
+            TimeSpan timeSpan, OverdueStrategy strategy = OverdueStrategy.AbsoluteExpiration);
 
         /// <summary>
         /// 删除指定Key的缓存

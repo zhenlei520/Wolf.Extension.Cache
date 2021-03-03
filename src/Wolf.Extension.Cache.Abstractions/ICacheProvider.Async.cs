@@ -1,9 +1,11 @@
 ﻿// Copyright (c) zhenlei520 All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Wolf.Extension.Cache.Abstractions.Configurations;
+using Wolf.Extension.Cache.Abstractions.Enum;
 using Wolf.Extension.Cache.Abstractions.Request.Base;
 using Wolf.Extension.Cache.Abstractions.Response.Base;
 
@@ -114,9 +116,10 @@ namespace Wolf.Extension.Cache.Abstractions
         /// 设置过期时间（异步）
         /// </summary>
         /// <param name="key">缓存key</param>
-        /// <param name="persistentOps">策略</param>
+        /// <param name="timeSpan">过期时间，永久保存：TimeSpan.Zero</param>
+        /// <param name="strategy">过期策略,默认绝对过期</param>
         /// <returns></returns>
-        Task<bool> SetExpireAsync(string key, BasePersistentOps persistentOps = null);
+        Task<bool> SetExpireAsync(string key, TimeSpan timeSpan, OverdueStrategy strategy = OverdueStrategy.AbsoluteExpiration);
 
         /// <summary>
         /// 删除指定Key的缓存（异步）

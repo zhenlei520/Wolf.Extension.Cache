@@ -64,7 +64,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="value">保存的值</param>
         /// <param name="persistentOps">策略</param>
         /// <returns></returns>
-        public bool Set(string key, string value, PersistentOps persistentOps = null)
+        public bool Set(string key, string value, BasePersistentOps persistentOps = null)
         {
             return this.Set<string>(key, value, persistentOps);
         }
@@ -96,12 +96,12 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="persistentOps">策略</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public bool Set<T>(string key, T obj, PersistentOps persistentOps = null)
+        public bool Set<T>(string key, T obj, BasePersistentOps persistentOps = null)
         {
             CheckKey(key);
             persistentOps = persistentOps.Get();
             var cacheKey = GetCacheKey(key);
-            if (persistentOps.OverdueTime == null)
+            if (persistentOps.OverdueTimeSpan == TimeSpan.Zero)
             {
                 this._memoryCache.Set(cacheKey, obj);
             }
@@ -305,28 +305,32 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// 设置过期时间
         /// </summary>
         /// <param name="key">缓存key</param>
-        /// <param name="persistentOps">策略</param>
+        /// <param name="timeSpan"></param>
         /// <returns></returns>
-        public bool SetExpire(string key,  BasePersistentOps persistentOps = null)
+        public  bool SetExpire(string key,
+            TimeSpan timeSpan, OverdueStrategy strategy = OverdueStrategy.AbsoluteExpiration)
         {
             CheckKey(key);
-            persistentOps = persistentOps.Get();
+            if (timeSpan < TimeSpan.Zero)
+            {
+                throw new NotSupportedException(nameof(timeSpan));
+            }
             this._memoryCache.GetOrCreate(GetCacheKey(key), cacheEntry =>
             {
-                if (persistentOps.OverdueTimeSpan == TimeSpan.Zero)
+                if (timeSpan == TimeSpan.Zero)
                 {
                     cacheEntry.AbsoluteExpiration = null;
                     cacheEntry.SlidingExpiration = null;
                 }
                 else
                 {
-                    if (persistentOps.Strategy == OverdueStrategy.AbsoluteExpiration)
+                    if (strategy == OverdueStrategy.AbsoluteExpiration)
                     {
-                        cacheEntry.AbsoluteExpiration = DateTimeOffset.Now.Add(persistentOps.OverdueTimeSpan);
+                        cacheEntry.AbsoluteExpiration = DateTimeOffset.Now.Add(timeSpan);
                     }
-                    else if (persistentOps.Strategy == OverdueStrategy.SlidingExpiration)
+                    else if (strategy == OverdueStrategy.SlidingExpiration)
                     {
-                        cacheEntry.SetSlidingExpiration(persistentOps.OverdueTimeSpan);
+                        cacheEntry.SetSlidingExpiration(timeSpan);
                     }
                     else
                     {

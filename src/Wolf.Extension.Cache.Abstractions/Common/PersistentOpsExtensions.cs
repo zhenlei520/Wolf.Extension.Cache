@@ -1,6 +1,7 @@
 ﻿// Copyright (c) zhenlei520 All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
+using System;
 using Wolf.Extension.Cache.Abstractions.Configurations;
 
 namespace Wolf.Extension.Cache.Abstractions.Common
@@ -27,7 +28,7 @@ namespace Wolf.Extension.Cache.Abstractions.Common
         /// <returns></returns>
         public static BasePersistentOps Get(this BasePersistentOps persistentOps)
         {
-            return persistentOps ?? new BasePersistentOps();
+            return persistentOps ?? new BasePersistentOps(TimeSpan.Zero);
         }
     }
 }
