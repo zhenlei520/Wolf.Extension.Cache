@@ -922,7 +922,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <param name="value">一个或多个值</param>
         /// <returns></returns>
-        public long LPush(string key, string[] value)
+        public long LPush(string key, params string[] value)
         {
             key = this.GetCacheKey(key);
             using (var conn = Instance.GetConnection())
@@ -937,7 +937,7 @@ namespace Wolf.Extension.Cache.Redis.Common
         /// <param name="key">不含prefix前辍RedisHelper.Name</param>
         /// <param name="value">一个或多个值</param>
         /// <returns></returns>
-        public long RPush(string key, string[] value)
+        public long RPush(string key, params string[] value)
         {
             key = this.GetCacheKey(key);
             using (var conn = Instance.GetConnection())
