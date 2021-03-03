@@ -20,11 +20,6 @@ namespace Wolf.Extension.Cache.Redis
         private readonly IEnumerable<CacheOptions> _cacheOptions;
         private readonly IJsonFactory _jsonFactory;
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="cacheOptions"></param>
-        /// <param name="jsonFactory"></param>
         public CacheBuilder(IEnumerable<CacheOptions> cacheOptions, IJsonFactory jsonFactory)
         {
             this._cacheOptions = cacheOptions;
@@ -59,7 +54,7 @@ namespace Wolf.Extension.Cache.Redis
                 return this.CreateProviders().FirstOrDefault();
             }
 
-            CacheOptions option = this._cacheOptions.FirstOrDefault(x =>
+            var option = this._cacheOptions.FirstOrDefault(x =>
                              x.ServiceName.Equals(GlobalConfigurations.ServiceName,
                                  StringComparison.OrdinalIgnoreCase) &&
                              x.ServiecId.Equals(serviceId, StringComparison.OrdinalIgnoreCase)) ??
