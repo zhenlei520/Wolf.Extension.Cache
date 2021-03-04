@@ -42,19 +42,16 @@ namespace Wolf.Extension.Cache.Abstractions.Configurations
         /// 默认绝对过期，不确保原子性
         /// </summary>
         /// <param name="overdueTime">过期时间，永不过期：null，不得小于TimeSpan.Zero</param>
-        public BasePersistentOps(TimeSpan? overdueTime = null) : this()
+        public BasePersistentOps(TimeSpan overdueTime) : this()
         {
             this.Strategy = OverdueStrategy.AbsoluteExpiration;
 
-            if (overdueTime != null)
+            if (overdueTime < TimeSpan.Zero)
             {
-                if (overdueTime < TimeSpan.Zero)
-                {
-                    throw new NotSupportedException(nameof(overdueTime));
-                }
-
-                this.OverdueTimeSpan = overdueTime.Value;
+                throw new NotSupportedException(nameof(overdueTime));
             }
+
+            this.OverdueTimeSpan = overdueTime;
         }
 
         /// <summary>

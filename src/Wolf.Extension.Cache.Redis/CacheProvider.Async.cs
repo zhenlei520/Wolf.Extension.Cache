@@ -17,16 +17,6 @@ namespace Wolf.Extension.Cache.Redis
     /// </summary>
     public partial class CacheProvider
     {
-        public bool Set(ICollection<BaseRequest<string>> list, PersistentOps persistentOps = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool Set<T>(ICollection<BaseRequest<T>> list, PersistentOps persistentOps = null)
-        {
-            throw new NotImplementedException();
-        }
-
         public Task<bool> SetAsync(string key, string value, PersistentOps persistentOps = null)
         {
             throw new NotImplementedException();

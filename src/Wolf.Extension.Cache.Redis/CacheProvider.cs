@@ -56,7 +56,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <param name="list">缓存键值对集合</param>
         /// <param name="persistentOps">策略</param>
         /// <returns></returns>
-        public bool Set(IEnumerable<BaseRequest<string>> list,
+        public bool Set(ICollection<BaseRequest<string>> list,
             PersistentOps persistentOps = null)
         {
             return this.Set<string>(list, persistentOps);
@@ -92,7 +92,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <param name="persistentOps">策略</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public bool Set<T>(IEnumerable<BaseRequest<T>> list,
+        public bool Set<T>(ICollection<BaseRequest<T>> list,
             PersistentOps persistentOps = null)
         {
             persistentOps = persistentOps.Get();
@@ -112,7 +112,8 @@ namespace Wolf.Extension.Cache.Redis
                     }
                 }
             });
-            return true;
+
+            return ret.Any(x => (bool) x);
         }
 
         #endregion
@@ -169,7 +170,28 @@ namespace Wolf.Extension.Cache.Redis
         /// <returns></returns>
         public List<BaseResponse<T>> Get<T>(ICollection<string> keys)
         {
-            return null;
+            var ret = this._client.StartPipe(client =>
+            {
+                CSRedisClientPipe<T> clientPipe = null;
+                foreach (var key in keys)
+                {
+                    if (clientPipe == null)
+                    {
+                        clientPipe = client.Get<T>(key);
+                    }
+                    else
+                    {
+                        clientPipe.Get<T>(key);
+                    }
+                }
+            });
+            List<BaseResponse<T>> list = new List<BaseResponse<T>>();
+            for (int index = 0; index < keys.Count(); index++)
+            {
+                list.Add(new BaseResponse<T>(keys.ToList()[index], (T) ret[index]));
+            }
+
+            return list;
         }
 
         #endregion
