@@ -94,7 +94,7 @@ namespace Wolf.Extension.Cache
             throw new NotImplementedException();
         }
 
-        public Task<bool> SetAsync(string key, string value, PersistentOps persistentOps = null)
+        public Task<bool> SetAsync(string key, string value, BasePersistentOps persistentOps = null)
         {
             throw new NotImplementedException();
         }
@@ -104,7 +104,7 @@ namespace Wolf.Extension.Cache
             throw new NotImplementedException();
         }
 
-        public Task<bool> SetAsync<T>(string key, T obj, PersistentOps persistentOps = null)
+        public Task<bool> SetAsync<T>(string key, T obj, BasePersistentOps persistentOps = null)
         {
             throw new NotImplementedException();
         }

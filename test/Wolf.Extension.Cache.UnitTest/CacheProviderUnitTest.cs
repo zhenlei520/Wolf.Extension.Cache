@@ -106,6 +106,117 @@ namespace Wolf.Extension.Cache.UnitTest
 
         #endregion
 
+        #region 为数字增长1
+
+        [Theory]
+        [InlineData("wolf3", 2)]
+        [InlineData("test2", 3)]
+        public void Increment(string key, long val)
+        {
+            var ret = this._cacheProvider.Increment(key, val);
+        }
+
+        #endregion
+
+        #region 为数字减少1
+
+        /// <summary>
+        /// 为数字减少1
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="val"></param>
+        [Theory]
+        [InlineData("wolf3", 2)]
+        [InlineData("test2", 3)]
+        public void Decrement(string key, long val)
+        {
+            var ret = this._cacheProvider.Decrement(key, val);
+        }
+
+        #endregion
+
+        #region 判断缓存key是否存在
+
+        /// <summary>
+        /// 判断缓存key是否存在
+        /// </summary>
+        /// <param name="key"></param>
+        [Theory]
+        [InlineData("test2")]
+        public void Exist(string key)
+        {
+            var ret = this._cacheProvider.Exist(key);
+        }
+
+        #endregion
+
+        #region 设置过期时间
+
+        /// <summary>
+        /// 设置过期时间
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="second"></param>
+        [Theory]
+        [InlineData("test2", 3)]
+        public void SetExpire(string key, int second)
+        {
+            var ret = this._cacheProvider.SetExpire(key, TimeSpan.FromSeconds(second));
+        }
+
+        #endregion
+
+        #region 删除指定Key的缓存
+
+        /// <summary>
+        /// 删除指定Key的缓存
+        /// </summary>
+        /// <param name="key"></param>
+        [Theory]
+        [InlineData("test")]
+        public void Remove(string key)
+        {
+            var ret = this._cacheProvider.Remove(key);
+        }
+
+        #endregion
+
+        #region 删除指定的缓存集合
+
+        /// <summary>
+        /// 删除指定的缓存集合
+        /// </summary>
+        /// <param name="keys"></param>
+        [Theory]
+        [InlineData("test,test3")]
+        public void RemoveRange(string keys)
+        {
+            List<string> keyList = keys.ConvertToList<string>(',');
+            var ret = this._cacheProvider.RemoveRange(keyList);
+        }
+
+        #endregion
+
+        #region 查找所有符合给定模式( pattern)的 key
+
+        /// <summary>
+        /// 查找所有符合给定模式( pattern)的 key
+        /// </summary>
+        /// <param name="pattern"></param>
+        [Theory]
+        [InlineData("test")]
+        public void Keys(string pattern = "*")
+        {
+            var ret = this._cacheProvider.Keys(pattern);
+        }
+
+        #endregion
+
+        #region MyRegion
+
+        
+
+        #endregion
     }
 
     public class User

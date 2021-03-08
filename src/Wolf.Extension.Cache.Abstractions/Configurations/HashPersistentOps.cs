@@ -1,6 +1,7 @@
 ﻿// Copyright (c) zhenlei520 All rights reserved.
 
 using System;
+using Wolf.Extension.Cache.Abstractions.Enum;
 
 namespace Wolf.Extension.Cache.Abstractions.Configurations
 {
@@ -19,7 +20,9 @@ namespace Wolf.Extension.Cache.Abstractions.Configurations
             if (isCanHashExpire)
             {
                 this.HashOverdueTime = overdueTime;
-                this.HashOverdueTimeSpan = this.HashOverdueTime != null ? TimeSpan.FromSeconds(this.HashOverdueTime.Value) : TimeSpan.Zero;
+                this.HashOverdueTimeSpan = this.HashOverdueTime != null
+                    ? TimeSpan.FromSeconds(this.HashOverdueTime.Value)
+                    : TimeSpan.Zero;
             }
 
             this.IsCanHashExpire = isCanHashExpire;
@@ -35,6 +38,11 @@ namespace Wolf.Extension.Cache.Abstractions.Configurations
         /// 如果不是单键过期，即为整键过期
         /// </summary>
         public bool IsCanHashExpire { get; private set; }
+
+        /// <summary>
+        /// 设置策略，默认全部设置，不区分缓存是否存在
+        /// </summary>
+        public SetStrategy? SetStrategy { get; set; }
 
         /// <summary>
         /// 过期时间，单位：s

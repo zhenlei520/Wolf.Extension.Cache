@@ -25,10 +25,9 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="value">保存的值</param>
         /// <param name="persistentOps">策略</param>
         /// <returns></returns>
-        public Task<bool> SetAsync(
-            string key,
+        public Task<bool> SetAsync(string key,
             string value,
-            PersistentOps persistentOps = null)
+            BasePersistentOps persistentOps = null)
         {
             return Task.FromResult(Set(key, value, (BasePersistentOps) persistentOps));
         }
@@ -61,10 +60,9 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="persistentOps">策略</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public Task<bool> SetAsync<T>(
-            string key,
+        public Task<bool> SetAsync<T>(string key,
             T obj,
-            PersistentOps persistentOps = null)
+            BasePersistentOps persistentOps = null)
         {
             return Task.FromResult(Set(key, obj, persistentOps));
         }

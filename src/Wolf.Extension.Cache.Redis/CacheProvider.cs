@@ -307,7 +307,6 @@ namespace Wolf.Extension.Cache.Redis
         /// <returns></returns>
         public List<string> Keys(string pattern = "*")
         {
-            var keys = new List<string>();
             return this._client.Keys(pattern).ToList();
         }
 

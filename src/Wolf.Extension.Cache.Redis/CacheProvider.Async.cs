@@ -2,13 +2,17 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using CSRedis;
+using Wolf.Extension.Cache.Abstractions.Common;
 using Wolf.Extension.Cache.Abstractions.Configurations;
 using Wolf.Extension.Cache.Abstractions.Enum;
 using Wolf.Extension.Cache.Abstractions.Request.Base;
 using Wolf.Extension.Cache.Abstractions.Request.Hash;
 using Wolf.Extension.Cache.Abstractions.Response.Base;
 using Wolf.Extension.Cache.Abstractions.Response.Hash;
+using Wolf.Extension.Cache.Redis.Internal;
 
 namespace Wolf.Extension.Cache.Redis
 {
@@ -17,559 +21,282 @@ namespace Wolf.Extension.Cache.Redis
     /// </summary>
     public partial class CacheProvider
     {
-        public Task<bool> SetAsync(string key, string value, PersistentOps persistentOps = null)
+        #region 设置缓存（异步）
+
+        /// <summary>
+        /// 设置缓存
+        /// </summary>
+        /// <param name="key">缓存键</param>
+        /// <param name="value">保存的值</param>
+        /// <param name="persistentOps">策略</param>
+        /// <returns></returns>
+        public Task<bool> SetAsync(string key, string value, BasePersistentOps persistentOps = null)
         {
-            throw new NotImplementedException();
+            return this.SetAsync<string>(key, value, persistentOps);
         }
 
+        #endregion
+
+        #region 设置缓存键值对集合
+
+        /// <summary>
+        /// 设置缓存键值对集合
+        /// </summary>
+        /// <param name="list">缓存键值对集合</param>
+        /// <param name="persistentOps">策略</param>
+        /// <returns></returns>
         public Task<bool> SetAsync(List<BaseRequest<string>> list, PersistentOps persistentOps = null)
         {
-            throw new NotImplementedException();
+            return this.SetAsync<string>(list, persistentOps);
         }
 
-        public Task<bool> SetAsync<T>(string key, T obj, PersistentOps persistentOps = null)
+        #endregion
+
+        #region 保存一个对象
+
+        /// <summary>
+        /// 保存一个对象
+        /// </summary>
+        /// <param name="key">缓存键</param>
+        /// <param name="obj">缓存值</param>
+        /// <param name="persistentOps">策略</param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public Task<bool> SetAsync<T>(string key, T obj, BasePersistentOps persistentOps = null)
         {
-            throw new NotImplementedException();
+            persistentOps = persistentOps.Get();
+            return this._client.SetAsync(key, obj, persistentOps.OverdueTimeSpan,
+                persistentOps.SetStrategy.GetRedisExistence());
         }
 
+        #endregion
+
+        #region 保存多个对象集合
+
+        /// <summary>
+        /// 保存多个对象集合
+        /// </summary>
+        /// <param name="list">缓存键值对集合</param>
+        /// <param name="persistentOps">策略</param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public Task<bool> SetAsync<T>(List<BaseRequest<T>> list, PersistentOps persistentOps = null)
         {
-            throw new NotImplementedException();
+            persistentOps = persistentOps.Get();
+            RedisExistence? exists = persistentOps.SetStrategy.GetRedisExistence();
+            var ret = this._client.StartPipe(client =>
+            {
+                CSRedisClientPipe<bool> clientPipe = null;
+                foreach (var item in list)
+                {
+                    if (clientPipe == null)
+                    {
+                        clientPipe = client.Set(item.Key, item.Value, persistentOps.OverdueTimeSpan,
+                            exists);
+                    }
+                    else
+                    {
+                        clientPipe.Set(item.Key, item.Value, persistentOps.OverdueTimeSpan, exists);
+                    }
+                }
+            });
+
+            return Task.FromResult(ret.Any(x => (bool) x));
         }
 
+        #endregion
+
+        #region 获取单个key的值（异步）
+
+        /// <summary>
+        /// 获取单个key的值（异步）
+        /// </summary>
+        /// <param name="key">缓存键</param>
+        /// <returns></returns>
         public Task<string> GetAsync(string key)
         {
-            throw new NotImplementedException();
+            return this._client.GetAsync(key);
         }
 
+        #endregion
+
+        #region 获取多组缓存键集合（异步）
+
+        /// <summary>
+        /// 获取多组缓存键集合（异步）
+        /// </summary>
+        /// <param name="keys">缓存键集合</param>
+        /// <returns></returns>
         public Task<List<BaseResponse<string>>> GetAsync(ICollection<string> keys)
         {
-            throw new NotImplementedException();
+            return this.GetAsync<string>(keys);
         }
 
+        #endregion
+
+        #region 获取指定缓存的值（异步）
+
+        /// <summary>
+        /// 获取指定缓存的值（异步）
+        /// </summary>
+        /// <param name="key">缓存键</param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public Task<T> GetAsync<T>(string key)
         {
-            throw new NotImplementedException();
+            return this._client.GetAsync<T>(key);
         }
 
+        #endregion
+
+        #region 获取多组缓存键集合（异步）
+
+        /// <summary>
+        /// 获取多组缓存键集合（异步）
+        /// </summary>
+        /// <param name="keys">缓存键集合</param>
+        /// <returns></returns>
         public Task<List<BaseResponse<T>>> GetAsync<T>(ICollection<string> keys)
         {
-            throw new NotImplementedException();
+            var ret = this._client.StartPipe(client =>
+            {
+                CSRedisClientPipe<T> clientPipe = null;
+                foreach (var key in keys)
+                {
+                    if (clientPipe == null)
+                    {
+                        clientPipe = client.Get<T>(key);
+                    }
+                    else
+                    {
+                        clientPipe.Get<T>(key);
+                    }
+                }
+            });
+            List<BaseResponse<T>> list = new List<BaseResponse<T>>();
+            for (int index = 0; index < keys.Count(); index++)
+            {
+                list.Add(new BaseResponse<T>(keys.ToList()[index], (T) ret[index]));
+            }
+
+            return Task.FromResult(list);
         }
 
+        #endregion
+
+        #region 为数字增长val（异步）
+
+        /// <summary>
+        /// 为数字增长val（异步）
+        /// </summary>
+        /// <param name="key">缓存键</param>
+        /// <param name="val">增加的值</param>
+        /// <returns></returns>
         public Task<long> IncrementAsync(string key, long val = 1)
         {
-            throw new NotImplementedException();
+            return this._client.IncrByAsync(key, val);
         }
 
+        #endregion
+
+        #region 为数字减少val
+
+        /// <summary>
+        /// 为数字减少val
+        /// </summary>
+        /// <param name="key">缓存键</param>
+        /// <param name="val">待减的值</param>
+        /// <returns>原value-val</returns>
         public Task<long> DecrementAsync(string key, long val = 1)
         {
-            throw new NotImplementedException();
+            return this._client.IncrByAsync(key, -val);
         }
 
+        #endregion
+
+        #region 检查指定的缓存key是否存在（异步）
+
+        /// <summary>
+        /// 检查指定的缓存key是否存在（异步）
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <returns></returns>
         public Task<bool> ExistAsync(string key)
         {
-            throw new NotImplementedException();
+            return this._client.ExistsAsync(key);
         }
 
-        public Task<bool> SetExpireAsync(string key, TimeSpan timeSpan, OverdueStrategy strategy = OverdueStrategy.AbsoluteExpiration)
+        #endregion
+
+        #region 设置过期时间（异步）
+
+        /// <summary>
+        /// 设置过期时间（异步）
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <param name="timeSpan">过期时间，永久保存：TimeSpan.Zero</param>
+        /// <param name="strategy">过期策略,默认绝对过期</param>
+        /// <returns></returns>
+        public Task<bool> SetExpireAsync(string key, TimeSpan timeSpan,
+            OverdueStrategy strategy = OverdueStrategy.AbsoluteExpiration)
         {
-            throw new NotImplementedException();
+            if (timeSpan < TimeSpan.Zero)
+            {
+                throw new NotSupportedException(nameof(timeSpan));
+            }
+
+            return this._client.ExpireAsync(key, timeSpan);
         }
 
+        #endregion
+
+        #region 删除指定Key的缓存（异步）
+
+        /// <summary>
+        /// 删除指定Key的缓存（异步）
+        /// 用于在 key 存在时删除 key
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <returns>返回删除的数量</returns>
         public Task<long> RemoveAsync(string key)
         {
-            throw new NotImplementedException();
+            return this._client.DelAsync(key);
         }
 
+        #endregion
+
+        #region 删除指定Key的缓存（异步）
+
+        /// <summary>
+        /// 删除指定Key的缓存（异步）
+        /// 用于在 key 存在时删除 key
+        /// </summary>
+        /// <param name="keys">待删除的Key集合</param>
+        /// <returns>返回删除的数量</returns>
         public Task<long> RemoveRangeAsync(List<string> keys)
         {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<string>> KeysAsync(string pattern = "*")
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool SortedSet(string key, string value, double score)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool SortedSet<T>(string key, T value, double score)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool SortedSetRemove(string key, string value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool SortedSetRemove<T>(string key, T value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<string> SortedSetRangeByRank(string key, int count = 1000, bool isDesc = true)
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<T> SortedSetRangeByRank<T>(string key, int count = 1000, bool isDesc = true)
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<string> SortedSetRangeFrom(string key, int fromRank, int toRank, bool isDesc = true)
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<T> SortedSetRangeFrom<T>(string key, int fromRank, int toRank, bool isDesc = true)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool SortedSetExist<T>(string key, T value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public long SortedSetLength(string key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> HashSetAsync(string key, string hashKey, string value, HashPersistentOps persistentOps = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> HashSetAsync(MultHashRequest<HashRequest<string>> request, HashPersistentOps persistentOps = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> HashSetAsync(List<MultHashRequest<HashRequest<string>>> request, HashPersistentOps persistentOps = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> HashSetAsync<T>(string key, string hashKey, T value, HashPersistentOps persistentOps = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> HashSetAsync<T>(MultHashRequest<HashRequest<T>> request, HashPersistentOps persistentOps = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> HashSetAsync<T>(List<MultHashRequest<HashRequest<T>>> request, HashPersistentOps persistentOps = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<string> HashGetAsync(string key, string hashKey)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<HashResponse<string>>> HashGetAsync(string key, List<string> hashKeys)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<HashMultResponse<string>>> HashGetAsync(List<MultHashRequest<string>> list)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<T> HashGetAsync<T>(string key, string hashKey)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<HashResponse<T>>> HashGetAsync<T>(string key, List<string> hashKeys)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<HashMultResponse<T>>> HashGetAsync<T>(ICollection<MultHashRequest<string>> list)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<string>> HashKeyListAsync(string key, int? top = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<HashResponse<string>>> HashListAsync(string key, int? top = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<HashResponse<T>>> HashListAsync<T>(string key, int? top = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<HashMultResponse<string>>> HashMultListAsync(ICollection<string> keys, int? top = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<HashMultResponse<T>>> HashMultListAsync<T>(ICollection<string> keys, int? top = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> HashExistsAsync(string key, string hashKey)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> HashDeleteAsync(string key, string hashKey)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> HashDeleteAsync(string key, ICollection<string> hashKeys)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> HashRangeDeleteAsync(ICollection<BaseRequest<List<string>>> request)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<long> HashIncrementAsync(string key, string hashKey, long val = 1)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<long> HashDecrementAsync(string key, string hashKey, long val = 1)
-        {
-            throw new NotImplementedException();
-        }
-
-        public long ListRightPush(string key, string value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public long ListRightPush<T>(string key, T value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public string ListRightPop(string key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public T ListRightPop<T>(string key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public long ListLeftPush(string key, string value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public long ListLeftPush<T>(string key, T value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public string ListLeftPop(string key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public T ListLeftPop<T>(string key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<string> ListLeftRange(string key, int count = 1000)
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<T> ListLeftRange<T>(string key, int count = 1000)
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<string> ListRightRange(string key, int count = 1000)
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<T> ListRightRange<T>(string key, int count = 1000)
-        {
-            throw new NotImplementedException();
-        }
-
-        public long ListRemove(string key, string value)
-        {
-            throw new NotImplementedException();
-        }
+            if (keys == null || !keys.Any())
+            {
+                return Task.FromResult(0l);
+            }
 
-        public long ListRemove<T>(string key, T value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public long ListLength(string key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<long> ListRightPushAsync(string key, string value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<long> ListRightPushAsync<T>(string key, T value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<string> ListRightPopAsync(string key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<T> ListRightPopAsync<T>(string key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<long> ListLeftPushAsync(string key, string value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<long> ListLeftPushAsync<T>(string key, T value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<string> ListLeftPopAsync(string key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<T> ListLeftPopAsync<T>(string key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<string>> ListLeftRangeAsync(string key, int count = 1000)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<T>> ListLeftRangeAsync<T>(string key, int count = 1000)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<string>> ListRightRangeAsync(string key, int count = 1000)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<T>> ListRightRangeAsync<T>(string key, int count = 1000)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<long> ListRemoveAsync(string key, string value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<long> ListRemoveAsync<T>(string key, T value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<long> ListLengthAsync(string key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> SortedSetAsync(string key, string value, double score)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> SortedSetAsync<T>(string key, T value, double score)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> SortedSetRemoveAsync(string key, string value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> SortedSetRemoveAsync<T>(string key, T value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<string>> SortedSetRangeByRankAsync(string key, int count = 1000, bool isDesc = true)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<T>> SortedSetRangeByRankAsync<T>(string key, int count = 1000, bool isDesc = true)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<string>> SortedSetRangeFromAsync(string key, int fromRank, int toRank, bool isDesc = true)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<T>> SortedSetRangeFromAsync<T>(string key, int fromRank, int toRank, bool isDesc = true)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> SortedSetExistAsync<T>(string key, T value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<long> SortedSetLengthAsync(string key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool HashSet(string key, string hashKey, string value, HashPersistentOps persistentOps = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool HashSet(MultHashRequest<HashRequest<string>> request, HashPersistentOps persistentOps = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool HashSet(List<MultHashRequest<HashRequest<string>>> request, HashPersistentOps persistentOps = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool HashSet<T>(string key, string hashKey, T value, HashPersistentOps persistentOps = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool HashSet<T>(MultHashRequest<HashRequest<T>> request, HashPersistentOps persistentOps = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool HashSet<T>(ICollection<MultHashRequest<HashRequest<T>>> request, HashPersistentOps persistentOps = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public string HashGet(string key, string hashKey)
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<HashResponse<string>> HashGet(string key, ICollection<string> hashKeys)
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<HashMultResponse<string>> HashGet(ICollection<MultHashRequest<string>> list)
-        {
-            throw new NotImplementedException();
+            return this._client.DelAsync(keys.ToArray());
         }
 
-        public T HashGet<T>(string key, string hashKey)
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<HashResponse<T>> HashGet<T>(string key, ICollection<string> hashKeys)
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<HashMultResponse<T>> HashGet<T>(ICollection<MultHashRequest<string>> list)
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<string> HashKeyList(string key, int? top = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<HashResponse<string>> HashList(string key, int? top = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<HashResponse<T>> HashList<T>(string key, int? top = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<HashMultResponse<string>> HashMultList(ICollection<string> keys, int? top = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<HashMultResponse<T>> HashMultList<T>(ICollection<string> keys, int? top = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool HashExists(string key, string hashKey)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool HashDelete(string key, string hashKey)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool HashDelete(string key, ICollection<string> hashKeys)
-        {
-            throw new NotImplementedException();
-        }
+        #endregion
 
-        public bool HashRangeDelete(ICollection<BaseRequest<List<string>>> request)
-        {
-            throw new NotImplementedException();
-        }
+        #region 查找所有符合给定模式( pattern)的 key（异步）
 
-        public long HashIncrement(string key, string hashKey, long val = 1)
+        /// <summary>
+        /// 查找所有符合给定模式( pattern)的 key（异步）
+        /// </summary>
+        /// <param name="pattern">如：runoob*，不含prefix前辍RedisHelper.Name</param>
+        /// <returns></returns>
+        public async Task<List<string>> KeysAsync(string pattern = "*")
         {
-            throw new NotImplementedException();
+            return (await this._client.KeysAsync(pattern)).ToList();
         }
 
-        public long HashDecrement(string key, string hashKey, long val = 1)
-        {
-            throw new NotImplementedException();
-        }
+        #endregion
     }
 }

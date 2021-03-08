@@ -26,7 +26,7 @@ namespace Wolf.Extension.Cache.Abstractions
         Task<bool> SetAsync(
             string key,
             string value,
-            PersistentOps persistentOps = null);
+            BasePersistentOps persistentOps = null);
 
         /// <summary>
         /// 设置缓存键值对集合(异步)
@@ -48,7 +48,7 @@ namespace Wolf.Extension.Cache.Abstractions
         Task<bool> SetAsync<T>(
             string key,
             T obj,
-            PersistentOps persistentOps = null);
+            BasePersistentOps persistentOps = null);
 
         /// <summary>
         /// 保存多个对象集合(异步)

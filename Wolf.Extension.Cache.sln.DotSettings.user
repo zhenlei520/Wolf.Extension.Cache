@@ -11,6 +11,10 @@
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=f0545764_002D9952_002D46fe_002D8ca8_002De8b328ae8274/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="GetRange" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;TestAncestor&gt;&#xD;
     &lt;TestId&gt;xUnit::E07541DC-C58C-49F4-BF5C-B6C004E4B14F::.NETCoreApp,Version=v3.1::Wolf.Extension.Cache.UnitTest.CacheProviderUnitTest.GetRange&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;xUnit::E07541DC-C58C-49F4-BF5C-B6C004E4B14F::.NETCoreApp,Version=v3.1::Wolf.Extension.Cache.UnitTest.CacheProviderUnitTest.Increment&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;xUnit::E07541DC-C58C-49F4-BF5C-B6C004E4B14F::.NETCoreApp,Version=v3.1::Wolf.Extension.Cache.UnitTest.CacheProviderUnitTest.Exist&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;xUnit::E07541DC-C58C-49F4-BF5C-B6C004E4B14F::.NETCoreApp,Version=v3.1::Wolf.Extension.Cache.UnitTest.CacheProviderUnitTest.SetExpire&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;xUnit::E07541DC-C58C-49F4-BF5C-B6C004E4B14F::.NETCoreApp,Version=v3.1::Wolf.Extension.Cache.UnitTest.CacheProviderUnitTest.RemoveRange&lt;/TestId&gt;&#xD;
   &lt;/TestAncestor&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
 	</wpf:ResourceDictionary>

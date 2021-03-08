@@ -2,18 +2,24 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Linq;
+using CSRedis;
+using Wolf.Extension.Cache.Abstractions.Common;
 using Wolf.Extension.Cache.Abstractions.Configurations;
 using Wolf.Extension.Cache.Abstractions.Request.Base;
 using Wolf.Extension.Cache.Abstractions.Request.Hash;
 using Wolf.Extension.Cache.Abstractions.Response.Hash;
+using Wolf.Extension.Cache.Redis.Internal;
 
-namespace Wolf.Extension.Cache.Abstractions
+namespace Wolf.Extension.Cache.Redis
 {
     /// <summary>
     /// Hash
     /// </summary>
-    public partial interface ICacheProvider
+    public partial class CacheProvider
     {
+        #region 存储数据到Hash表
+
         /// <summary>
         /// 存储数据到Hash表
         /// </summary>
@@ -22,11 +28,18 @@ namespace Wolf.Extension.Cache.Abstractions
         /// <param name="value">hash值</param>
         /// <param name="persistentOps">策略</param>
         /// <returns></returns>
-        bool HashSet(
+        public bool HashSet(
             string key,
             string hashKey,
             string value,
-            HashPersistentOps persistentOps = null);
+            HashPersistentOps persistentOps = null)
+        {
+            return this.HashSet<string>(key, hashKey, value, persistentOps);
+        }
+
+        #endregion
+
+        #region 存储数据到Hash表
 
         /// <summary>
         /// 存储数据到Hash表
@@ -34,9 +47,16 @@ namespace Wolf.Extension.Cache.Abstractions
         /// <param name="request">缓存键集合</param>
         /// <param name="persistentOps">策略</param>
         /// <returns></returns>
-        bool HashSet(
+        public bool HashSet(
             MultHashRequest<HashRequest<string>> request,
-            HashPersistentOps persistentOps = null);
+            HashPersistentOps persistentOps = null)
+        {
+            return this.HashSet<string>(request, persistentOps);
+        }
+
+        #endregion
+
+        #region 存储数据到Hash表
 
         /// <summary>
         /// 存储数据到Hash表
@@ -47,11 +67,30 @@ namespace Wolf.Extension.Cache.Abstractions
         /// <param name="persistentOps">策略</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        bool HashSet<T>(
+        public bool HashSet<T>(
             string key,
             string hashKey,
             T value,
-            HashPersistentOps persistentOps = null);
+            HashPersistentOps persistentOps = null)
+        {
+            persistentOps = persistentOps.Get();
+            if (persistentOps.IsCanHashExpire)
+            {
+                return false;
+            }
+            else
+            {
+                return this._client.StartPipe(pipe =>
+                {
+                    pipe.HSet(key, hashKey, value);
+                    pipe.Expire(key, persistentOps.HashOverdueTimeSpan);
+                }).Any(x => (bool) x);
+            }
+        }
+
+        #endregion
+
+        #region 存储数据到Hash表
 
         /// <summary>
         /// 存储数据到Hash表
@@ -59,9 +98,44 @@ namespace Wolf.Extension.Cache.Abstractions
         /// <param name="request">缓存键以及Hash键值对集合的集合</param>
         /// <param name="persistentOps">策略</param>
         /// <returns></returns>
-        bool HashSet(
+        public bool HashSet(
             List<MultHashRequest<HashRequest<string>>> request,
-            HashPersistentOps persistentOps = null);
+            HashPersistentOps persistentOps = null)
+        {
+            persistentOps = persistentOps.Get();
+            var ret = this._client.StartPipe(client =>
+            {
+                CSRedisClientPipe<bool> clientPipe = null;
+                RedisExistence? exists = persistentOps.SetStrategy.GetRedisExistence();
+
+                if (persistentOps.IsCanHashExpire)
+                {
+                    //指定hash键过期
+                }
+                else
+                {
+                    foreach (var item in request)
+                    {
+                        foreach (var hashRequest in item.List)
+                        {
+                            if (clientPipe == null)
+                            {
+                                clientPipe = client.HSet(item.Key, hashRequest.HashKey, hashRequest.Value, exists);
+                            }
+                            else
+                            {
+                                clientPipe.HSet(item.Key, hashRequest.HashKey, hashRequest.Value, exists);
+                            }
+                        }
+
+                        clientPipe?.Expire(item.Key, persistentOps.HashOverdueTimeSpan);
+                    }
+                }
+            });
+            return ret.Any(x => (bool) x);
+        }
+
+        #endregion
 
         /// <summary>
         /// 存储数据到Hash表
