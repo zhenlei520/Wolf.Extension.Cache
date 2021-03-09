@@ -19,6 +19,236 @@ namespace Wolf.Extension.Cache
     /// </summary>
     public class NullCacheProvider : ICacheProvider
     {
+        public Task<bool> HashSetAsync(string key, string hashKey, string value, HashPersistentOps persistentOps = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> HashSetAsync(MultHashRequest<HashRequest<string>> request, HashPersistentOps persistentOps = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> HashSetAsync(List<MultHashRequest<HashRequest<string>>> request, HashPersistentOps persistentOps = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> HashSetAsync<T>(string key, string hashKey, T value, HashPersistentOps persistentOps = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> HashSetAsync<T>(MultHashRequest<HashRequest<T>> request, HashPersistentOps persistentOps = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> HashSetAsync<T>(List<MultHashRequest<HashRequest<T>>> request, HashPersistentOps persistentOps = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<string> HashGetAsync(string key, string hashKey)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<HashResponse<string>>> HashGetAsync(string key, List<string> hashKeys)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<HashMultResponse<string>>> HashGetAsync(List<MultHashRequest<string>> list)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<T> HashGetAsync<T>(string key, string hashKey)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<HashResponse<T>>> HashGetAsync<T>(string key, ICollection<string> hashKeys)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<HashMultResponse<T>>> HashGetAsync<T>(ICollection<MultHashRequest<string>> list)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<string>> HashKeyListAsync(string key, int? top = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<HashResponse<string>>> HashListAsync(string key, int? top = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<HashResponse<T>>> HashListAsync<T>(string key, int? top = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<HashMultResponse<string>>> HashMultListAsync(ICollection<string> keys, int? top = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<HashMultResponse<T>>> HashMultListAsync<T>(ICollection<string> keys, int? top = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> HashExistsAsync(string key, string hashKey)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> HashDeleteAsync(string key, string hashKey)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> HashDeleteAsync(string key, ICollection<string> hashKeys)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> HashRangeDeleteAsync(ICollection<BaseRequest<List<string>>> request)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<long> HashIncrementAsync(string key, string hashKey, long val = 1)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<long> HashDecrementAsync(string key, string hashKey, long val = 1)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool HashSet(string key, string hashKey, string value, HashPersistentOps persistentOps = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool HashSet(MultHashRequest<HashRequest<string>> request, HashPersistentOps persistentOps = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool HashSet(List<MultHashRequest<HashRequest<string>>> request, HashPersistentOps persistentOps = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool HashSet<T>(string key, string hashKey, T value, HashPersistentOps persistentOps = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool HashSet<T>(MultHashRequest<HashRequest<T>> request, HashPersistentOps persistentOps = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool HashSet<T>(ICollection<MultHashRequest<HashRequest<T>>> request, HashPersistentOps persistentOps = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string HashGet(string key, string hashKey)
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<HashResponse<string>> HashGet(string key, ICollection<string> hashKeys)
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<HashMultResponse<string>> HashGet(ICollection<MultHashRequest<string>> list)
+        {
+            throw new NotImplementedException();
+        }
+
+        public T HashGet<T>(string key, string hashKey)
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<HashResponse<T>> HashGet<T>(string key, ICollection<string> hashKeys)
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<HashMultResponse<T>> HashGet<T>(ICollection<MultHashRequest<string>> list)
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<string> HashKeyList(string key, int? top = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<HashResponse<string>> HashList(string key, int? top = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<HashResponse<T>> HashList<T>(string key, int? top = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<HashMultResponse<string>> HashMultList(ICollection<string> keys, int? top = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<HashMultResponse<T>> HashMultList<T>(ICollection<string> keys, int? top = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool HashExists(string key, string hashKey)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool HashDelete(string key, string hashKey)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool HashDelete(string key, ICollection<string> hashKeys)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool HashRangeDelete(ICollection<BaseRequest<List<string>>> request)
+        {
+            throw new NotImplementedException();
+        }
+
+        public long HashIncrement(string key, string hashKey, long val = 1)
+        {
+            throw new NotImplementedException();
+        }
+
+        public long HashDecrement(string key, string hashKey, long val = 1)
+        {
+            throw new NotImplementedException();
+        }
+
         public bool Set(string key, string value, BasePersistentOps persistentOps = null)
         {
             throw new NotImplementedException();
@@ -94,6 +324,56 @@ namespace Wolf.Extension.Cache
             throw new NotImplementedException();
         }
 
+        public Task<bool> SortedSetAsync(string key, string value, double score)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> SortedSetAsync<T>(string key, T value, double score)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> SortedSetRemoveAsync(string key, string value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> SortedSetRemoveAsync<T>(string key, T value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<string>> SortedSetRangeByRankAsync(string key, int count = 1000, bool isDesc = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<T>> SortedSetRangeByRankAsync<T>(string key, int count = 1000, bool isDesc = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<string>> SortedSetRangeFromAsync(string key, int fromRank, int toRank, bool isDesc = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<T>> SortedSetRangeFromAsync<T>(string key, int fromRank, int toRank, bool isDesc = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> SortedSetExistAsync<T>(string key, T value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<long> SortedSetLengthAsync(string key)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<bool> SetAsync(string key, string value, BasePersistentOps persistentOps = null)
         {
             throw new NotImplementedException();
@@ -165,171 +445,6 @@ namespace Wolf.Extension.Cache
         }
 
         public Task<List<string>> KeysAsync(string pattern = "*")
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> SortedSetAsync(string key, string value, double score)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> SortedSetAsync<T>(string key, T value, double score)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> SortedSetRemoveAsync(string key, string value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> SortedSetRemoveAsync<T>(string key, T value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<string>> SortedSetRangeByRankAsync(string key, int count = 1000, bool isDesc = true)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<T>> SortedSetRangeByRankAsync<T>(string key, int count = 1000, bool isDesc = true)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<string>> SortedSetRangeFromAsync(string key, int fromRank, int toRank, bool isDesc = true)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<T>> SortedSetRangeFromAsync<T>(string key, int fromRank, int toRank, bool isDesc = true)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> SortedSetExistAsync<T>(string key, T value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<long> SortedSetLengthAsync(string key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> HashSetAsync(string key, string hashKey, string value, HashPersistentOps persistentOps = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> HashSetAsync(MultHashRequest<HashRequest<string>> request, HashPersistentOps persistentOps = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> HashSetAsync(List<MultHashRequest<HashRequest<string>>> request, HashPersistentOps persistentOps = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> HashSetAsync<T>(string key, string hashKey, T value, HashPersistentOps persistentOps = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> HashSetAsync<T>(MultHashRequest<HashRequest<T>> request, HashPersistentOps persistentOps = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> HashSetAsync<T>(List<MultHashRequest<HashRequest<T>>> request, HashPersistentOps persistentOps = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<string> HashGetAsync(string key, string hashKey)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<HashResponse<string>>> HashGetAsync(string key, List<string> hashKeys)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<HashMultResponse<string>>> HashGetAsync(List<MultHashRequest<string>> list)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<T> HashGetAsync<T>(string key, string hashKey)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<HashResponse<T>>> HashGetAsync<T>(string key, List<string> hashKeys)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<HashMultResponse<T>>> HashGetAsync<T>(ICollection<MultHashRequest<string>> list)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<string>> HashKeyListAsync(string key, int? top = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<HashResponse<string>>> HashListAsync(string key, int? top = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<HashResponse<T>>> HashListAsync<T>(string key, int? top = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<HashMultResponse<string>>> HashMultListAsync(ICollection<string> keys, int? top = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<HashMultResponse<T>>> HashMultListAsync<T>(ICollection<string> keys, int? top = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> HashExistsAsync(string key, string hashKey)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> HashDeleteAsync(string key, string hashKey)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> HashDeleteAsync(string key, ICollection<string> hashKeys)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> HashRangeDeleteAsync(ICollection<BaseRequest<List<string>>> request)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<long> HashIncrementAsync(string key, string hashKey, long val = 1)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<long> HashDecrementAsync(string key, string hashKey, long val = 1)
         {
             throw new NotImplementedException();
         }
@@ -530,121 +645,6 @@ namespace Wolf.Extension.Cache
         }
 
         public long ListLength(string key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool HashSet(string key, string hashKey, string value, HashPersistentOps persistentOps = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool HashSet(MultHashRequest<HashRequest<string>> request, HashPersistentOps persistentOps = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool HashSet(List<MultHashRequest<HashRequest<string>>> request, HashPersistentOps persistentOps = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool HashSet<T>(string key, string hashKey, T value, HashPersistentOps persistentOps = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool HashSet<T>(MultHashRequest<HashRequest<T>> request, HashPersistentOps persistentOps = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool HashSet<T>(ICollection<MultHashRequest<HashRequest<T>>> request, HashPersistentOps persistentOps = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public string HashGet(string key, string hashKey)
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<HashResponse<string>> HashGet(string key, ICollection<string> hashKeys)
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<HashMultResponse<string>> HashGet(ICollection<MultHashRequest<string>> list)
-        {
-            throw new NotImplementedException();
-        }
-
-        public T HashGet<T>(string key, string hashKey)
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<HashResponse<T>> HashGet<T>(string key, ICollection<string> hashKeys)
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<HashMultResponse<T>> HashGet<T>(ICollection<MultHashRequest<string>> list)
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<string> HashKeyList(string key, int? top = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<HashResponse<string>> HashList(string key, int? top = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<HashResponse<T>> HashList<T>(string key, int? top = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<HashMultResponse<string>> HashMultList(ICollection<string> keys, int? top = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<HashMultResponse<T>> HashMultList<T>(ICollection<string> keys, int? top = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool HashExists(string key, string hashKey)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool HashDelete(string key, string hashKey)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool HashDelete(string key, ICollection<string> hashKeys)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool HashRangeDelete(ICollection<BaseRequest<List<string>>> request)
-        {
-            throw new NotImplementedException();
-        }
-
-        public long HashIncrement(string key, string hashKey, long val = 1)
-        {
-            throw new NotImplementedException();
-        }
-
-        public long HashDecrement(string key, string hashKey, long val = 1)
         {
             throw new NotImplementedException();
         }

@@ -195,7 +195,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="key">缓存键</param>
         /// <param name="hashKeys">Hash键集合</param>
         /// <returns></returns>
-        public Task<List<HashResponse<T>>> HashGetAsync<T>(string key, List<string> hashKeys)
+        public Task<List<HashResponse<T>>> HashGetAsync<T>(string key, ICollection<string> hashKeys)
         {
             return Task.FromResult(this.HashGet<T>(key, hashKeys));
         }

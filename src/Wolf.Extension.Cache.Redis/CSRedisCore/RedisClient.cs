@@ -1,9 +1,6 @@
-﻿using System.Globalization;
-using System.Threading;
-using CSRedis.Internal;
+﻿using CSRedis.Internal;
 using System;
 using System.Text;
-using System.Threading.Tasks;
 using System.IO;
 using CSRedis.Internal.IO;
 using System.Net;

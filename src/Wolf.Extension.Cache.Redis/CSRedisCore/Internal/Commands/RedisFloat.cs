@@ -1,5 +1,4 @@
 ﻿using CSRedis.Internal.IO;
-using System;
 using System.Globalization;
 
 namespace CSRedis.Internal.Commands

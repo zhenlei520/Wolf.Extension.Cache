@@ -9,9 +9,7 @@ using Wolf.Extension.Cache.Abstractions.Common;
 using Wolf.Extension.Cache.Abstractions.Configurations;
 using Wolf.Extension.Cache.Abstractions.Enum;
 using Wolf.Extension.Cache.Abstractions.Request.Base;
-using Wolf.Extension.Cache.Abstractions.Request.Hash;
 using Wolf.Extension.Cache.Abstractions.Response.Base;
-using Wolf.Extension.Cache.Abstractions.Response.Hash;
 using Wolf.Extension.Cache.Redis.Internal;
 
 namespace Wolf.Extension.Cache.Redis

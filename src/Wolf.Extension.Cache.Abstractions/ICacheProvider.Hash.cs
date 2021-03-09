@@ -41,6 +41,16 @@ namespace Wolf.Extension.Cache.Abstractions
         /// <summary>
         /// 存储数据到Hash表
         /// </summary>
+        /// <param name="request">缓存键以及Hash键值对集合的集合</param>
+        /// <param name="persistentOps">策略</param>
+        /// <returns></returns>
+        bool HashSet(
+            List<MultHashRequest<HashRequest<string>>> request,
+            HashPersistentOps persistentOps = null);
+
+        /// <summary>
+        /// 存储数据到Hash表
+        /// </summary>
         /// <param name="key">缓存键</param>
         /// <param name="hashKey">Hash键</param>
         /// <param name="value">hash值</param>
@@ -51,16 +61,6 @@ namespace Wolf.Extension.Cache.Abstractions
             string key,
             string hashKey,
             T value,
-            HashPersistentOps persistentOps = null);
-
-        /// <summary>
-        /// 存储数据到Hash表
-        /// </summary>
-        /// <param name="request">缓存键以及Hash键值对集合的集合</param>
-        /// <param name="persistentOps">策略</param>
-        /// <returns></returns>
-        bool HashSet(
-            List<MultHashRequest<HashRequest<string>>> request,
             HashPersistentOps persistentOps = null);
 
         /// <summary>

@@ -1,8 +1,4 @@
-﻿using CSRedis.Internal.IO;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System;
 using System.Threading.Tasks;
 
 namespace CSRedis.Internal.IO

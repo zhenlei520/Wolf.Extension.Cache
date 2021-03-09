@@ -2,9 +2,6 @@
 using CSRedis.Internal.Utilities;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.IO;
-using System.Reflection;
 
 namespace CSRedis.Internal.Commands
 {

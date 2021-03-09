@@ -123,7 +123,7 @@ namespace Wolf.Extension.Cache.Abstractions
         /// <param name="key">缓存键</param>
         /// <param name="hashKeys">Hash键集合</param>
         /// <returns></returns>
-        Task<List<HashResponse<T>>> HashGetAsync<T>(string key, List<string> hashKeys);
+        Task<List<HashResponse<T>>> HashGetAsync<T>(string key, ICollection<string> hashKeys);
 
         /// <summary>
         /// 从缓存中取出多个key对应的hash键集合（异步）

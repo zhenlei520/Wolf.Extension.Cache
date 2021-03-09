@@ -198,7 +198,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <param name="key">缓存键</param>
         /// <param name="hashKeys">Hash键集合</param>
         /// <returns></returns>
-        public async Task<List<HashResponse<T>>> HashGetAsync<T>(string key, List<string> hashKeys)
+        public async Task<List<HashResponse<T>>> HashGetAsync<T>(string key, ICollection<string> hashKeys)
         {
             return (await this.HashGetAsync(key, hashKeys)).Select(x => new HashResponse<T>()
             {

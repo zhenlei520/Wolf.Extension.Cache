@@ -1,11 +1,7 @@
 ﻿
 using CSRedis.Internal.IO;
-using CSRedis.Internal.Utilities;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Globalization;
-using System.IO;
+
 namespace CSRedis.Internal.Commands
 {
     class RedisStatus : RedisCommand<string>

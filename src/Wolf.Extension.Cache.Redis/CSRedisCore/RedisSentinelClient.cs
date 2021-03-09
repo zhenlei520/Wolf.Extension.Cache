@@ -1,10 +1,7 @@
 ﻿using CSRedis.Internal;
-using CSRedis.Internal.Commands;
 using CSRedis.Internal.IO;
 using System;
-using System.Collections.Generic;
 using System.Net;
-using System.Runtime.Serialization;
 using System.Text;
 
 namespace CSRedis
