@@ -239,7 +239,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="key">缓存key</param>
         /// <param name="top">得到前top条的Hash键值对集合，默认查询全部</param>
         /// <returns></returns>
-        public Task<List<HashResponse<string>>> HashListAsync(string key, int? top = null)
+        public Task<List<HashResponse<string>>> HashListAsync(string key, int top = -1)
         {
             return Task.FromResult(this.HashList(key, top));
         }

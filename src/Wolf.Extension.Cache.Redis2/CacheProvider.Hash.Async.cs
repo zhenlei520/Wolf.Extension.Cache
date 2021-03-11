@@ -260,7 +260,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <param name="key">缓存key</param>
         /// <param name="top">得到前top条的Hash键值对集合，默认查询全部</param>
         /// <returns></returns>
-        public async Task<List<HashResponse<string>>> HashListAsync(string key, int? top = null)
+        public async Task<List<HashResponse<string>>> HashListAsync(string key, int top = -1)
         {
             var hashKeys = await this.HashKeyListAsync(key, top);
             return this.HashGet(key, hashKeys);

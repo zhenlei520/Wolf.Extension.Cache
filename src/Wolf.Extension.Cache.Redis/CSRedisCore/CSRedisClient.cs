@@ -291,7 +291,7 @@ namespace CSRedis
         /// <param name="convert"></param>
         /// <param name="connectionStrings"></param>
         /// <exception cref="Exception"></exception>
-        protected CSRedisClient(IJsonFactory jsonFactory, Func<string, string> nodeRule, string[] sentinels,
+        public CSRedisClient(IJsonFactory jsonFactory, Func<string, string> nodeRule, string[] sentinels,
             bool readOnly, SentinelMasterConverter convert = null, params string[] connectionStrings)
         {
             this._jsonProvider = jsonFactory.Create();

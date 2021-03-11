@@ -79,12 +79,12 @@ namespace Wolf.Extension.Cache
             throw new NotImplementedException();
         }
 
-        public Task<List<string>> HashKeyListAsync(string key, int top = bad)
+        public Task<List<string>> HashKeyListAsync(string key, int top = -1)
         {
             throw new NotImplementedException();
         }
 
-        public Task<List<HashResponse<string>>> HashListAsync(string key, int? top = null)
+        public Task<List<HashResponse<string>>> HashListAsync(string key, int top = -1)
         {
             throw new NotImplementedException();
         }
@@ -194,7 +194,7 @@ namespace Wolf.Extension.Cache
             throw new NotImplementedException();
         }
 
-        public List<string> HashKeyList(string key, int top = bad)
+        public List<string> HashKeyList(string key, int top = -1)
         {
             throw new NotImplementedException();
         }

@@ -9,6 +9,27 @@ namespace Wolf.Extension.Cache.Redis.Configurations
     public class RedisOptions
     {
         /// <summary>
+        ///
+        /// </summary>
+        /// <param name="ip">Ip地址</param>
+        /// <param name="port">端口</param>
+        /// <param name="password">密码</param>
+        /// <param name="prefix">前缀</param>
+        /// <param name="dataBase">储存的数据库索引</param>
+        /// <param name="poolSize">Redis连接池连接数</param>
+        /// <param name="ssl">Enable encrypted transmission</param>
+        public RedisOptions(string ip, int port, string password,string prefix,int dataBase,int poolSize,bool ssl=false)
+        {
+            this.Prefix = prefix;
+            this.Ip = ip;
+            this.Port = port;
+            this.Password = password;
+            this.DataBase = dataBase;
+            this.PoolSize = poolSize;
+            this.Ssl = ssl;
+        }
+
+        /// <summary>
         /// 前缀
         /// </summary>
         public string Prefix { get; set; }
@@ -37,5 +58,10 @@ namespace Wolf.Extension.Cache.Redis.Configurations
         /// Redis连接池连接数
         /// </summary>
         public int PoolSize { get; set; }
+
+        /// <summary>
+        /// Enable encrypted transmission
+        /// </summary>
+        public bool Ssl { get; set; }
     }
 }

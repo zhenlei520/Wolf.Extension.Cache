@@ -146,7 +146,7 @@ namespace Wolf.Extension.Cache.Abstractions
         /// <param name="key">缓存key</param>
         /// <param name="top">得到前top条的Hash键值对集合，默认查询全部</param>
         /// <returns></returns>
-        Task<List<HashResponse<string>>> HashListAsync(string key, int? top = null);
+        Task<List<HashResponse<string>>> HashListAsync(string key, int top = -1);
 
         /// <summary>
         /// 根据缓存key得到全部的hash键值对集合

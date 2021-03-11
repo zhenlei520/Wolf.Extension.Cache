@@ -429,7 +429,7 @@ namespace Wolf.Extension.Cache.MemoryCache
             List<HashResponse<T>> list = new List<HashResponse<T>>();
             foreach (var item in cacheInfo)
             {
-                if (top == null || i < top.Value)
+                if (top != -1 || i < top)
                 {
                     list.Add(new HashResponse<T>()
                     {
@@ -491,7 +491,7 @@ namespace Wolf.Extension.Cache.MemoryCache
                 List<HashResponse<T>> list = new List<HashResponse<T>>();
                 foreach (var item in cacheInfo.Value)
                 {
-                    if (top == null || i < top.Value)
+                    if (top != -1 || i < top)
                     {
                         list.Add(new HashResponse<T>()
                         {
