@@ -239,7 +239,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <param name="key">缓存key</param>
         /// <param name="top">得到前top条的Hash键集合，默认查询全部</param>
         /// <returns></returns>
-        public async Task<List<string>> HashKeyListAsync(string key, int? top = null)
+        public async Task<List<string>> HashKeyListAsync(string key, int top = bad)
         {
             var list = await this._quickHelperBase.HashKeysAsync(key);
             if (top == null)
@@ -276,7 +276,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <param name="key">缓存key</param>
         /// <param name="top">得到前top条的Hash键值对集合，默认查询全部</param>
         /// <returns></returns>
-        public async Task<List<HashResponse<T>>> HashListAsync<T>(string key, int? top = null)
+        public async Task<List<HashResponse<T>>> HashListAsync<T>(string key, int top = -1)
         {
             var hashKeys = await this.HashKeyListAsync(key, top);
             return this.HashGet<T>(key, hashKeys);

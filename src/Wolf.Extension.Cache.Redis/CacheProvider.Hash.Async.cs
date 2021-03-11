@@ -248,12 +248,12 @@ namespace Wolf.Extension.Cache.Redis
         /// <param name="key">缓存key</param>
         /// <param name="top">得到前top条的Hash键集合，默认查询全部</param>
         /// <returns></returns>
-        public async Task<List<string>> HashKeyListAsync(string key, int? top = null)
+        public async Task<List<string>> HashKeyListAsync(string key, int top = -1)
         {
             var arrays = await this._client.HKeysAsync(key);
-            if (top != null)
+            if (top != -1)
             {
-                return arrays.Take(top.Value).ToList();
+                return arrays.Take(top).ToList();
             }
 
             return arrays.ToList();
@@ -269,7 +269,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <param name="key">缓存key</param>
         /// <param name="top">得到前top条的Hash键值对集合，默认查询全部</param>
         /// <returns></returns>
-        public Task<List<HashResponse<string>>> HashListAsync(string key, int? top = null)
+        public Task<List<HashResponse<string>>> HashListAsync(string key, int top = -1)
         {
             return this.HashListAsync<string>(key, top);
         }
@@ -284,7 +284,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <param name="key">缓存key</param>
         /// <param name="top">得到前top条的Hash键值对集合，默认查询全部</param>
         /// <returns></returns>
-        public Task<List<HashResponse<T>>> HashListAsync<T>(string key, int? top = null)
+        public Task<List<HashResponse<T>>> HashListAsync<T>(string key, int top = -1)
         {
             var hashKeys = this.HashKeyList(key, top);
             return this.HashGetAsync<T>(key, hashKeys);
@@ -300,7 +300,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <param name="keys">缓存键集合</param>
         /// <param name="top">得到前top条的Hash键值对集合，默认查询全部</param>
         /// <returns></returns>
-        public Task<List<HashMultResponse<string>>> HashMultListAsync(ICollection<string> keys, int? top = null)
+        public Task<List<HashMultResponse<string>>> HashMultListAsync(ICollection<string> keys, int top = -1)
         {
             return this.HashMultListAsync<string>(keys, top);
         }
@@ -316,7 +316,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <param name="top">得到前top条的Hash键值对集合，默认查询全部</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public async Task<List<HashMultResponse<T>>> HashMultListAsync<T>(ICollection<string> keys, int? top = null)
+        public async Task<List<HashMultResponse<T>>> HashMultListAsync<T>(ICollection<string> keys, int top = -1)
         {
             List<HashMultResponse<T>> ret = new List<HashMultResponse<T>>();
             foreach (var key in keys)

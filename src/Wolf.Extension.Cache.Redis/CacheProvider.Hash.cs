@@ -120,10 +120,12 @@ namespace Wolf.Extension.Cache.Redis
             HashPersistentOps persistentOps = null)
         {
             persistentOps = persistentOps.Get();
+            RedisExistence? exists = persistentOps.SetStrategy.GetRedisExistence();
+
+
             var ret = this._client.StartPipe(client =>
             {
                 CSRedisClientPipe<bool> clientPipe = null;
-                RedisExistence? exists = persistentOps.SetStrategy.GetRedisExistence();
 
                 if (persistentOps.IsCanHashExpire)
                 {
@@ -131,15 +133,27 @@ namespace Wolf.Extension.Cache.Redis
                 }
                 else
                 {
-                    foreach (var hashRequest in request.List)
+                    if (exists == null)
                     {
-                        if (clientPipe == null)
+                        clientPipe = client.HMSet(request.Key, request.List.SelectMany(x => new List<object>()
                         {
-                            clientPipe = client.HSet(request.Key, hashRequest.HashKey, hashRequest.Value, exists);
-                        }
-                        else
+                            x.HashKey,
+                            x.Value
+                        }).ToArray());
+                    }
+                    else
+                    {
+                        foreach (var hashRequest in request.List)
                         {
-                            clientPipe.HSet(request.Key, hashRequest.HashKey, hashRequest.Value, exists);
+                            if (clientPipe == null)
+                            {
+                                clientPipe = client.HSet(request.Key, hashRequest.HashKey, hashRequest.Value, exists);
+                            }
+                            else
+                            {
+                                clientPipe = clientPipe.HSet(request.Key, hashRequest.HashKey, hashRequest.Value,
+                                    exists);
+                            }
                         }
                     }
 
@@ -165,11 +179,10 @@ namespace Wolf.Extension.Cache.Redis
             HashPersistentOps persistentOps = null)
         {
             persistentOps = persistentOps.Get();
+            RedisExistence? exists = persistentOps.SetStrategy.GetRedisExistence();
             var ret = this._client.StartPipe(client =>
             {
                 CSRedisClientPipe<bool> clientPipe = null;
-                RedisExistence? exists = persistentOps.SetStrategy.GetRedisExistence();
-
                 if (persistentOps.IsCanHashExpire)
                 {
                     //指定hash键过期
@@ -178,15 +191,37 @@ namespace Wolf.Extension.Cache.Redis
                 {
                     foreach (var item in request)
                     {
-                        foreach (var hashRequest in item.List)
+                        if (exists == null)
                         {
                             if (clientPipe == null)
                             {
-                                clientPipe = client.HSet(item.Key, hashRequest.HashKey, hashRequest.Value, exists);
+                                clientPipe = client.HMSet(item.Key, item.List.SelectMany(x => new List<object>()
+                                {
+                                    x.HashKey,
+                                    x.Value
+                                }).ToArray());
                             }
                             else
                             {
-                                clientPipe.HSet(item.Key, hashRequest.HashKey, hashRequest.Value, exists);
+                                clientPipe = clientPipe.HMSet(item.Key, item.List.SelectMany(x => new List<object>()
+                                {
+                                    x.HashKey,
+                                    x.Value
+                                }).ToArray());
+                            }
+                        }
+                        else
+                        {
+                            foreach (var hashRequest in item.List)
+                            {
+                                if (clientPipe == null)
+                                {
+                                    clientPipe = client.HSet(item.Key, hashRequest.HashKey, hashRequest.Value, exists);
+                                }
+                                else
+                                {
+                                    clientPipe.HSet(item.Key, hashRequest.HashKey, hashRequest.Value, exists);
+                                }
                             }
                         }
 
@@ -313,12 +348,12 @@ namespace Wolf.Extension.Cache.Redis
         /// <param name="key">缓存key</param>
         /// <param name="top">得到前top条的Hash键集合，默认查询全部</param>
         /// <returns></returns>
-        public List<string> HashKeyList(string key, int? top = null)
+        public List<string> HashKeyList(string key, int top = -1)
         {
             var arrays = this._client.HKeys(key);
-            if (top != null)
+            if (top != -1)
             {
-                return arrays.Take(top.Value).ToList();
+                return arrays.Take(top).ToList();
             }
 
             return arrays.ToList();
@@ -334,7 +369,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <param name="key">缓存key</param>
         /// <param name="top">得到前top条的Hash键值对集合，默认查询全部</param>
         /// <returns></returns>
-        public List<HashResponse<string>> HashList(string key, int? top = null)
+        public List<HashResponse<string>> HashList(string key, int top = -1)
         {
             return this.HashList<string>(key, top);
         }
@@ -349,7 +384,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <param name="key">缓存key</param>
         /// <param name="top">得到前top条的Hash键值对集合，默认查询全部</param>
         /// <returns></returns>
-        public List<HashResponse<T>> HashList<T>(string key, int? top = null)
+        public List<HashResponse<T>> HashList<T>(string key, int top = -1)
         {
             var hashKeys = this.HashKeyList(key, top);
             return this.HashGet<T>(key, hashKeys);
@@ -365,7 +400,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <param name="keys">缓存键集合</param>
         /// <param name="top">得到前top条的Hash键值对集合，默认查询全部</param>
         /// <returns></returns>
-        public List<HashMultResponse<string>> HashMultList(ICollection<string> keys, int? top = null)
+        public List<HashMultResponse<string>> HashMultList(ICollection<string> keys, int top = -1)
         {
             return this.HashMultList<string>(keys, top);
         }
@@ -381,7 +416,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <param name="top">得到前top条的Hash键值对集合，默认查询全部</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public List<HashMultResponse<T>> HashMultList<T>(ICollection<string> keys, int? top = null)
+        public List<HashMultResponse<T>> HashMultList<T>(ICollection<string> keys, int top = -1)
         {
             return keys.Select(key => new HashMultResponse<T>()
             {

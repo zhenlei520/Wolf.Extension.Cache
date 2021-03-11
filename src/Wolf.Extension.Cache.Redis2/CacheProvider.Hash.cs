@@ -278,7 +278,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <param name="key">缓存key</param>
         /// <param name="top">得到前top条的Hash键集合，默认查询全部</param>
         /// <returns></returns>
-        public List<string> HashKeyList(string key, int? top = null)
+        public List<string> HashKeyList(string key, int top = bad)
         {
             var list = this._quickHelperBase.HashKeys(key);
             if (top == null)
@@ -299,7 +299,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <param name="key">缓存key</param>
         /// <param name="top">得到前top条的Hash键值对集合，默认查询全部</param>
         /// <returns></returns>
-        public List<HashResponse<string>> HashList(string key, int? top = null)
+        public List<HashResponse<string>> HashList(string key, int top = -1)
         {
             var hashKeys = this.HashKeyList(key, top);
             return this.HashGet(key, hashKeys);
@@ -315,7 +315,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <param name="key">缓存key</param>
         /// <param name="top">得到前top条的Hash键值对集合，默认查询全部</param>
         /// <returns></returns>
-        public List<HashResponse<T>> HashList<T>(string key, int? top = null)
+        public List<HashResponse<T>> HashList<T>(string key, int top = -1)
         {
             var hashKeys = this.HashKeyList(key, top);
             return this.HashGet<T>(key, hashKeys);
@@ -331,7 +331,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <param name="keys">缓存键集合</param>
         /// <param name="top">得到前top条的Hash键值对集合，默认查询全部</param>
         /// <returns></returns>
-        public List<HashMultResponse<string>> HashMultList(ICollection<string> keys, int? top = null)
+        public List<HashMultResponse<string>> HashMultList(ICollection<string> keys, int top = -1)
         {
             var list = keys.Select(key => new MultHashRequest<string>()
             {
@@ -352,7 +352,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <param name="top">得到前top条的Hash键值对集合，默认查询全部</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public List<HashMultResponse<T>> HashMultList<T>(ICollection<string> keys, int? top = null)
+        public List<HashMultResponse<T>> HashMultList<T>(ICollection<string> keys, int top = -1)
         {
             var list = keys.Select(key => new MultHashRequest<string>()
             {

@@ -137,7 +137,7 @@ namespace Wolf.Extension.Cache.Abstractions
         /// <param name="key">缓存key</param>
         /// <param name="top">得到前top条的Hash键集合，默认查询全部</param>
         /// <returns></returns>
-        List<string> HashKeyList(string key, int? top = null);
+        List<string> HashKeyList(string key, int top = -1);
 
         /// <summary>
         /// 根据缓存key得到全部的hash键值对集合
@@ -145,7 +145,7 @@ namespace Wolf.Extension.Cache.Abstractions
         /// <param name="key">缓存key</param>
         /// <param name="top">得到前top条的Hash键值对集合，默认查询全部</param>
         /// <returns></returns>
-        List<HashResponse<string>> HashList(string key, int? top = null);
+        List<HashResponse<string>> HashList(string key, int top = -1);
 
         /// <summary>
         /// 根据缓存key得到全部的hash键值对集合
@@ -153,7 +153,7 @@ namespace Wolf.Extension.Cache.Abstractions
         /// <param name="key">缓存key</param>
         /// <param name="top">得到前top条的Hash键值对集合，默认查询全部</param>
         /// <returns></returns>
-        List<HashResponse<T>> HashList<T>(string key, int? top = null);
+        List<HashResponse<T>> HashList<T>(string key, int top = -1);
 
         /// <summary>
         /// 根据多个缓存key得到缓存key对应缓存key全部的hash键值对集合的集合列表
@@ -161,7 +161,7 @@ namespace Wolf.Extension.Cache.Abstractions
         /// <param name="keys">缓存键集合</param>
         /// <param name="top">得到前top条的Hash键值对集合，默认查询全部</param>
         /// <returns></returns>
-        List<HashMultResponse<string>> HashMultList(ICollection<string> keys, int? top = null);
+        List<HashMultResponse<string>> HashMultList(ICollection<string> keys, int top = -1);
 
         /// <summary>
         /// 根据多个缓存key得到缓存key对应缓存key全部的hash键值对集合的集合列表
@@ -170,7 +170,7 @@ namespace Wolf.Extension.Cache.Abstractions
         /// <param name="top">得到前top条的Hash键值对集合，默认查询全部</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        List<HashMultResponse<T>> HashMultList<T>(ICollection<string> keys, int? top = null);
+        List<HashMultResponse<T>> HashMultList<T>(ICollection<string> keys, int top = -1);
 
         /// <summary>
         /// 判断HashKey是否存在

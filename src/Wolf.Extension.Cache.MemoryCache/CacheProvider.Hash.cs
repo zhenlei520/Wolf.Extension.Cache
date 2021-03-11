@@ -369,7 +369,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="key">缓存key</param>
         /// <param name="top">得到前top条的Hash键集合，默认查询全部</param>
         /// <returns></returns>
-        public List<string> HashKeyList(string key, int? top = null)
+        public List<string> HashKeyList(string key, int top = -1)
         {
             var cacheInfo = this.Get<HashSet<HashResponse<string>>>(key);
             if (cacheInfo == null)
@@ -381,7 +381,7 @@ namespace Wolf.Extension.Cache.MemoryCache
             var i = 0;
             foreach (var item in cacheInfo)
             {
-                if (top == null || i < top.Value)
+                if (top !=-1 || i < top)
                 {
                     list.Add(item.HashKey);
                 }
@@ -402,7 +402,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="key">缓存key</param>
         /// <param name="top">得到前top条的Hash键值对集合，默认查询全部</param>
         /// <returns></returns>
-        public List<HashResponse<string>> HashList(string key, int? top = null)
+        public List<HashResponse<string>> HashList(string key, int top = -1)
         {
             return this.HashList<string>(key, top);
         }
@@ -417,7 +417,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="key">缓存key</param>
         /// <param name="top">得到前top条的Hash键值对集合，默认查询全部</param>
         /// <returns></returns>
-        public List<HashResponse<T>> HashList<T>(string key, int? top = null)
+        public List<HashResponse<T>> HashList<T>(string key, int top = -1)
         {
             var cacheInfo = this.Get<HashSet<HashResponse<T>>>(key);
             if (cacheInfo == null)
@@ -454,7 +454,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="keys">缓存键集合</param>
         /// <param name="top">得到前top条的Hash键值对集合，默认查询全部</param>
         /// <returns></returns>
-        public List<HashMultResponse<string>> HashMultList(ICollection<string> keys, int? top = null)
+        public List<HashMultResponse<string>> HashMultList(ICollection<string> keys, int top = -1)
         {
             return this.HashMultList<string>(keys, top);
         }
@@ -470,7 +470,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="top">得到前top条的Hash键值对集合，默认查询全部</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public List<HashMultResponse<T>> HashMultList<T>(ICollection<string> keys, int? top = null)
+        public List<HashMultResponse<T>> HashMultList<T>(ICollection<string> keys, int top = -1)
         {
             if (keys == null || !keys.Any())
             {

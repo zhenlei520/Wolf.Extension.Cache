@@ -1681,7 +1681,7 @@ namespace CSRedis
         public CSRedisClientPipe<bool> HSetNx(string key, string field, object value) => PipeCommand(key,
             (c, k) => c.Value.HSetNx(k, field, rds.SerializeRedisValueInternal(value)));
 
-        ///     <summary>
+        /// <summary>
         /// 只有在字段 field 存在时，设置哈希表字段的值
         /// </summary>
         /// <param name="key">不含prefix前辍</param>

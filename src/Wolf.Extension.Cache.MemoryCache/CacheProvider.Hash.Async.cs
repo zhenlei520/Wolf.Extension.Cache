@@ -224,7 +224,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="key">缓存key</param>
         /// <param name="top">得到前top条的Hash键集合，默认查询全部</param>
         /// <returns></returns>
-        public Task<List<string>> HashKeyListAsync(string key, int? top = null)
+        public Task<List<string>> HashKeyListAsync(string key, int top = -1)
         {
             return Task.FromResult<List<string>>(this.HashKeyList(key, top));
         }
@@ -254,7 +254,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="key">缓存key</param>
         /// <param name="top">得到前top条的Hash键值对集合，默认查询全部</param>
         /// <returns></returns>
-        public Task<List<HashResponse<T>>> HashListAsync<T>(string key, int? top = null)
+        public Task<List<HashResponse<T>>> HashListAsync<T>(string key, int top = -1)
         {
             return Task.FromResult(this.HashList<T>(key, top));
         }
@@ -269,7 +269,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="keys">缓存键集合</param>
         /// <param name="top">得到前top条的Hash键值对集合，默认查询全部</param>
         /// <returns></returns>
-        public Task<List<HashMultResponse<string>>> HashMultListAsync(ICollection<string> keys, int? top = null)
+        public Task<List<HashMultResponse<string>>> HashMultListAsync(ICollection<string> keys, int top = -1)
         {
             return Task.FromResult(this.HashMultList(keys, top));
         }
@@ -285,7 +285,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="top">得到前top条的Hash键值对集合，默认查询全部</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public Task<List<HashMultResponse<T>>> HashMultListAsync<T>(ICollection<string> keys, int? top = null)
+        public Task<List<HashMultResponse<T>>> HashMultListAsync<T>(ICollection<string> keys, int top = -1)
         {
             return Task.FromResult(this.HashMultList<T>(keys, top));
         }

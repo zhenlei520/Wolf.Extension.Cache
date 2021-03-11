@@ -79,7 +79,7 @@ namespace Wolf.Extension.Cache
             throw new NotImplementedException();
         }
 
-        public Task<List<string>> HashKeyListAsync(string key, int? top = null)
+        public Task<List<string>> HashKeyListAsync(string key, int top = bad)
         {
             throw new NotImplementedException();
         }
@@ -89,17 +89,17 @@ namespace Wolf.Extension.Cache
             throw new NotImplementedException();
         }
 
-        public Task<List<HashResponse<T>>> HashListAsync<T>(string key, int? top = null)
+        public Task<List<HashResponse<T>>> HashListAsync<T>(string key, int top = -1)
         {
             throw new NotImplementedException();
         }
 
-        public Task<List<HashMultResponse<string>>> HashMultListAsync(ICollection<string> keys, int? top = null)
+        public Task<List<HashMultResponse<string>>> HashMultListAsync(ICollection<string> keys, int top = -1)
         {
             throw new NotImplementedException();
         }
 
-        public Task<List<HashMultResponse<T>>> HashMultListAsync<T>(ICollection<string> keys, int? top = null)
+        public Task<List<HashMultResponse<T>>> HashMultListAsync<T>(ICollection<string> keys, int top = -1)
         {
             throw new NotImplementedException();
         }
@@ -194,27 +194,27 @@ namespace Wolf.Extension.Cache
             throw new NotImplementedException();
         }
 
-        public List<string> HashKeyList(string key, int? top = null)
+        public List<string> HashKeyList(string key, int top = bad)
         {
             throw new NotImplementedException();
         }
 
-        public List<HashResponse<string>> HashList(string key, int? top = null)
+        public List<HashResponse<string>> HashList(string key, int top = -1)
         {
             throw new NotImplementedException();
         }
 
-        public List<HashResponse<T>> HashList<T>(string key, int? top = null)
+        public List<HashResponse<T>> HashList<T>(string key, int top = -1)
         {
             throw new NotImplementedException();
         }
 
-        public List<HashMultResponse<string>> HashMultList(ICollection<string> keys, int? top = null)
+        public List<HashMultResponse<string>> HashMultList(ICollection<string> keys, int top = -1)
         {
             throw new NotImplementedException();
         }
 
-        public List<HashMultResponse<T>> HashMultList<T>(ICollection<string> keys, int? top = null)
+        public List<HashMultResponse<T>> HashMultList<T>(ICollection<string> keys, int top = -1)
         {
             throw new NotImplementedException();
         }
