@@ -1,7 +1,6 @@
 ﻿// Copyright (c) zhenlei520 All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Wolf.Extension.Cache.MemoryCache
@@ -137,7 +136,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="key">缓存建</param>
         /// <param name="count">获取多少的列表，默认获取1000条，不限制为-1</param>
         /// <returns></returns>
-        public Task<List<string>> ListLeftRangeAsync(string key, int count = 1000)
+        public Task<string[]> ListLeftRangeAsync(string key, int count = 1000)
         {
             return Task.FromResult(this.ListLeftRange(key, count));
         }
@@ -152,7 +151,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="key">缓存建</param>
         /// <param name="count">获取多少的列表，默认获取1000条，不限制为-1</param>
         /// <returns></returns>
-        public Task<List<T>> ListLeftRangeAsync<T>(string key, int count = 1000)
+        public Task<T[]> ListLeftRangeAsync<T>(string key, int count = 1000)
         {
             return Task.FromResult(this.ListLeftRange<T>(key, count));
         }
@@ -167,9 +166,9 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="key">缓存建</param>
         /// <param name="count">获取多少的列表，默认获取1000条，不限制为-1</param>
         /// <returns></returns>
-        public Task<List<string>> ListRightRangeAsync(string key, int count = 1000)
+        public Task<string[]> ListRightRangeAsync(string key, int count = 1000)
         {
-            return Task.FromResult<List<string>>(this.ListRightRange(key, count));
+            return Task.FromResult<string[]>(this.ListRightRange(key, count));
         }
 
         #endregion
@@ -182,9 +181,9 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="key">缓存建</param>
         /// <param name="count">获取多少的列表，默认获取1000条，不限制为-1</param>
         /// <returns></returns>
-        public Task<List<T>> ListRightRangeAsync<T>(string key, int count = 1000)
+        public Task<T[]> ListRightRangeAsync<T>(string key, int count = 1000)
         {
-            return Task.FromResult<List<T>>(this.ListRightRange<T>(key, count));
+            return Task.FromResult<T[]>(this.ListRightRange<T>(key, count));
         }
 
         #endregion

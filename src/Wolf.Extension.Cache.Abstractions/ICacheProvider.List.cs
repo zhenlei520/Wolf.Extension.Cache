@@ -1,8 +1,6 @@
 ﻿// Copyright (c) zhenlei520 All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
-
 namespace Wolf.Extension.Cache.Abstractions
 {
     /// <summary>
@@ -78,7 +76,7 @@ namespace Wolf.Extension.Cache.Abstractions
         /// <param name="key">缓存建</param>
         /// <param name="count">获取多少的列表，默认获取1000条，不限制为-1</param>
         /// <returns></returns>
-        List<string> ListLeftRange(string key, int count = 1000);
+        string[] ListLeftRange(string key, int count = 1000);
 
         /// <summary>
         /// 获取指定key的队列List
@@ -86,7 +84,7 @@ namespace Wolf.Extension.Cache.Abstractions
         /// <param name="key">缓存建</param>
         /// <param name="count">获取多少的列表，默认获取1000条，不限制为-1</param>
         /// <returns></returns>
-        List<T> ListLeftRange<T>(string key, int count = 1000);
+        T[] ListLeftRange<T>(string key, int count = 1000);
 
         /// <summary>
         /// 获取指定key的栈List
@@ -94,7 +92,7 @@ namespace Wolf.Extension.Cache.Abstractions
         /// <param name="key">缓存建</param>
         /// <param name="count">获取多少的列表，默认获取1000条，不限制为-1</param>
         /// <returns></returns>
-        List<string> ListRightRange(string key, int count = 1000);
+        string[] ListRightRange(string key, int count = 1000);
 
         /// <summary>
         /// 获取指定key的栈List
@@ -102,7 +100,7 @@ namespace Wolf.Extension.Cache.Abstractions
         /// <param name="key">缓存建</param>
         /// <param name="count">获取多少的列表，默认获取1000条，不限制为-1</param>
         /// <returns></returns>
-        List<T> ListRightRange<T>(string key, int count = 1000);
+        T[] ListRightRange<T>(string key, int count = 1000);
 
         /// <summary>
         /// 根据缓存键以及对应的list的值删除

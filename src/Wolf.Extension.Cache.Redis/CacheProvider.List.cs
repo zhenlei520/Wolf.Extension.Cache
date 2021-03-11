@@ -1,11 +1,9 @@
 ﻿// Copyright (c) zhenlei520 All rights reserved.
 
-using System.Collections.Generic;
-
 namespace Wolf.Extension.Cache.Redis
 {
     /// <summary>
-    /// List
+    /// List存储
     /// </summary>
     public partial class CacheProvider
     {
@@ -19,7 +17,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <returns>返回队列中总数</returns>
         public long ListRightPush(string key, string value)
         {
-            return this._quickHelperBase.RPush(key, new string[1] {value});
+            return this._client.LPush(key, value);
         }
 
         #endregion
@@ -35,7 +33,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <returns>返回队列中总数</returns>
         public long ListRightPush<T>(string key, T value)
         {
-            return this._quickHelperBase.RPush(key, ConvertJson(value));
+            return this._client.RPush(key, value);
         }
 
         #endregion
@@ -49,7 +47,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <returns></returns>
         public string ListRightPop(string key)
         {
-            return this._quickHelperBase.RPop(key);
+            return this._client.RPop(key);
         }
 
         #endregion
@@ -63,7 +61,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <returns></returns>
         public T ListRightPop<T>(string key)
         {
-            return ConvertObj<T>(this._quickHelperBase.RPop(key));
+            return this._client.RPop<T>(key);
         }
 
         #endregion
@@ -78,7 +76,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <returns>返回队列中总数</returns>
         public long ListLeftPush(string key, string value)
         {
-            return this._quickHelperBase.LPush(key, value);
+            return this._client.LPush(key, value);
         }
 
         #endregion
@@ -94,7 +92,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <returns>返回队列中总数</returns>
         public long ListLeftPush<T>(string key, T value)
         {
-            return this._quickHelperBase.LPush(key, ConvertJson(value));
+            return this._client.LPush(key, value);
         }
 
         #endregion
@@ -108,7 +106,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <returns></returns>
         public string ListLeftPop(string key)
         {
-            return this._quickHelperBase.LPop(key);
+            return this._client.LPop(key);
         }
 
         #endregion
@@ -122,7 +120,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <returns></returns>
         public T ListLeftPop<T>(string key)
         {
-            return ConvertObj<T>(this.ListLeftPop(key));
+            return this._client.LPop<T>(key);
         }
 
         #endregion
@@ -137,9 +135,12 @@ namespace Wolf.Extension.Cache.Redis
         /// <returns></returns>
         public string[] ListLeftRange(string key, int count = 1000)
         {
+            return this._client.LRange(key,0, count);
         }
 
         #endregion
+
+        #region 获取指定key的队列List
 
         /// <summary>
         /// 获取指定key的队列List
@@ -147,7 +148,14 @@ namespace Wolf.Extension.Cache.Redis
         /// <param name="key">缓存建</param>
         /// <param name="count">获取多少的列表，默认获取1000条，不限制为-1</param>
         /// <returns></returns>
-        List<T> ListLeftRange<T>(string key, int count = 1000);
+        public T[] ListLeftRange<T>(string key, int count = 1000)
+        {
+            return this._client.LRange<T>(key, 0, count);
+        }
+
+        #endregion
+
+        #region 获取指定key的栈List
 
         /// <summary>
         /// 获取指定key的栈List
@@ -155,7 +163,12 @@ namespace Wolf.Extension.Cache.Redis
         /// <param name="key">缓存建</param>
         /// <param name="count">获取多少的列表，默认获取1000条，不限制为-1</param>
         /// <returns></returns>
-        List<string> ListRightRange(string key, int count = 1000);
+        public string[] ListRightRange(string key, int count = 1000)
+        {
+            return this._client.LRange(key, -1, count);
+        }
+
+        #endregion
 
         #region 获取指定key的栈List
 
@@ -167,7 +180,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <returns></returns>
         public T[] ListRightRange<T>(string key, int count = 1000)
         {
-
+            return this._client.LRange<T>(key, -1, count);
         }
 
         #endregion
@@ -182,7 +195,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <returns>返回队列中总数</returns>
         public long ListRemove(string key, string value)
         {
-            return this.ListRemove<string>(key, value);
+            return this._client.LRem(key,0, value);
         }
 
         #endregion
@@ -198,7 +211,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <returns>返回队列中总数</returns>
         public long ListRemove<T>(string key, T value)
         {
-            return this._quickHelperBase.LRem(key, ConvertJson(value), 0);
+            return this._client.LRem(key,0, value);
         }
 
         #endregion
@@ -212,7 +225,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <returns></returns>
         public long ListLength(string key)
         {
-            return this._quickHelperBase.LLen(key);
+            return this._client.LLen(key);
         }
 
         #endregion

@@ -324,12 +324,12 @@ namespace Wolf.Extension.Cache
             throw new NotImplementedException();
         }
 
-        public Task<bool> SortedSetAsync(string key, string value, double score)
+        public Task<bool> SortedSetAsync(string key, string value, decimal score)
         {
             throw new NotImplementedException();
         }
 
-        public Task<bool> SortedSetAsync<T>(string key, T value, double score)
+        public Task<bool> SortedSetAsync<T>(string key, T value, decimal score)
         {
             throw new NotImplementedException();
         }
@@ -344,22 +344,22 @@ namespace Wolf.Extension.Cache
             throw new NotImplementedException();
         }
 
-        public Task<List<string>> SortedSetRangeByRankAsync(string key, int count = 1000, bool isDesc = true)
+        public Task<string[]> SortedSetRangeByRankAsync(string key, int count = 1000, bool isDesc = true)
         {
             throw new NotImplementedException();
         }
 
-        public Task<List<T>> SortedSetRangeByRankAsync<T>(string key, int count = 1000, bool isDesc = true)
+        public Task<T[]> SortedSetRangeByRankAsync<T>(string key, int count = 1000, bool isDesc = true)
         {
             throw new NotImplementedException();
         }
 
-        public Task<List<string>> SortedSetRangeFromAsync(string key, int fromRank, int toRank, bool isDesc = true)
+        public Task<string[]> SortedSetRangeFromAsync(string key, int fromRank, int toRank, bool isDesc = true)
         {
             throw new NotImplementedException();
         }
 
-        public Task<List<T>> SortedSetRangeFromAsync<T>(string key, int fromRank, int toRank, bool isDesc = true)
+        public Task<T[]> SortedSetRangeFromAsync<T>(string key, int fromRank, int toRank, bool isDesc = true)
         {
             throw new NotImplementedException();
         }
@@ -449,12 +449,12 @@ namespace Wolf.Extension.Cache
             throw new NotImplementedException();
         }
 
-        public bool SortedSet(string key, string value, double score)
+        public bool SortedSet(string key, string value, decimal score)
         {
             throw new NotImplementedException();
         }
 
-        public bool SortedSet<T>(string key, T value, double score)
+        public bool SortedSet<T>(string key, T value, decimal score)
         {
             throw new NotImplementedException();
         }
@@ -469,22 +469,22 @@ namespace Wolf.Extension.Cache
             throw new NotImplementedException();
         }
 
-        public List<string> SortedSetRangeByRank(string key, int count = 1000, bool isDesc = true)
+        public string[] SortedSetRangeByRank(string key, int count = 1000, bool isDesc = true)
         {
             throw new NotImplementedException();
         }
 
-        public List<T> SortedSetRangeByRank<T>(string key, int count = 1000, bool isDesc = true)
+        public T[] SortedSetRangeByRank<T>(string key, int count = 1000, bool isDesc = true)
         {
             throw new NotImplementedException();
         }
 
-        public List<string> SortedSetRangeFrom(string key, int fromRank, int toRank, bool isDesc = true)
+        public string[] SortedSetRangeFrom(string key, int fromRank, int toRank, bool isDesc = true)
         {
             throw new NotImplementedException();
         }
 
-        public List<T> SortedSetRangeFrom<T>(string key, int fromRank, int toRank, bool isDesc = true)
+        public T[] SortedSetRangeFrom<T>(string key, int fromRank, int toRank, bool isDesc = true)
         {
             throw new NotImplementedException();
         }
@@ -539,22 +539,22 @@ namespace Wolf.Extension.Cache
             throw new NotImplementedException();
         }
 
-        public Task<List<string>> ListLeftRangeAsync(string key, int count = 1000)
+        public Task<string[]> ListLeftRangeAsync(string key, int count = 1000)
         {
             throw new NotImplementedException();
         }
 
-        public Task<List<T>> ListLeftRangeAsync<T>(string key, int count = 1000)
+        public Task<T[]> ListLeftRangeAsync<T>(string key, int count = 1000)
         {
             throw new NotImplementedException();
         }
 
-        public Task<List<string>> ListRightRangeAsync(string key, int count = 1000)
+        public Task<string[]> ListRightRangeAsync(string key, int count = 1000)
         {
             throw new NotImplementedException();
         }
 
-        public Task<List<T>> ListRightRangeAsync<T>(string key, int count = 1000)
+        public Task<T[]> ListRightRangeAsync<T>(string key, int count = 1000)
         {
             throw new NotImplementedException();
         }
@@ -614,22 +614,22 @@ namespace Wolf.Extension.Cache
             throw new NotImplementedException();
         }
 
-        public List<string> ListLeftRange(string key, int count = 1000)
+        public string[] ListLeftRange(string key, int count = 1000)
         {
             throw new NotImplementedException();
         }
 
-        public List<T> ListLeftRange<T>(string key, int count = 1000)
+        public T[] ListLeftRange<T>(string key, int count = 1000)
         {
             throw new NotImplementedException();
         }
 
-        public List<string> ListRightRange(string key, int count = 1000)
+        public string[] ListRightRange(string key, int count = 1000)
         {
             throw new NotImplementedException();
         }
 
-        public List<T> ListRightRange<T>(string key, int count = 1000)
+        public T[] ListRightRange<T>(string key, int count = 1000)
         {
             throw new NotImplementedException();
         }

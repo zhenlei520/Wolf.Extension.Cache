@@ -197,7 +197,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="key">缓存建</param>
         /// <param name="count">获取多少的列表，默认获取1000条，不限制为-1</param>
         /// <returns></returns>
-        public List<string> ListLeftRange(string key, int count = 1000)
+        public string[] ListLeftRange(string key, int count = 1000)
         {
             return this.ListLeftRange<string>(key, count);
         }
@@ -212,10 +212,10 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="key">缓存建</param>
         /// <param name="count">获取多少的列表，默认获取1000条，不限制为-1</param>
         /// <returns></returns>
-        public List<T> ListLeftRange<T>(string key, int count = 1000)
+        public T[] ListLeftRange<T>(string key, int count = 1000)
         {
             var allList = this.Get<List<T>>(key);
-            return allList.Take(count).ToList();
+            return allList.Take(count).ToArray();
         }
 
         #endregion
@@ -228,7 +228,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="key">缓存建</param>
         /// <param name="count">获取多少的列表，默认获取1000条，不限制为-1</param>
         /// <returns></returns>
-        public List<string> ListRightRange(string key, int count = 1000)
+        public string[] ListRightRange(string key, int count = 1000)
         {
             return this.ListRightRange<string>(key, count);
         }
@@ -243,11 +243,11 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="key">缓存建</param>
         /// <param name="count">获取多少的列表，默认获取1000条，不限制为-1</param>
         /// <returns></returns>
-        public List<T> ListRightRange<T>(string key, int count = 1000)
+        public T[] ListRightRange<T>(string key, int count = 1000)
         {
             var allList = this.Get<List<T>>(key);
             allList.Reverse();
-            return allList.Take(count).ToList();
+            return allList.Take(count).ToArray();
         }
 
         #endregion

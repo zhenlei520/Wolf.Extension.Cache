@@ -20,9 +20,9 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="value">缓存值</param>
         /// <param name="score">分值</param>
         /// <returns></returns>
-        public Task<bool> SortedSetAsync(string key, string value, double score)
+        public Task<bool> SortedSetAsync(string key, string value, decimal score)
         {
-            return Task.FromResult<bool>(this.SortedSet(key, value, score));
+            return Task.FromResult<bool>(SortedSet(key, value, (decimal) score));
         }
 
         #endregion
@@ -37,9 +37,9 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="score">分值</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public Task<bool> SortedSetAsync<T>(string key, T value, double score)
+        public Task<bool> SortedSetAsync<T>(string key, T value, decimal score)
         {
-            return Task.FromResult(this.SortedSet(key, value, score));
+            return Task.FromResult(SortedSet(key, value, (decimal) score));
         }
 
         #endregion
@@ -84,7 +84,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="count">数量</param>
         /// <param name="isDesc">是否降序，默认降序</param>
         /// <returns></returns>
-        public Task<List<string>> SortedSetRangeByRankAsync(string key, int count = 1000, bool isDesc = true)
+        public Task<string[]> SortedSetRangeByRankAsync(string key, int count = 1000, bool isDesc = true)
         {
             return Task.FromResult(this.SortedSetRangeByRank(key, count, isDesc));
         }
@@ -101,7 +101,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="isDesc">是否降序，默认降序</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public Task<List<T>> SortedSetRangeByRankAsync<T>(string key, int count = 1000, bool isDesc = true)
+        public Task<T[]> SortedSetRangeByRankAsync<T>(string key, int count = 1000, bool isDesc = true)
         {
             return Task.FromResult(this.SortedSetRangeByRank<T>(key, count, isDesc));
         }
@@ -118,7 +118,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="toRank">终点排名下标（包含）</param>
         /// <param name="isDesc">是否降序，默认降序</param>
         /// <returns></returns>
-        public Task<List<string>> SortedSetRangeFromAsync(string key, int fromRank, int toRank, bool isDesc = true)
+        public Task<string[]> SortedSetRangeFromAsync(string key, int fromRank, int toRank, bool isDesc = true)
         {
             return Task.FromResult(this.SortedSetRangeFrom(key, fromRank, toRank, isDesc));
         }
@@ -136,7 +136,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="isDesc">是否降序，默认降序</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public Task<List<T>> SortedSetRangeFromAsync<T>(string key, int fromRank, int toRank, bool isDesc = true)
+        public Task<T[]> SortedSetRangeFromAsync<T>(string key, int fromRank, int toRank, bool isDesc = true)
         {
             return Task.FromResult(this.SortedSetRangeFrom<T>(key, fromRank, toRank, isDesc));
         }

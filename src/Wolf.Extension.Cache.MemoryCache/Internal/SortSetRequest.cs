@@ -17,7 +17,7 @@ namespace Wolf.Extension.Cache.MemoryCache.Internal
         /// <summary>
         /// 分数
         /// </summary>
-        public double Score { get; set; }
+        public decimal Score { get; set; }
     }
 
     /// <summary>

@@ -1,7 +1,6 @@
 ﻿// Copyright (c) zhenlei520 All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Wolf.Extension.Cache.Abstractions
@@ -79,7 +78,7 @@ namespace Wolf.Extension.Cache.Abstractions
         /// <param name="key">缓存建</param>
         /// <param name="count">获取多少的列表，默认获取1000条，不限制为-1</param>
         /// <returns></returns>
-        Task<List<string>> ListLeftRangeAsync(string key, int count = 1000);
+        Task<string[]> ListLeftRangeAsync(string key, int count = 1000);
 
         /// <summary>
         /// 获取指定key的List(异步)
@@ -87,7 +86,7 @@ namespace Wolf.Extension.Cache.Abstractions
         /// <param name="key">缓存建</param>
         /// <param name="count">获取多少的列表，默认获取1000条，不限制为-1</param>
         /// <returns></returns>
-        Task<List<T>> ListLeftRangeAsync<T>(string key, int count = 1000);
+        Task<T[]> ListLeftRangeAsync<T>(string key, int count = 1000);
 
         /// <summary>
         /// 获取指定key的栈List
@@ -95,7 +94,7 @@ namespace Wolf.Extension.Cache.Abstractions
         /// <param name="key">缓存建</param>
         /// <param name="count">获取多少的列表，默认获取1000条，不限制为-1</param>
         /// <returns></returns>
-        Task<List<string>> ListRightRangeAsync(string key, int count = 1000);
+        Task<string[]> ListRightRangeAsync(string key, int count = 1000);
 
         /// <summary>
         /// 获取指定key的栈List
@@ -103,7 +102,7 @@ namespace Wolf.Extension.Cache.Abstractions
         /// <param name="key">缓存建</param>
         /// <param name="count">获取多少的列表，默认获取1000条，不限制为-1</param>
         /// <returns></returns>
-        Task<List<T>> ListRightRangeAsync<T>(string key, int count = 1000);
+        Task<T[]> ListRightRangeAsync<T>(string key, int count = 1000);
 
         /// <summary>
         /// 根据缓存键以及对应的list的值删除(异步)

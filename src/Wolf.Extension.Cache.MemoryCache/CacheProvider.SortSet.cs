@@ -21,7 +21,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="value">缓存值</param>
         /// <param name="score">分值</param>
         /// <returns></returns>
-        public bool SortedSet(string key, string value, double score)
+        public bool SortedSet(string key, string value, decimal score)
         {
             return this.SortedSet<string>(key, value, score);
         }
@@ -38,7 +38,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="score">分值</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public bool SortedSet<T>(string key, T value, double score)
+        public bool SortedSet<T>(string key, T value, decimal score)
         {
             lock (obj)
             {
@@ -110,7 +110,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="count">数量</param>
         /// <param name="isDesc">是否降序，默认降序</param>
         /// <returns></returns>
-        public List<string> SortedSetRangeByRank(string key, int count = 1000, bool isDesc = true)
+        public string[] SortedSetRangeByRank(string key, int count = 1000, bool isDesc = true)
         {
             return this.SortedSetRangeByRank<string>(key, count, isDesc);
         }
@@ -127,20 +127,20 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="isDesc">是否降序，默认降序</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public List<T> SortedSetRangeByRank<T>(string key, int count = 1000, bool isDesc = true)
+        public T[] SortedSetRangeByRank<T>(string key, int count = 1000, bool isDesc = true)
         {
             var sortSetList = this.Get<SortedSet<SortSetRequest<T>>>(key);
             if (sortSetList == null)
             {
-                return new List<T>();
+                return new List<T>().ToArray();
             }
 
             if (isDesc)
             {
-                return sortSetList.OrderByDescending(x => x.Score).Take(count).Select(x => x.Data).ToList();
+                return sortSetList.OrderByDescending(x => x.Score).Take(count).Select(x => x.Data).ToArray();
             }
 
-            return sortSetList.OrderBy(x => x.Score).Take(count).Select(x => x.Data).ToList();
+            return sortSetList.OrderBy(x => x.Score).Take(count).Select(x => x.Data).ToArray();
         }
 
         #endregion
@@ -155,7 +155,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="toRank">终点排名下标（包含）</param>
         /// <param name="isDesc">是否降序，默认降序</param>
         /// <returns></returns>
-        public List<string> SortedSetRangeFrom(string key, int fromRank, int toRank, bool isDesc = true)
+        public string[] SortedSetRangeFrom(string key, int fromRank, int toRank, bool isDesc = true)
         {
             return this.SortedSetRangeFrom<string>(key, fromRank, toRank, isDesc);
         }
@@ -173,22 +173,22 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="isDesc">是否降序，默认降序</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public List<T> SortedSetRangeFrom<T>(string key, int fromRank, int toRank, bool isDesc = true)
+        public T[] SortedSetRangeFrom<T>(string key, int fromRank, int toRank, bool isDesc = true)
         {
             var sortSetList = this.Get<SortedSet<SortSetRequest<T>>>(key);
             if (sortSetList == null)
             {
-                return new List<T>();
+                return new List<T>().ToArray();
             }
 
             var count = toRank - fromRank + 1;
             if (isDesc)
             {
                 return sortSetList.OrderByDescending(x => x.Score).Take(fromRank).Take(count)
-                    .Select(x => x.Data).ToList();
+                    .Select(x => x.Data).ToArray();
             }
 
-            return sortSetList.OrderBy(x => x.Score).Take(count).Select(x => x.Data).ToList();
+            return sortSetList.OrderBy(x => x.Score).Take(count).Select(x => x.Data).ToArray();
         }
 
         #endregion
