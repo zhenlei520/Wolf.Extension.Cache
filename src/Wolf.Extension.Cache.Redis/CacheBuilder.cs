@@ -36,7 +36,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <summary>
         ///
         /// </summary>
-        public string Identify => "Redis";
+        public string Identify => GlobalConfigurations.ServiceName;
 
         /// <summary>
         /// 创建多个缓存服务

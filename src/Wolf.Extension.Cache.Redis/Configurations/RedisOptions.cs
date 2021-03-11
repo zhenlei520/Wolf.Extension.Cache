@@ -63,5 +63,14 @@ namespace Wolf.Extension.Cache.Redis.Configurations
         /// Enable encrypted transmission
         /// </summary>
         public bool Ssl { get; set; }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return $"{this.Ip}:{this.Port},password={this.Password},defaultDatabase={this.DataBase},prefix={this.Prefix},ssl={this.Ssl}";
+        }
     }
 }
