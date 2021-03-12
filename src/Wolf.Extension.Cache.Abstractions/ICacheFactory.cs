@@ -2,13 +2,14 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using Wolf.DependencyInjection.Abstracts;
 
 namespace Wolf.Extension.Cache.Abstractions
 {
     /// <summary>
     /// 存储服务
     /// </summary>
-    public interface ICacheFactory
+    public interface ICacheFactory : ISingleInstance
     {
         /// <summary>
         /// 创建多个缓存服务

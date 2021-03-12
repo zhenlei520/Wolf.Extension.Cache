@@ -275,7 +275,7 @@ namespace Wolf.Extension.Cache.Redis
         {
             if (keys == null || !keys.Any())
             {
-                return Task.FromResult(0l);
+                return Task.FromResult(0L);
             }
 
             return this._client.DelAsync(keys.ToArray());

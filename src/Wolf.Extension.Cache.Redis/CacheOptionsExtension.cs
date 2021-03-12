@@ -4,6 +4,8 @@
 using System;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
+using Wolf.DependencyInjection;
+using Wolf.Extension.Cache.Abstractions;
 using Wolf.Extension.Cache.Abstractions.Configurations;
 using Wolf.Extension.Cache.Redis.Configurations;
 using Wolf.Extension.Cache.Redis.Internal;
@@ -123,6 +125,7 @@ namespace Wolf.Extension.Cache.Redis
         private static IServiceCollection AddRedis(this IServiceCollection serviceCollection,
             CacheOptions cacheOptions)
         {
+            serviceCollection.TryAddEnumerable(typeof(ICacheBuilder), typeof(CacheBuilder), ServiceLifetime.Singleton);
             serviceCollection.AddSingleton(cacheOptions);
             return serviceCollection;
         }

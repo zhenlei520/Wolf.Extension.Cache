@@ -14,8 +14,8 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="Wolf.DependencyInjection" Version="0.0.1-preview-t003" />
-    <PackageReference Include="Wolf.Extensions.Serialize.Json.Abstracts" Version="0.0.1-preview-t004" />
+    <PackageReference Include="Wolf.DependencyInjection" Version="0.0.1-preview-t005" />
+    <PackageReference Include="Wolf.Extensions.Serialize.Json.Abstracts" Version="0.0.1-preview-t005" />
   </ItemGroup>
   
   <ItemGroup>

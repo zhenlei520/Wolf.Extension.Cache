@@ -1,5 +1,5 @@
 ﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=8faefbb4_002D1ac0_002D4d7c_002Da044_002D048096b5fb10/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="Set" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=8faefbb4_002D1ac0_002D4d7c_002Da044_002D048096b5fb10/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="Set" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;TestAncestor&gt;&#xD;
     &lt;TestId&gt;xUnit::E07541DC-C58C-49F4-BF5C-B6C004E4B14F::.NETCoreApp,Version=v3.1::Wolf.Extension.Cache.UnitTest.CacheProviderUnitTest.Set&lt;/TestId&gt;&#xD;
     &lt;TestId&gt;xUnit::E07541DC-C58C-49F4-BF5C-B6C004E4B14F::.NETCoreApp,Version=v3.1::Wolf.Extension.Cache.UnitTest.CacheProviderUnitTest.SetRange&lt;/TestId&gt;&#xD;
@@ -8,13 +8,15 @@
     &lt;TestId&gt;xUnit::E07541DC-C58C-49F4-BF5C-B6C004E4B14F::.NETCoreApp,Version=v3.1::Wolf.Extension.Cache.UnitTest.CacheProviderUnitTest.GetRange&lt;/TestId&gt;&#xD;
   &lt;/TestAncestor&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=f0545764_002D9952_002D46fe_002D8ca8_002De8b328ae8274/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="GetRange" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=f0545764_002D9952_002D46fe_002D8ca8_002De8b328ae8274/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="GetRange" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;TestAncestor&gt;&#xD;
     &lt;TestId&gt;xUnit::E07541DC-C58C-49F4-BF5C-B6C004E4B14F::.NETCoreApp,Version=v3.1::Wolf.Extension.Cache.UnitTest.CacheProviderUnitTest.GetRange&lt;/TestId&gt;&#xD;
     &lt;TestId&gt;xUnit::E07541DC-C58C-49F4-BF5C-B6C004E4B14F::.NETCoreApp,Version=v3.1::Wolf.Extension.Cache.UnitTest.CacheProviderUnitTest.Increment&lt;/TestId&gt;&#xD;
     &lt;TestId&gt;xUnit::E07541DC-C58C-49F4-BF5C-B6C004E4B14F::.NETCoreApp,Version=v3.1::Wolf.Extension.Cache.UnitTest.CacheProviderUnitTest.Exist&lt;/TestId&gt;&#xD;
     &lt;TestId&gt;xUnit::E07541DC-C58C-49F4-BF5C-B6C004E4B14F::.NETCoreApp,Version=v3.1::Wolf.Extension.Cache.UnitTest.CacheProviderUnitTest.SetExpire&lt;/TestId&gt;&#xD;
     &lt;TestId&gt;xUnit::E07541DC-C58C-49F4-BF5C-B6C004E4B14F::.NETCoreApp,Version=v3.1::Wolf.Extension.Cache.UnitTest.CacheProviderUnitTest.RemoveRange&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;xUnit::E07541DC-C58C-49F4-BF5C-B6C004E4B14F::.NETCoreApp,Version=v3.1::Wolf.Extension.Cache.UnitTest.CacheProviderUnitTest.Set&lt;/TestId&gt;&#xD;
   &lt;/TestAncestor&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
+	<s:Boolean x:Key="/Default/UnloadedProject/UnloadedProjects/=3227578e_002D4c5e_002D4b2e_002D9f9a_002D46681dfcf3b1_0023Wolf_002EExtension_002ECache_002ERedis2/@EntryIndexedValue">True</s:Boolean>
 	</wpf:ResourceDictionary>

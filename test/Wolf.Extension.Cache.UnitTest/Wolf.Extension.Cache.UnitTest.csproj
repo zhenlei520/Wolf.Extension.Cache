@@ -8,6 +8,7 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
+        <PackageReference Include="Wolf.DependencyInjection.Autofac" Version="0.0.1-preview-t005" />
         <PackageReference Include="Wolf.Extensions.Serialize.Json" Version="0.0.1-preview-t005" />
         <PackageReference Include="Wolf.Extensions.Serialize.Json.Newtonsoft" Version="0.0.1-preview-t005" />
         <PackageReference Include="xunit" Version="2.4.0" />
@@ -17,6 +18,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\src\Wolf.Extension.Cache.Redis\Wolf.Extension.Cache.Redis.csproj" />
+      <ProjectReference Include="..\..\src\Wolf.Extension.Cache\Wolf.Extension.Cache.csproj" />
     </ItemGroup>
 
 </Project>

@@ -21,7 +21,6 @@ namespace Wolf.Extension.Cache.Redis
     public partial class CacheProvider : ICacheProvider
     {
         private readonly CSRedisClient _client;
-        private readonly IJsonProvider _jsonProvider;
 
         /// <summary>
         ///

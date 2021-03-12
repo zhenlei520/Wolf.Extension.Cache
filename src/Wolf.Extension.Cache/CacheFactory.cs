@@ -32,6 +32,10 @@ namespace Wolf.Extension.Cache
         /// <returns></returns>
         public ICacheBuilder Create(string serviceName = "")
         {
+            if (serviceName.IsNullOrWhiteSpace())
+            {
+                return this._cacheBuilders.FirstOrDefault() ?? new NullCacheBuilder();
+            }
             return this._cacheBuilders.FirstOrDefault(x =>
                 x.Identify.Equals(serviceName, StringComparison.OrdinalIgnoreCase)) ?? new NullCacheBuilder();
         }
@@ -44,6 +48,10 @@ namespace Wolf.Extension.Cache
         /// <returns></returns>
         public IEnumerable<ICacheProvider> CreateProviders(string serviceName = "")
         {
+            if (serviceName.IsNullOrWhiteSpace())
+            {
+                return this._cacheBuilders.SelectMany(x => x.CreateProviders());
+            }
             return this._cacheBuilders.Where(x => x.Identify.Equals(serviceName, StringComparison.OrdinalIgnoreCase))
                 .SelectMany(x => x.CreateProviders());
         }
