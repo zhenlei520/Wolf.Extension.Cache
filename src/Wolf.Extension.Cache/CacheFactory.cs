@@ -37,7 +37,7 @@ namespace Wolf.Extension.Cache
                 return this._cacheBuilders.FirstOrDefault() ?? new NullCacheBuilder();
             }
             return this._cacheBuilders.FirstOrDefault(x =>
-                x.Identify.Equals(serviceName, StringComparison.OrdinalIgnoreCase)) ?? new NullCacheBuilder();
+                x.ServiceName.Equals(serviceName, StringComparison.OrdinalIgnoreCase)) ?? new NullCacheBuilder();
         }
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace Wolf.Extension.Cache
             {
                 return this._cacheBuilders.SelectMany(x => x.CreateProviders());
             }
-            return this._cacheBuilders.Where(x => x.Identify.Equals(serviceName, StringComparison.OrdinalIgnoreCase))
+            return this._cacheBuilders.Where(x => x.ServiceName.Equals(serviceName, StringComparison.OrdinalIgnoreCase))
                 .SelectMany(x => x.CreateProviders());
         }
 
@@ -108,7 +108,7 @@ namespace Wolf.Extension.Cache
             }
 
             return this._cacheBuilders.FirstOrDefault(x =>
-                       x.Identify.Equals(serviceName, StringComparison.OrdinalIgnoreCase)) ??
+                       x.ServiceName.Equals(serviceName, StringComparison.OrdinalIgnoreCase)) ??
                    throw new NotSupportedException($"服务名称为：{serviceName}");
         }
 

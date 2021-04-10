@@ -36,7 +36,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <summary>
         ///
         /// </summary>
-        public string Identify => GlobalConfigurations.ServiceName;
+        public virtual string ServiceName => GlobalConfigurations.ServiceName;
 
         /// <summary>
         /// 创建多个缓存服务
@@ -71,7 +71,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <returns></returns>
         private IEnumerable<CacheOptions> GetOptions()
         {
-            return this._cacheOptions.Where(x => x.ServiceName.Equals(Identify, StringComparison.OrdinalIgnoreCase));
+            return this._cacheOptions.Where(x => x.ServiceName.Equals(ServiceName, StringComparison.OrdinalIgnoreCase));
         }
 
         #endregion

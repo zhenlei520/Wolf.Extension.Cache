@@ -93,6 +93,7 @@ namespace Wolf.Extension.Cache.MemoryCache
             T value,
             HashPersistentOps persistentOps = null)
         {
+            persistentOps = persistentOps ?? new HashPersistentOps();
             lock (obj)
             {
                 var hashSet = this.Get<HashSet<HashResponse<T>>>(key);
@@ -100,7 +101,18 @@ namespace Wolf.Extension.Cache.MemoryCache
                 {
                     if (hashSet.Any(x => x.HashKey == hashKey))
                     {
+                        if (persistentOps.SetStrategy != null && persistentOps.SetStrategy == SetStrategy.NoFind)
+                        {
+                            return false;
+                        }
                         hashSet.RemoveWhere(x => x.HashKey == hashKey);
+                    }
+                    else
+                    {
+                        if(persistentOps.SetStrategy!=null&& persistentOps.SetStrategy==SetStrategy.Exist)
+                        {
+                            return false;
+                        }
                     }
                 }
                 else
@@ -132,6 +144,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         public bool HashSet<T>(MultHashRequest<HashRequest<T>> request,
             HashPersistentOps persistentOps = null)
         {
+            persistentOps = persistentOps ?? new HashPersistentOps();
             lock (obj)
             {
                 var hashSet = this.Get<HashSet<HashResponse<T>>>(request.Key);
@@ -144,7 +157,18 @@ namespace Wolf.Extension.Cache.MemoryCache
 
                     if (hashSet.Any(x => x.HashKey == item.HashKey))
                     {
+                        if (persistentOps.SetStrategy != null && persistentOps.SetStrategy == SetStrategy.NoFind)
+                        {
+                            continue;
+                        }
                         hashSet.RemoveWhere(x => x.HashKey == item.HashKey);
+                    }
+                    else
+                    {
+                        if (persistentOps.SetStrategy != null && persistentOps.SetStrategy == SetStrategy.Exist)
+                        {
+                            continue;
+                        }
                     }
 
                     hashSet.Add(new HashResponse<T>(item.HashKey, item.Value));
@@ -172,25 +196,38 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <returns></returns>
         public bool HashSet<T>(ICollection<MultHashRequest<HashRequest<T>>> request, HashPersistentOps persistentOps = null)
         {
+            persistentOps = persistentOps ?? new HashPersistentOps();
             lock (obj)
             {
                 List<BaseRequest<HashSet<HashResponse<T>>>> list = new List<BaseRequest<HashSet<HashResponse<T>>>>();
-
                 var cacheList = Get<HashSet<HashResponse<T>>>((ICollection<string>) request.Select(x => x.Key)) ??
                                 new List<BaseResponse<HashSet<HashResponse<T>>>>(); //得到缓存键对应的hash集合的集合
                 foreach (var item in request)
                 {
                     var hashSet = cacheList.FirstOrDefault(x => x.Key == item.Key) ??new BaseResponse<HashSet<HashResponse<T>>>(); //指定缓存的hash键值对集合
 
+                    List<string> takeHashKeyList = new List<string>();//跳过的hash集合
                     foreach (var hashInfo in item.List)
                     {
                         if (hashSet.Value.Any(x=>x.HashKey==hashInfo.HashKey))
                         {
+                            if (persistentOps.SetStrategy != null && persistentOps.SetStrategy == SetStrategy.NoFind)
+                            {
+                                takeHashKeyList.Add(hashInfo.HashKey);
+                                continue;
+                            }
                             hashSet.Value.RemoveWhere(x=>x.HashKey==hashInfo.HashKey);
+                        }
+                        else
+                        {
+                            if (persistentOps.SetStrategy != null && persistentOps.SetStrategy == SetStrategy.Exist)
+                            {
+                                takeHashKeyList.Add(hashInfo.HashKey);
+                            }
                         }
                     }
 
-                    foreach (var hashInfo in item.List)
+                    foreach (var hashInfo in item.List.Where(x=>!takeHashKeyList.Contains(x.HashKey)))
                     {
                         hashSet.Value.Add(new HashResponse<T>(hashInfo.HashKey, hashInfo.Value));
                     }

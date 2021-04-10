@@ -34,7 +34,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <summary>
         /// 服务名称
         /// </summary>
-        public string Identify => "MemoryCache";
+        public virtual string ServiceName => "MemoryCache";
 
         /// <summary>
         /// 权重
@@ -75,7 +75,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         private Wolf.Extension.Cache.MemoryCache.Configurations.MemoryCacheOptions GetOptions()
         {
             var options =
-                _options.FirstOrDefault(x => x.ServiceName.Equals(Identify, StringComparison.OrdinalIgnoreCase));
+                _options.FirstOrDefault(x => x.ServiceName.Equals(ServiceName, StringComparison.OrdinalIgnoreCase));
             if (options == null)
             {
                 return new Configurations.MemoryCacheOptions();

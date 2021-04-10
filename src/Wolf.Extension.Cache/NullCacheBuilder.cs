@@ -15,7 +15,7 @@ namespace Wolf.Extension.Cache
         /// <summary>
         ///
         /// </summary>
-        public string Identify => "Null";
+        public string ServiceName => "";
 
         /// <summary>
         /// 创建缓存服务
