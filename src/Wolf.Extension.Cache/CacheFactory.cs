@@ -36,6 +36,7 @@ namespace Wolf.Extension.Cache
             {
                 return this._cacheBuilders.FirstOrDefault() ?? new NullCacheBuilder();
             }
+
             return this._cacheBuilders.FirstOrDefault(x =>
                 x.ServiceName.Equals(serviceName, StringComparison.OrdinalIgnoreCase)) ?? new NullCacheBuilder();
         }
@@ -52,6 +53,7 @@ namespace Wolf.Extension.Cache
             {
                 return this._cacheBuilders.SelectMany(x => x.CreateProviders());
             }
+
             return this._cacheBuilders.Where(x => x.ServiceName.Equals(serviceName, StringComparison.OrdinalIgnoreCase))
                 .SelectMany(x => x.CreateProviders());
         }
@@ -76,8 +78,8 @@ namespace Wolf.Extension.Cache
         /// 创建缓存服务
         /// 如果注入同一个服务注入多次，则仅取第一个配置
         /// </summary>
-        /// <param name="serviceName">服务名称,默认查询权重最高的</param>
-        /// <param name="serviceId">服务id</param>
+        /// <param name="serviceName">服务名称,默认查询权重最高的（不可为空）</param>
+        /// <param name="serviceId">服务id（可为空）</param>
         /// <returns></returns>
         public ICacheProvider CreateProvider(string serviceName, string serviceId = "")
         {
