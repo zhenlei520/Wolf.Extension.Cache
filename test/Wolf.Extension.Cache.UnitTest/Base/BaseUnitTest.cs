@@ -2,12 +2,16 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using CSRedis;
 using Microsoft.Extensions.DependencyInjection;
 using Wolf.DependencyInjection.Autofac;
 using Wolf.Extension.Cache.Abstractions;
 using Wolf.Extension.Cache.Abstractions.Configurations;
 using Wolf.Extension.Cache.Redis;
 using Wolf.Extension.Cache.Redis.Configurations;
+using Wolf.Extension.Cache.Redis.Internal;
 using Wolf.Extensions.Serialize.Json.Abstracts;
 using Wolf.Extensions.Serialize.Json.Newtonsoft;
 
@@ -27,6 +31,12 @@ namespace Wolf.Extension.Cache.UnitTest.Base
             var redisOption = provider.GetService<CacheOptions>();
             var cacheBuilder = provider.GetService<ICacheBuilder>();
 
+            var options=provider.GetService<IEnumerable<CacheOptions>>();
+            RedisConfigs config = options.Select(x=>x.Configuration).FirstOrDefault() as RedisConfigs;
+            var csRedisClient = new CSRedisClient(provider.GetService<IJsonFactory>(), config.NodeRuleExternal,
+                config.Sentinels, config.ReadOnly, null, config.ConnectionStrings);
+
+            var s=csRedisClient.SIsMember("tes", "asd");
             _cacheProvider=provider.GetService<ICacheFactory>().CreateProvider();
             // CSRedisClient client = new CSRedisClient(new JsonFactory(new List<IJsonBuilder>()
             // {
@@ -40,7 +50,7 @@ namespace Wolf.Extension.Cache.UnitTest.Base
             var serviceCollection = new ServiceCollection();
 
             serviceCollection.AddNewtonsoftJson();
-            serviceCollection.AddRedis(new RedisOptions("127.0.0.1", 6379, "", "wolf", 0, 50, false), "");
+            serviceCollection.AddRedis(new RedisOptions("127.0.0.1", 6379, "", "", 0, 50, false), "");
             return serviceCollection.Build("Wolf");
         }
     }

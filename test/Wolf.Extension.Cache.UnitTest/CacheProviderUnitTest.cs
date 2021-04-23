@@ -25,6 +25,8 @@ namespace Wolf.Extension.Cache.UnitTest
         [InlineData("test", "1")]
         public void Set(string key, string value)
         {
+            base._cacheProvider.ListLeftPush("cacheKye", "woshice");
+
             base._cacheProvider.Set(key, value, new BasePersistentOps());
         }
 
@@ -213,7 +215,7 @@ namespace Wolf.Extension.Cache.UnitTest
 
         #region MyRegion
 
-        
+
 
         #endregion
     }
