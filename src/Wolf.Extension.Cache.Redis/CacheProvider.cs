@@ -11,7 +11,6 @@ using Wolf.Extension.Cache.Abstractions.Enum;
 using Wolf.Extension.Cache.Abstractions.Request.Base;
 using Wolf.Extension.Cache.Abstractions.Response.Base;
 using Wolf.Extension.Cache.Redis.Internal;
-using Wolf.Extensions.Serialize.Json.Abstracts;
 
 namespace Wolf.Extension.Cache.Redis
 {

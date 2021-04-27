@@ -3,7 +3,9 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using Wolf.Extension.Cache.Abstractions.Request.SortedSet;
 using Wolf.Extension.Cache.MemoryCache.Internal;
+using Wolf.Systems.Core;
 
 namespace Wolf.Extension.Cache.MemoryCache
 {
@@ -36,9 +38,42 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <param name="key">缓存键</param>
         /// <param name="value">缓存值</param>
         /// <param name="score">分值</param>
+        /// <returns></returns>
+        public bool SortedSet(string key, params SortedSetRequest<string>[] request)
+        {
+            return this.SortedSet<string>(key, request);
+        }
+
+        #endregion
+
+        #region 设置SortSet类型的缓存键值对
+
+        /// <summary>
+        /// 设置SortSet类型的缓存键值对
+        /// </summary>
+        /// <param name="key">缓存键</param>
+        /// <param name="value">缓存值</param>
+        /// <param name="score">分值</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         public bool SortedSet<T>(string key, T value, decimal score)
+        {
+            return this.SortedSet(key, new SortedSetRequest<T>(score, value));
+        }
+
+        #endregion
+
+        #region 设置SortSet类型的缓存键值对
+
+        /// <summary>
+        /// 设置SortSet类型的缓存键值对
+        /// </summary>
+        /// <param name="key">缓存键</param>
+        /// <param name="value">缓存值</param>
+        /// <param name="score">分值</param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public bool SortedSet<T>(string key, params SortedSetRequest<T>[] request)
         {
             lock (obj)
             {
@@ -49,10 +84,22 @@ namespace Wolf.Extension.Cache.MemoryCache
                         new SortSetRequestComparer<T>());
                 }
 
-                sortSetList.Add(new SortSetRequest<T>()
+                request.ForEach(item =>
                 {
-                    Data = value,
-                    Score = score
+                    var info = sortSetList.FirstOrDefault(x => x.Data.Equals(item.Data));
+                    if (info == null)
+                    {
+                        info = new SortSetRequest<T>()
+                        {
+                            Data = item.Data,
+                            Score = item.Score
+                        };
+                        sortSetList.Add(info);
+                    }
+                    else
+                    {
+                        info.Score = item.Score;
+                    }
                 });
                 return this.Set(key, sortSetList);
             }
@@ -95,6 +142,86 @@ namespace Wolf.Extension.Cache.MemoryCache
                 }
 
                 sortSetList.RemoveWhere(x => x.Data.Equals(value));
+                return this.Set(key, sortSetList);
+            }
+        }
+
+        #endregion
+
+        #region 移除有序集合中给定的分数区间的所有成员
+
+        /// <summary>
+        /// 移除有序集合中给定的分数区间的所有成员
+        /// </summary>
+        /// <param name="key">缓存键</param>
+        /// <param name="fromRank">开始位置，0表示第一个元素，-1表示最后一个元素</param>
+        /// <param name="toRank">结束位置，0表示第一个元素，-1表示最后一个元素</param>
+        /// <returns></returns>
+        public bool SortedSetRemoveByRank(string key, int fromRank, int toRank)
+        {
+            lock (obj)
+            {
+                var sortSetList = this.Get<SortedSet<SortSetRequest<object>>>(key);
+                if (sortSetList == null)
+                {
+                    return true;
+                }
+
+                //正序
+                var list = sortSetList.ToList();
+                if (fromRank >= 0)
+                {
+                    var lastIndex = toRank == -1 ? sortSetList.Count - 1 : toRank;
+                    // ReSharper disable once InvokeAsExtensionMethod
+                    Systems.Core.Extensions.ChangeResult(ref fromRank,ref lastIndex);
+                    if (lastIndex > sortSetList.Count - 1)
+                    {
+                        lastIndex = sortSetList.Count - 1;
+                    }
+                    var delList = list.Skip(fromRank).Take(lastIndex - fromRank + 1);
+                    sortSetList.RemoveWhere(x => delList.All(y => y.Data.Equals(x.Data)));
+                }
+                else if(fromRank==-1)
+                {
+                    int lastIndex = sortSetList.Count()-1;
+                    if (toRank > lastIndex)
+                    {
+                        return false;
+                    }
+                    var delList = list.Skip(toRank).Take(lastIndex - toRank + 1);
+                    sortSetList.RemoveWhere(x => delList.All(y => y.Data.Equals(x.Data)));
+                }
+                else
+                {
+                    return false;
+                }
+
+                return this.Set(key, sortSetList);
+            }
+        }
+
+        #endregion
+
+        #region 移除有序集合中给定的分数区间的所有成员
+
+        /// <summary>
+        /// 移除有序集合中给定的分数区间的所有成员
+        /// </summary>
+        /// <param name="key">缓存键</param>
+        /// <param name="min">分数最小值 decimal.MinValue 1</param>
+        /// <param name="max">分数最大值 decimal.MaxValue 10</param>
+        /// <returns></returns>
+        public bool SortedSetRemoveByScore(string key, decimal min, decimal max)
+        {
+            lock (obj)
+            {
+                var sortSetList = this.Get<SortedSet<SortSetRequest<object>>>(key);
+                if (sortSetList == null)
+                {
+                    return true;
+                }
+
+                sortSetList.RemoveWhere(x => x.Score >= min && x.Score <= max);
                 return this.Set(key, sortSetList);
             }
         }
@@ -226,6 +353,110 @@ namespace Wolf.Extension.Cache.MemoryCache
         {
             var sortSetList = this.Get<SortedSet<SortSetRequest<object>>>(key);
             return sortSetList?.Count ?? 0;
+        }
+
+        #endregion
+
+        #region 返回有序集KEY中，score值在min和max之间(默认包括score值等于min或max)的成员的数量
+
+        /// <summary>
+        /// 返回有序集KEY中，score值在min和max之间(默认包括score值等于min或max)的成员的数量
+        /// </summary>
+        /// <param name="key">缓存建</param>
+        /// <param name="min">score的最小值（包含）</param>
+        /// <param name="max">score的最大值（包含）</param>
+        /// <returns></returns>
+        public long SortedSetLength(string key, decimal min, decimal max)
+        {
+            var sortSetList = this.Get<SortedSet<SortSetRequest<object>>>(key);
+            return sortSetList.Count(x => x.Score >= min && x.Score <= max);
+        }
+
+        #endregion
+
+        #region 有序集合增长val
+
+        /// <summary>
+        /// 有序集合增长val
+        /// </summary>
+        /// <param name="key">缓存键</param>
+        /// <param name="value">值</param>
+        /// <param name="val">增加的值</param>
+        /// <returns></returns>
+        public decimal SortedSetIncrement(string key, string value, long val = 1)
+        {
+            return SortedSetIncrement<string>(key, value, val);
+        }
+
+        #endregion
+
+        #region 有序集合增长val
+
+        /// <summary>
+        /// 有序集合增长val
+        /// </summary>
+        /// <param name="key">缓存键</param>
+        /// <param name="value">值</param>
+        /// <param name="val">增加的值</param>
+        /// <returns></returns>
+        public decimal SortedSetIncrement<T>(string key, T value, long val = 1)
+        {
+            lock (obj)
+            {
+                var sortSetList = this.Get<SortedSet<SortSetRequest<T>>>(key) ?? new SortedSet<SortSetRequest<T>>(
+                    new List<SortSetRequest<T>>(),
+                    new SortSetRequestComparer<T>());
+
+                var info = sortSetList.FirstOrDefault(x => x.Data.Equals(value));
+                if (info == null)
+                {
+                    info = new SortSetRequest<T>()
+                    {
+                        Data = value,
+                        Score = val
+                    };
+                    sortSetList.Add(info);
+                }
+                else
+                {
+                    info.Score += val;
+                }
+
+                this.Set(key, sortSetList);
+                return info.Score;
+            }
+        }
+
+        #endregion
+
+        #region 有序集合减少val
+
+        /// <summary>
+        /// 有序集合减少val
+        /// </summary>
+        /// <param name="key">缓存键</param>
+        /// <param name="value">值</param>
+        /// <param name="val">增加的值</param>
+        /// <returns></returns>
+        public decimal SortedSetDecrement(string key, string value, long val = 1)
+        {
+            return this.SortedSetDecrement<string>(key, value, val);
+        }
+
+        #endregion
+
+        #region 有序集合减少val
+
+        /// <summary>
+        /// 有序集合减少val
+        /// </summary>
+        /// <param name="key">缓存键</param>
+        /// <param name="value">值</param>
+        /// <param name="val">增加的值</param>
+        /// <returns></returns>
+        public decimal SortedSetDecrement<T>(string key, T value, long val = 1)
+        {
+            return this.SortedSetIncrement(key, value, -1 * val);
         }
 
         #endregion

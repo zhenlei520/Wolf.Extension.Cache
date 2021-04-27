@@ -9,6 +9,7 @@ using Wolf.Extension.Cache.Abstractions.Configurations;
 using Wolf.Extension.Cache.Abstractions.Enum;
 using Wolf.Extension.Cache.Abstractions.Request.Base;
 using Wolf.Extension.Cache.Abstractions.Request.Hash;
+using Wolf.Extension.Cache.Abstractions.Request.SortedSet;
 using Wolf.Extension.Cache.Abstractions.Response.Base;
 using Wolf.Extension.Cache.Abstractions.Response.Hash;
 
@@ -249,6 +250,31 @@ namespace Wolf.Extension.Cache
             throw new NotImplementedException();
         }
 
+        public long SortedSetLength(string key, decimal min, decimal max)
+        {
+            throw new NotImplementedException();
+        }
+
+        public decimal SortedSetIncrement(string key, string value, long val = 1)
+        {
+            throw new NotImplementedException();
+        }
+
+        public decimal SortedSetIncrement<T>(string key, T value, long val = 1)
+        {
+            throw new NotImplementedException();
+        }
+
+        public decimal SortedSetDecrement(string key, string value, long val = 1)
+        {
+            throw new NotImplementedException();
+        }
+
+        public decimal SortedSetDecrement<T>(string key, T value, long val = 1)
+        {
+            throw new NotImplementedException();
+        }
+
         public bool Set(string key, string value, BasePersistentOps persistentOps = null)
         {
             throw new NotImplementedException();
@@ -329,7 +355,17 @@ namespace Wolf.Extension.Cache
             throw new NotImplementedException();
         }
 
+        public Task<bool> SortedSetAsync(string key, params SortedSetRequest<string>[] request)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<bool> SortedSetAsync<T>(string key, T value, decimal score)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> SortedSetAsync<T>(string key, params SortedSetRequest<T>[] request)
         {
             throw new NotImplementedException();
         }
@@ -340,6 +376,16 @@ namespace Wolf.Extension.Cache
         }
 
         public Task<bool> SortedSetRemoveAsync<T>(string key, T value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> SortedSetRemoveByRankAsync(string key, int fromRank, int toRank)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> SortedSetRemoveByScoreAsync(string key, decimal min, decimal max)
         {
             throw new NotImplementedException();
         }
@@ -370,6 +416,31 @@ namespace Wolf.Extension.Cache
         }
 
         public Task<long> SortedSetLengthAsync(string key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<long> SortedSetLengthAsync(string key, decimal min, decimal max)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<decimal> SortedSetIncrementAsync(string key, string value, long val = 1)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<decimal> SortedSetIncrementAsync<T>(string key, T value, long val = 1)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<decimal> SortedSetDecrementAsync(string key, string value, long val = 1)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<decimal> SortedSetDecrementAsync<T>(string key, T value, long val = 1)
         {
             throw new NotImplementedException();
         }
@@ -454,7 +525,17 @@ namespace Wolf.Extension.Cache
             throw new NotImplementedException();
         }
 
+        public bool SortedSet(string key, params SortedSetRequest<string>[] request)
+        {
+            throw new NotImplementedException();
+        }
+
         public bool SortedSet<T>(string key, T value, decimal score)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool SortedSet<T>(string key, params SortedSetRequest<T>[] request)
         {
             throw new NotImplementedException();
         }
@@ -465,6 +546,16 @@ namespace Wolf.Extension.Cache
         }
 
         public bool SortedSetRemove<T>(string key, T value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool SortedSetRemoveByRank(string key, int fromRank, int toRank)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool SortedSetRemoveByScore(string key, decimal min, decimal max)
         {
             throw new NotImplementedException();
         }

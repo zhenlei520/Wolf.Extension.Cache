@@ -1,8 +1,8 @@
 ﻿// Copyright (c) zhenlei520 All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
 using System.Threading.Tasks;
+using Wolf.Extension.Cache.Abstractions.Request.SortedSet;
 
 namespace Wolf.Extension.Cache.Abstractions
 {
@@ -26,9 +26,28 @@ namespace Wolf.Extension.Cache.Abstractions
         /// <param name="key">缓存键</param>
         /// <param name="value">缓存值</param>
         /// <param name="score">分值</param>
+        /// <returns></returns>
+        Task<bool> SortedSetAsync(string key, params SortedSetRequest<string>[] request);
+
+        /// <summary>
+        /// 设置SortSet类型的缓存键值对（异步）
+        /// </summary>
+        /// <param name="key">缓存键</param>
+        /// <param name="value">缓存值</param>
+        /// <param name="score">分值</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         Task<bool> SortedSetAsync<T>(string key, T value, decimal score);
+
+        /// <summary>
+        /// 设置SortSet类型的缓存键值对（异步）
+        /// </summary>
+        /// <param name="key">缓存键</param>
+        /// <param name="value">缓存值</param>
+        /// <param name="score">分值</param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        Task<bool> SortedSetAsync<T>(string key, params SortedSetRequest<T>[] request);
 
         /// <summary>
         /// 删除指定的缓存键的value（异步）
@@ -46,6 +65,24 @@ namespace Wolf.Extension.Cache.Abstractions
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         Task<bool> SortedSetRemoveAsync<T>(string key, T value);
+
+        /// <summary>
+        /// 移除有序集合中给定的分数区间的所有成员（异步）
+        /// </summary>
+        /// <param name="key">缓存键</param>
+        /// <param name="fromRank">开始位置，0表示第一个元素，-1表示最后一个元素</param>
+        /// <param name="toRank">结束位置，0表示第一个元素，-1表示最后一个元素</param>
+        /// <returns></returns>
+        Task<bool> SortedSetRemoveByRankAsync(string key, int fromRank, int toRank);
+
+        /// <summary>
+        /// 移除有序集合中给定的分数区间的所有成员（异步）
+        /// </summary>
+        /// <param name="key">缓存键</param>
+        /// <param name="min">分数最小值 decimal.MinValue 1</param>
+        /// <param name="max">分数最大值 decimal.MaxValue 10</param>
+        /// <returns></returns>
+        Task<bool> SortedSetRemoveByScoreAsync(string key, decimal min, decimal max);
 
         /// <summary>
         /// 根据排名查询指定缓存的count数量的值（异步）
@@ -102,5 +139,50 @@ namespace Wolf.Extension.Cache.Abstractions
         /// <param name="key">缓存键</param>
         /// <returns></returns>
         Task<long> SortedSetLengthAsync(string key);
+
+        /// <summary>
+        /// 返回有序集KEY中，score值在min和max之间(默认包括score值等于min或max)的成员的数量（异步）
+        /// </summary>
+        /// <param name="key">缓存建</param>
+        /// <param name="min">score的最小值（包含）</param>
+        /// <param name="max">score的最大值（包含）</param>
+        /// <returns></returns>
+        Task<long> SortedSetLengthAsync(string key, decimal min, decimal max);
+
+        /// <summary>
+        /// 有序集合增长val（异步）
+        /// </summary>
+        /// <param name="key">缓存键</param>
+        /// <param name="value">值</param>
+        /// <param name="val">增加的值</param>
+        /// <returns></returns>
+        Task<decimal> SortedSetIncrementAsync(string key, string value, long val = 1);
+
+        /// <summary>
+        /// 有序集合增长val（异步）
+        /// </summary>
+        /// <param name="key">缓存键</param>
+        /// <param name="value">值</param>
+        /// <param name="val">增加的值</param>
+        /// <returns></returns>
+        Task<decimal> SortedSetIncrementAsync<T>(string key, T value, long val = 1);
+
+        /// <summary>
+        /// 有序集合减少val（异步）
+        /// </summary>
+        /// <param name="key">缓存键</param>
+        /// <param name="value">值</param>
+        /// <param name="val">增加的值</param>
+        /// <returns></returns>
+        Task<decimal> SortedSetDecrementAsync(string key, string value, long val = 1);
+
+        /// <summary>
+        /// 有序集合减少val（异步）
+        /// </summary>
+        /// <param name="key">缓存键</param>
+        /// <param name="value">值</param>
+        /// <param name="val">增加的值</param>
+        /// <returns></returns>
+        Task<decimal> SortedSetDecrementAsync<T>(string key, T value, long val = 1);
     }
 }
