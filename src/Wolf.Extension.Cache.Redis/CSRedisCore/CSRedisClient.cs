@@ -1021,6 +1021,9 @@ namespace CSRedis
         /// </summary>
         public NodesServerManagerProvider NodesServerManager { get; set; }
 
+        /// <summary>
+        ///
+        /// </summary>
         public partial class NodesServerManagerProvider
         {
             private CSRedisClient _csredis;
@@ -1692,12 +1695,29 @@ namespace CSRedis
             return so;
         }
 
+        /// <summary>
+        ///
+        /// </summary>
         public class SubscribeObject : IDisposable
         {
             internal CSRedisClient Redis;
+
+            /// <summary>
+            ///
+            /// </summary>
             public string[] Channels { get; }
+
+            /// <summary>
+            ///
+            /// </summary>
             public (string[] chans, Object<RedisClient> conn)[] Subscrs { get; }
+
+
             internal Dictionary<string, Action<SubscribeMessageEventArgs>> OnMessageDic;
+
+            /// <summary>
+            ///
+            /// </summary>
             public bool IsUnsubscribed { get; private set; } = true;
 
             internal SubscribeObject(CSRedisClient redis, string[] channels,

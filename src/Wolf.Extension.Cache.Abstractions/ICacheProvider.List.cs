@@ -71,7 +71,7 @@ namespace Wolf.Extension.Cache.Abstractions
         T ListLeftPop<T>(string key);
 
         /// <summary>
-        /// 获取指定key的队列List
+        /// 获取指定key的队列List 从左到右
         /// </summary>
         /// <param name="key">缓存建</param>
         /// <param name="count">获取多少的列表，默认获取1000条，不限制为-1</param>
@@ -79,7 +79,7 @@ namespace Wolf.Extension.Cache.Abstractions
         string[] ListLeftRange(string key, int count = 1000);
 
         /// <summary>
-        /// 获取指定key的队列List
+        /// 获取指定key的队列List 从左到右
         /// </summary>
         /// <param name="key">缓存建</param>
         /// <param name="count">获取多少的列表，默认获取1000条，不限制为-1</param>
@@ -87,7 +87,7 @@ namespace Wolf.Extension.Cache.Abstractions
         T[] ListLeftRange<T>(string key, int count = 1000);
 
         /// <summary>
-        /// 获取指定key的栈List
+        /// 获取指定key的栈List 从右到左
         /// </summary>
         /// <param name="key">缓存建</param>
         /// <param name="count">获取多少的列表，默认获取1000条，不限制为-1</param>
@@ -95,7 +95,7 @@ namespace Wolf.Extension.Cache.Abstractions
         string[] ListRightRange(string key, int count = 1000);
 
         /// <summary>
-        /// 获取指定key的栈List
+        /// 获取指定key的栈List 从右到左
         /// </summary>
         /// <param name="key">缓存建</param>
         /// <param name="count">获取多少的列表，默认获取1000条，不限制为-1</param>

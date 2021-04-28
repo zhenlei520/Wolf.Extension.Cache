@@ -1,8 +1,11 @@
 ﻿// Copyright (c) zhenlei520 All rights reserved.
 
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Wolf.Extension.Cache.Abstractions.Request.SortedSet;
+using Wolf.Extension.Cache.Abstractions.Response.SortedSet;
 
 namespace Wolf.Extension.Cache.Redis
 {
@@ -33,8 +36,7 @@ namespace Wolf.Extension.Cache.Redis
         /// 设置SortSet类型的缓存键值对
         /// </summary>
         /// <param name="key">缓存键</param>
-        /// <param name="value">缓存值</param>
-        /// <param name="score">分值</param>
+        /// <param name="request"></param>
         /// <returns></returns>
         public async Task<bool> SortedSetAsync(string key, params SortedSetRequest<string>[] request)
         {
@@ -50,8 +52,7 @@ namespace Wolf.Extension.Cache.Redis
         /// 设置SortSet类型的缓存键值对
         /// </summary>
         /// <param name="key">缓存键</param>
-        /// <param name="value">缓存值</param>
-        /// <param name="score">分值</param>
+        /// <param name="request"></param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         public async Task<bool> SortedSetAsync<T>(string key, params SortedSetRequest<T>[] request)
@@ -226,6 +227,212 @@ namespace Wolf.Extension.Cache.Redis
             }
 
             return this._client.ZRangeAsync<T>(key, fromRank, toRank);
+        }
+
+        #endregion
+
+        #region 根据缓存键获取从起始排名到终点排名的数据以及分值（根据下标）
+
+        /// <summary>
+        /// 根据缓存键获取从起始排名到终点排名的数据以及分值（根据下标）
+        /// </summary>
+        /// <param name="key">缓存键</param>
+        /// <param name="fromRank">起始排名下标，0表示第一个元素，-1表示最后一个元素（包含）</param>
+        /// <param name="toRank">终点排名下标，0表示第一个元素，-1表示最后一个元素（包含）</param>
+        /// <param name="isDesc">是否降序，默认降序</param>
+        /// <returns></returns>
+        public async Task<List<SortedSetResponse<string>>> SortedSetRangeWithScoresFromAsync(string key, int fromRank,
+            int toRank,
+            bool isDesc = true)
+        {
+            if (isDesc)
+            {
+                var ret = await this._client.ZRevRangeWithScoresAsync(key, fromRank, toRank);
+                return ret.Select(x => new SortedSetResponse<string>(x.score, x.member)).ToList();
+            }
+            else
+            {
+                var ret = await this._client.ZRevRangeWithScoresAsync(key, fromRank, toRank);
+                return ret.Select(x => new SortedSetResponse<string>(x.score, x.member)).ToList();
+            }
+        }
+
+        #endregion
+
+        #region 根据缓存键获取从起始排名到终点排名的数据以及分值（根据下标）
+
+        /// <summary>
+        /// 根据缓存键获取从起始排名到终点排名的数据以及分值（根据下标）
+        /// </summary>
+        /// <param name="key">缓存键</param>
+        /// <param name="fromRank">起始排名下标，0表示第一个元素，-1表示最后一个元素（包含）</param>
+        /// <param name="toRank">终点排名下标，0表示第一个元素，-1表示最后一个元素（包含）</param>
+        /// <param name="isDesc">是否降序，默认降序</param>
+        /// <returns></returns>
+        public async Task<List<SortedSetResponse<T>>> SortedSetRangeWithScoresFromAsync<T>(string key, int fromRank,
+            int toRank,
+            bool isDesc = true)
+        {
+            if (isDesc)
+            {
+                var ret = await this._client.ZRevRangeWithScoresAsync<T>(key, fromRank, toRank);
+                return ret.Select(x => new SortedSetResponse<T>(x.score, x.member)).ToList();
+            }
+            else
+            {
+                var ret = await this._client.ZRevRangeWithScoresAsync<T>(key, fromRank, toRank);
+                return ret.Select(x => new SortedSetResponse<T>(x.score, x.member)).ToList();
+            }
+        }
+
+        #endregion
+
+        #region 根据缓存key以及最小分值以及最大分值得到区间的成员（根据分值）
+
+        /// <summary>
+        /// 根据缓存key以及最小分值以及最大分值得到区间的成员（根据分值）
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <param name="min">分数最小值 decimal.MinValue 1</param>
+        /// <param name="max">分数最大值 decimal.MaxValue 10</param>
+        /// <param name="skip">跳过多少条</param>
+        /// <param name="count">查询多少条，默认-1 查询全部</param>
+        /// <param name="isDesc">是否按分值降序，默认降序</param>
+        /// <returns></returns>
+        public Task<string[]> SortedSetRangeByScoreAsync(string key, decimal min, decimal max, int skip = 0,
+            int count = -1,
+            bool isDesc = true)
+        {
+            if (count < -1 || count == 0)
+            {
+                throw new Exception("count is negative 1 or greater than 0");
+            }
+
+            if (skip < 0)
+            {
+                throw new Exception("skip is greater than or equal to 0");
+            }
+
+            if (isDesc)
+            {
+                return this._client.ZRevRangeByScoreAsync(key, min, max, count, skip);
+            }
+
+            return this._client.ZRangeByScoreAsync(key, min, max, count, skip);
+        }
+
+        #endregion
+
+        #region 根据缓存key以及最小分值以及最大分值得到区间的成员（根据分值）
+
+        /// <summary>
+        /// 根据缓存key以及最小分值以及最大分值得到区间的成员（根据分值）
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <param name="min">分数最小值 decimal.MinValue 1</param>
+        /// <param name="max">分数最大值 decimal.MaxValue 10</param>
+        /// <param name="skip">跳过多少条</param>
+        /// <param name="count">查询多少条，默认-1 查询全部</param>
+        /// <param name="isDesc">是否按分值降序，默认降序</param>
+        /// <returns></returns>
+        public Task<T[]> SortedSetRangeByScoreAsync<T>(string key, decimal min, decimal max, int skip = 0,
+            int count = -1,
+            bool isDesc = true)
+        {
+            if (count < -1 || count == 0)
+            {
+                throw new Exception("count is negative 1 or greater than 0");
+            }
+
+            if (skip < 0)
+            {
+                throw new Exception("skip is greater than or equal to 0");
+            }
+
+            if (isDesc)
+            {
+                return this._client.ZRevRangeByScoreAsync<T>(key, min, max, count, skip);
+            }
+
+            return this._client.ZRangeByScoreAsync<T>(key, min, max, count, skip);
+        }
+
+        #endregion
+
+        #region 根据缓存key以及最小分值以及最大分值得到区间的成员（根据分值）
+
+        /// <summary>
+        /// 根据缓存key以及最小分值以及最大分值得到区间的成员以及分值（根据分值）
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <param name="min">分数最小值 decimal.MinValue 1</param>
+        /// <param name="max">分数最大值 decimal.MaxValue 10</param>
+        /// <param name="skip">跳过多少条</param>
+        /// <param name="count">查询多少条，默认-1 查询全部</param>
+        /// <param name="isDesc">是否按分值降序，默认降序</param>
+        /// <returns></returns>
+        public async Task<List<SortedSetResponse<string>>> SortedSetRangeByScoreWithScoresAsync(string key, decimal min,
+            decimal max,
+            int skip = 0, int count = -1,
+            bool isDesc = true)
+        {
+            if (count < -1 || count == 0)
+            {
+                throw new Exception("count is negative 1 or greater than 0");
+            }
+
+            if (skip < 0)
+            {
+                throw new Exception("skip is greater than or equal to 0");
+            }
+
+            if (isDesc)
+            {
+                return (await this._client.ZRevRangeByScoreWithScoresAsync(key, min, max, count, skip))
+                    .Select(x => new SortedSetResponse<string>(x.score, x.member)).ToList();
+            }
+
+            return (await this._client.ZRangeByScoreWithScoresAsync(key, min, max, count, skip))
+                .Select(x => new SortedSetResponse<string>(x.score, x.member)).ToList();
+        }
+
+        #endregion
+
+        #region 根据缓存key以及最小分值以及最大分值得到区间的成员（根据分值）
+
+        /// <summary>
+        /// 根据缓存key以及最小分值以及最大分值得到区间的成员（根据分值）
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <param name="min">分数最小值 decimal.MinValue 1</param>
+        /// <param name="max">分数最大值 decimal.MaxValue 10</param>
+        /// <param name="skip">跳过多少条</param>
+        /// <param name="count">查询多少条，默认-1 查询全部</param>
+        /// <param name="isDesc">是否按分值降序，默认降序</param>
+        /// <returns></returns>
+        public async Task<List<SortedSetResponse<T>>> SortedSetRangeByScoreWithScoresAsync<T>(string key, decimal min,
+            decimal max,
+            int skip = 0, int count = -1,
+            bool isDesc = true)
+        {
+            if (count < -1 || count == 0)
+            {
+                throw new Exception("count is negative 1 or greater than 0");
+            }
+
+            if (skip < 0)
+            {
+                throw new Exception("skip is greater than or equal to 0");
+            }
+
+            if (isDesc)
+            {
+                return (await this._client.ZRevRangeByScoreWithScoresAsync<T>(key, min, max, count, skip))
+                    .Select(x => new SortedSetResponse<T>(x.score, x.member)).ToList();
+            }
+
+            return (await this._client.ZRangeByScoreWithScoresAsync<T>(key, min, max, count, skip))
+                .Select(x => new SortedSetResponse<T>(x.score, x.member)).ToList();
         }
 
         #endregion

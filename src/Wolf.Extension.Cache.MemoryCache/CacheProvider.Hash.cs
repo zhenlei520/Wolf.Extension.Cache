@@ -94,7 +94,7 @@ namespace Wolf.Extension.Cache.MemoryCache
             HashPersistentOps persistentOps = null)
         {
             persistentOps = persistentOps ?? new HashPersistentOps();
-            lock (obj)
+            lock (_obj)
             {
                 var hashSet = this.Get<HashSet<HashResponse<T>>>(key);
                 if (hashSet != null)
@@ -145,7 +145,7 @@ namespace Wolf.Extension.Cache.MemoryCache
             HashPersistentOps persistentOps = null)
         {
             persistentOps = persistentOps ?? new HashPersistentOps();
-            lock (obj)
+            lock (_obj)
             {
                 var hashSet = this.Get<HashSet<HashResponse<T>>>(request.Key);
                 foreach (var item in request.List)
@@ -197,7 +197,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         public bool HashSet<T>(ICollection<MultHashRequest<HashRequest<T>>> request, HashPersistentOps persistentOps = null)
         {
             persistentOps = persistentOps ?? new HashPersistentOps();
-            lock (obj)
+            lock (_obj)
             {
                 List<BaseRequest<HashSet<HashResponse<T>>>> list = new List<BaseRequest<HashSet<HashResponse<T>>>>();
                 var cacheList = Get<HashSet<HashResponse<T>>>((ICollection<string>) request.Select(x => x.Key)) ??
@@ -653,7 +653,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <returns>增长后的值</returns>
         public long HashIncrement(string key, string hashKey, long val = 1)
         {
-            lock (obj)
+            lock (_obj)
             {
                 var cacheInfo = this.Get<HashSet<HashResponse<long>>>(key);
                 if (cacheInfo == null)
@@ -692,7 +692,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <returns>减少后的值</returns>
         public long HashDecrement(string key, string hashKey, long val = 1)
         {
-            lock (obj)
+            lock (_obj)
             {
                 var cacheInfo = this.Get<HashSet<HashResponse<long>>>(key);
                 if (cacheInfo == null)

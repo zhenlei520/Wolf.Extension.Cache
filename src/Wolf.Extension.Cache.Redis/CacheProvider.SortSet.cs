@@ -1,7 +1,10 @@
 ﻿// Copyright (c) zhenlei520 All rights reserved.
 
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using Wolf.Extension.Cache.Abstractions.Request.SortedSet;
+using Wolf.Extension.Cache.Abstractions.Response.SortedSet;
 
 namespace Wolf.Extension.Cache.Redis
 {
@@ -32,8 +35,7 @@ namespace Wolf.Extension.Cache.Redis
         /// 设置SortSet类型的缓存键值对
         /// </summary>
         /// <param name="key">缓存键</param>
-        /// <param name="value">缓存值</param>
-        /// <param name="score">分值</param>
+        /// <param name="request"></param>
         /// <returns></returns>
         public bool SortedSet(string key, params SortedSetRequest<string>[] request)
         {
@@ -66,8 +68,7 @@ namespace Wolf.Extension.Cache.Redis
         /// 设置SortSet类型的缓存键值对
         /// </summary>
         /// <param name="key">缓存键</param>
-        /// <param name="value">缓存值</param>
-        /// <param name="score">分值</param>
+        /// <param name="request"></param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         public bool SortedSet<T>(string key, params SortedSetRequest<T>[] request)
@@ -212,8 +213,8 @@ namespace Wolf.Extension.Cache.Redis
         /// 根据缓存键获取从起始排名到终点排名的数据
         /// </summary>
         /// <param name="key">缓存键</param>
-        /// <param name="fromRank">起始排名下标（包含）</param>
-        /// <param name="toRank">终点排名下标（包含）</param>
+        /// <param name="fromRank">开始位置，0表示第一个元素，-1表示最后一个元素</param>
+        /// <param name="toRank">结束位置，0表示第一个元素，-1表示最后一个元素</param>
         /// <param name="isDesc">是否降序，默认降序</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
@@ -225,6 +226,206 @@ namespace Wolf.Extension.Cache.Redis
             }
 
             return this._client.ZRange<T>(key, fromRank, toRank);
+        }
+
+        #endregion
+
+        #region 根据缓存键获取从起始排名到终点排名的数据以及分值（根据下标）
+
+        /// <summary>
+        /// 根据缓存键获取从起始排名到终点排名的数据以及分值（根据下标）
+        /// </summary>
+        /// <param name="key">缓存键</param>
+        /// <param name="fromRank">起始排名下标，0表示第一个元素，-1表示最后一个元素（包含）</param>
+        /// <param name="toRank">终点排名下标，0表示第一个元素，-1表示最后一个元素（包含）</param>
+        /// <param name="isDesc">是否降序，默认降序</param>
+        /// <returns></returns>
+        public List<SortedSetResponse<string>> SortedSetRangeWithScoresFrom(string key, int fromRank, int toRank,
+            bool isDesc = true)
+        {
+            if (isDesc)
+            {
+                var ret = this._client.ZRevRangeWithScores(key, fromRank, toRank);
+                return ret.Select(x => new SortedSetResponse<string>(x.score, x.member)).ToList();
+            }
+            else
+            {
+                var ret = this._client.ZRangeWithScores(key, fromRank, toRank);
+                return ret.Select(x => new SortedSetResponse<string>(x.score, x.member)).ToList();
+            }
+        }
+
+        #endregion
+
+        #region 根据缓存键获取从起始排名到终点排名的数据以及分值（根据下标）
+
+        /// <summary>
+        /// 根据缓存键获取从起始排名到终点排名的数据以及分值（根据下标）
+        /// </summary>
+        /// <param name="key">缓存键</param>
+        /// <param name="fromRank">起始排名下标，0表示第一个元素，-1表示最后一个元素（包含）</param>
+        /// <param name="toRank">终点排名下标，0表示第一个元素，-1表示最后一个元素（包含）</param>
+        /// <param name="isDesc">是否降序，默认降序</param>
+        /// <returns></returns>
+        public List<SortedSetResponse<T>> SortedSetRangeWithScoresFrom<T>(string key, int fromRank, int toRank,
+            bool isDesc = true)
+        {
+            if (isDesc)
+            {
+                var ret = this._client.ZRevRangeWithScores<T>(key, fromRank, toRank);
+                return ret.Select(x => new SortedSetResponse<T>(x.score, x.member)).ToList();
+            }
+            else
+            {
+                var ret = this._client.ZRangeWithScores<T>(key, fromRank, toRank);
+                return ret.Select(x => new SortedSetResponse<T>(x.score, x.member)).ToList();
+            }
+        }
+
+        #endregion
+
+        #region 根据缓存key以及最小分值以及最大分值得到区间的成员（根据分值）
+
+        /// <summary>
+        /// 根据缓存key以及最小分值以及最大分值得到区间的成员（根据分值）
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <param name="min">分数最小值 decimal.MinValue 1</param>
+        /// <param name="max">分数最大值 decimal.MaxValue 10</param>
+        /// <param name="skip">跳过多少条</param>
+        /// <param name="count">查询多少条，默认-1 查询全部</param>
+        /// <param name="isDesc">是否按分值降序，默认降序</param>
+        /// <returns></returns>
+        public string[] SortedSetRangeByScore(string key, decimal min, decimal max, int skip = 0, int count = -1,
+            bool isDesc = true)
+        {
+            if (count < -1 || count == 0)
+            {
+                throw new Exception("count is negative 1 or greater than 0");
+            }
+
+            if (skip < 0)
+            {
+                throw new Exception("skip is greater than or equal to 0");
+            }
+
+            if (isDesc)
+            {
+                return this._client.ZRevRangeByScore(key, min, max, count, skip);
+            }
+
+            return this._client.ZRangeByScore(key, min, max, count, skip);
+        }
+
+        #endregion
+
+        #region 根据缓存key以及最小分值以及最大分值得到区间的成员（根据分值）
+
+        /// <summary>
+        /// 根据缓存key以及最小分值以及最大分值得到区间的成员（根据分值）
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <param name="min">分数最小值 decimal.MinValue 1</param>
+        /// <param name="max">分数最大值 decimal.MaxValue 10</param>
+        /// <param name="skip">跳过多少条</param>
+        /// <param name="count">查询多少条，默认-1 查询全部</param>
+        /// <param name="isDesc">是否按分值降序，默认降序</param>
+        /// <returns></returns>
+        public T[] SortedSetRangeByScore<T>(string key, decimal min, decimal max, int skip = 0, int count = -1,
+            bool isDesc = true)
+        {
+            if (count < -1 || count == 0)
+            {
+                throw new Exception("count is negative 1 or greater than 0");
+            }
+
+            if (skip < 0)
+            {
+                throw new Exception("skip is greater than or equal to 0");
+            }
+
+            if (isDesc)
+            {
+                return this._client.ZRevRangeByScore<T>(key, min, max, count, skip);
+            }
+
+            return this._client.ZRangeByScore<T>(key, min, max, count, skip);
+        }
+
+        #endregion
+
+        #region 根据缓存key以及最小分值以及最大分值得到区间的成员（根据分值）
+
+        /// <summary>
+        /// 根据缓存key以及最小分值以及最大分值得到区间的成员以及分值（根据分值）
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <param name="min">分数最小值 decimal.MinValue 1</param>
+        /// <param name="max">分数最大值 decimal.MaxValue 10</param>
+        /// <param name="skip">跳过多少条</param>
+        /// <param name="count">查询多少条，默认-1 查询全部</param>
+        /// <param name="isDesc">是否按分值降序，默认降序</param>
+        /// <returns></returns>
+        public List<SortedSetResponse<string>> SortedSetRangeByScoreWithScores(string key, decimal min, decimal max,
+            int skip = 0, int count = -1,
+            bool isDesc = true)
+        {
+            if (count < -1 || count == 0)
+            {
+                throw new Exception("count is negative 1 or greater than 0");
+            }
+
+            if (skip < 0)
+            {
+                throw new Exception("skip is greater than or equal to 0");
+            }
+
+            if (isDesc)
+            {
+                return this._client.ZRevRangeByScoreWithScores(key, min, max, count, skip)
+                    .Select(x => new SortedSetResponse<string>(x.score, x.member)).ToList();
+            }
+
+            return this._client.ZRangeByScoreWithScores(key, min, max, count, skip)
+                .Select(x => new SortedSetResponse<string>(x.score, x.member)).ToList();
+        }
+
+        #endregion
+
+        #region 根据缓存key以及最小分值以及最大分值得到区间的成员（根据分值）
+
+        /// <summary>
+        /// 根据缓存key以及最小分值以及最大分值得到区间的成员（根据分值）
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <param name="min">分数最小值 decimal.MinValue 1</param>
+        /// <param name="max">分数最大值 decimal.MaxValue 10</param>
+        /// <param name="skip">跳过多少条</param>
+        /// <param name="count">查询多少条，默认-1 查询全部</param>
+        /// <param name="isDesc">是否按分值降序，默认降序</param>
+        /// <returns></returns>
+        public List<SortedSetResponse<T>> SortedSetRangeByScoreWithScores<T>(string key, decimal min, decimal max,
+            int skip = 0, int count = -1,
+            bool isDesc = true)
+        {
+            if (count < -1 || count == 0)
+            {
+                throw new Exception("count is negative 1 or greater than 0");
+            }
+
+            if (skip < 0)
+            {
+                throw new Exception("skip is greater than or equal to 0");
+            }
+
+            if (isDesc)
+            {
+                return this._client.ZRevRangeByScoreWithScores<T>(key, min, max, count, skip)
+                    .Select(x => new SortedSetResponse<T>(x.score, x.member)).ToList();
+            }
+
+            return this._client.ZRangeByScoreWithScores<T>(key, min, max, count, skip)
+                .Select(x => new SortedSetResponse<T>(x.score, x.member)).ToList();
         }
 
         #endregion

@@ -27,8 +27,6 @@ namespace Wolf.Extension.Cache.Redis.Internal
         ///
         /// </summary>
         /// <param name="connectionString">mymaster,password=123456,poolsize=50,connectTimeout=200,ssl=false</param>
-        /// <param name="sentinels">哨兵</param>
-        /// <param name="readOnly">只读</param>
         public RedisConfigs(string connectionString)
         {
             this.ConnectionStrings = new[] {connectionString};
@@ -41,9 +39,6 @@ namespace Wolf.Extension.Cache.Redis.Internal
         /// </summary>
         /// <param name="nodeRule"></param>
         /// <param name="connectionStrings"></param>
-        /// <param name="connectionString">mymaster,password=123456,poolsize=50,connectTimeout=200,ssl=false</param>
-        /// <param name="sentinels">哨兵</param>
-        /// <param name="readOnly">只读</param>
         public RedisConfigs(Func<string, string> nodeRule,string[] connectionStrings)
         {
             this.ConnectionStrings = connectionStrings;

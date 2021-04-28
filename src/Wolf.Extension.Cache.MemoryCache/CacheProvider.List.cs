@@ -38,7 +38,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <returns>返回队列中总数</returns>
         public long ListRightPush<T>(string key, T value)
         {
-            lock (obj)
+            lock (_obj)
             {
                 var list = this.Get<List<T>>(key);
                 if (list == null)
@@ -81,7 +81,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <returns></returns>
         public T ListRightPop<T>(string key)
         {
-            lock (obj)
+            lock (_obj)
             {
                 var list = this.Get<List<T>>(key);
                 T obj = default(T);
@@ -129,7 +129,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <returns>返回队列中总数</returns>
         public long ListLeftPush<T>(string key, T value)
         {
-            lock (obj)
+            lock (_obj)
             {
                 var list = this.Get<List<T>>(key) ?? new List<T>();
                 list.Insert(list.Count, value);
@@ -168,7 +168,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <returns></returns>
         public T ListLeftPop<T>(string key)
         {
-            lock (obj)
+            lock (_obj)
             {
                 var list = this.Get<List<T>>(key);
                 T obj = default(T);
@@ -192,7 +192,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         #region 获取指定key的List
 
         /// <summary>
-        /// 获取指定key的List
+        /// 获取指定key的List 从左到右
         /// </summary>
         /// <param name="key">缓存建</param>
         /// <param name="count">获取多少的列表，默认获取1000条，不限制为-1</param>
@@ -207,7 +207,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         #region 获取指定key的List
 
         /// <summary>
-        /// 获取指定key的List
+        /// 获取指定key的List 从左到右
         /// </summary>
         /// <param name="key">缓存建</param>
         /// <param name="count">获取多少的列表，默认获取1000条，不限制为-1</param>
@@ -223,7 +223,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         #region 获取指定key的栈List
 
         /// <summary>
-        /// 获取指定key的栈List
+        /// 获取指定key的栈List 从右到左
         /// </summary>
         /// <param name="key">缓存建</param>
         /// <param name="count">获取多少的列表，默认获取1000条，不限制为-1</param>
@@ -238,7 +238,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         #region 获取指定key的栈List
 
         /// <summary>
-        /// 获取指定key的栈List
+        /// 获取指定key的栈List 从右到左
         /// </summary>
         /// <param name="key">缓存建</param>
         /// <param name="count">获取多少的列表，默认获取1000条，不限制为-1</param>
@@ -278,7 +278,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <returns>返回队列中总数</returns>
         public long ListRemove<T>(string key, T value)
         {
-            lock (obj)
+            lock (_obj)
             {
                 var list = this.Get<List<T>>(key);
                 var count = 0;

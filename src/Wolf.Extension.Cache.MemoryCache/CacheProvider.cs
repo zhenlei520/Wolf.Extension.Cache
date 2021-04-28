@@ -23,7 +23,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <summary>
         ///
         /// </summary>
-        private readonly object obj = new object();
+        private readonly object _obj = new object();
 
         /// <summary>
         ///
@@ -306,6 +306,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// </summary>
         /// <param name="key">缓存key</param>
         /// <param name="timeSpan"></param>
+        /// <param name="strategy">策略</param>
         /// <returns></returns>
         public  bool SetExpire(string key,
             TimeSpan timeSpan, OverdueStrategy strategy = OverdueStrategy.AbsoluteExpiration)

@@ -1,9 +1,11 @@
 ﻿// Copyright (c) zhenlei520 All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Wolf.Extension.Cache.Abstractions.Request.SortedSet;
+using Wolf.Extension.Cache.Abstractions.Response.SortedSet;
 using Wolf.Extension.Cache.MemoryCache.Internal;
 using Wolf.Systems.Core;
 
@@ -36,8 +38,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// 设置SortSet类型的缓存键值对
         /// </summary>
         /// <param name="key">缓存键</param>
-        /// <param name="value">缓存值</param>
-        /// <param name="score">分值</param>
+        /// <param name="request"></param>
         /// <returns></returns>
         public bool SortedSet(string key, params SortedSetRequest<string>[] request)
         {
@@ -69,13 +70,12 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// 设置SortSet类型的缓存键值对
         /// </summary>
         /// <param name="key">缓存键</param>
-        /// <param name="value">缓存值</param>
-        /// <param name="score">分值</param>
+        /// <param name="request"></param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         public bool SortedSet<T>(string key, params SortedSetRequest<T>[] request)
         {
-            lock (obj)
+            lock (_obj)
             {
                 var sortSetList = this.Get<SortedSet<SortSetRequest<T>>>(key);
                 if (sortSetList == null)
@@ -133,7 +133,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <returns></returns>
         public bool SortedSetRemove<T>(string key, T value)
         {
-            lock (obj)
+            lock (_obj)
             {
                 var sortSetList = this.Get<SortedSet<SortSetRequest<T>>>(key);
                 if (sortSetList == null)
@@ -159,7 +159,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <returns></returns>
         public bool SortedSetRemoveByRank(string key, int fromRank, int toRank)
         {
-            lock (obj)
+            lock (_obj)
             {
                 var sortSetList = this.Get<SortedSet<SortSetRequest<object>>>(key);
                 if (sortSetList == null)
@@ -173,21 +173,23 @@ namespace Wolf.Extension.Cache.MemoryCache
                 {
                     var lastIndex = toRank == -1 ? sortSetList.Count - 1 : toRank;
                     // ReSharper disable once InvokeAsExtensionMethod
-                    Systems.Core.Extensions.ChangeResult(ref fromRank,ref lastIndex);
+                    Systems.Core.Extensions.ChangeResult(ref fromRank, ref lastIndex);
                     if (lastIndex > sortSetList.Count - 1)
                     {
                         lastIndex = sortSetList.Count - 1;
                     }
+
                     var delList = list.Skip(fromRank).Take(lastIndex - fromRank + 1);
                     sortSetList.RemoveWhere(x => delList.All(y => y.Data.Equals(x.Data)));
                 }
-                else if(fromRank==-1)
+                else if (fromRank == -1)
                 {
-                    int lastIndex = sortSetList.Count()-1;
+                    int lastIndex = sortSetList.Count() - 1;
                     if (toRank > lastIndex)
                     {
                         return false;
                     }
+
                     var delList = list.Skip(toRank).Take(lastIndex - toRank + 1);
                     sortSetList.RemoveWhere(x => delList.All(y => y.Data.Equals(x.Data)));
                 }
@@ -213,7 +215,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <returns></returns>
         public bool SortedSetRemoveByScore(string key, decimal min, decimal max)
         {
-            lock (obj)
+            lock (_obj)
             {
                 var sortSetList = this.Get<SortedSet<SortSetRequest<object>>>(key);
                 if (sortSetList == null)
@@ -295,8 +297,8 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// 根据缓存键获取从起始排名到终点排名的数据
         /// </summary>
         /// <param name="key">缓存键</param>
-        /// <param name="fromRank">起始排名下标（包含）</param>
-        /// <param name="toRank">终点排名下标（包含）</param>
+        /// <param name="fromRank">开始位置，0表示第一个元素，-1表示最后一个元素</param>
+        /// <param name="toRank">结束位置，0表示第一个元素，-1表示最后一个元素</param>
         /// <param name="isDesc">是否降序，默认降序</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
@@ -308,14 +310,221 @@ namespace Wolf.Extension.Cache.MemoryCache
                 return new List<T>().ToArray();
             }
 
+            //正序
+            var list = sortSetList.ToList();
+            if (fromRank >= 0)
+            {
+                var lastIndex = toRank == -1 ? sortSetList.Count - 1 : toRank;
+                // ReSharper disable once InvokeAsExtensionMethod
+                Systems.Core.Extensions.ChangeResult(ref fromRank, ref lastIndex);
+                if (lastIndex > sortSetList.Count - 1)
+                {
+                    lastIndex = sortSetList.Count - 1;
+                }
+
+                var newList = list.Skip(fromRank).Take(lastIndex - fromRank + 1).Select(x => x.Data).ToArray();
+                if (fromRank > toRank)
+                {
+                    //倒序
+                    newList.Reverse();
+                }
+
+                return newList;
+            }
+
+            if (fromRank == -1)
+            {
+                int lastIndex = sortSetList.Count() - 1;
+                if (toRank > lastIndex)
+                {
+                    return new T[0];
+                }
+
+                var newList = list.Skip(toRank).Take(lastIndex - toRank + 1).Select(x => x.Data).ToArray();
+                newList.Reverse();
+                return newList;
+            }
+
+            return new T[0];
+        }
+
+        #endregion
+
+        #region 根据缓存键获取从起始排名到终点排名的数据
+
+        /// <summary>
+        /// 根据缓存键获取从起始排名到终点排名的数据
+        /// </summary>
+        /// <param name="key">缓存键</param>
+        /// <param name="fromRank">起始排名下标（包含）</param>
+        /// <param name="toRank">终点排名下标（包含）</param>
+        /// <param name="isDesc">是否降序，默认降序</param>
+        /// <returns></returns>
+        public List<SortedSetResponse<string>> SortedSetRangeWithScoresFrom(string key, int fromRank, int toRank,
+            bool isDesc = true)
+        {
+            return this.SortedSetRangeWithScoresFrom<string>(key, fromRank, toRank, isDesc);
+        }
+
+        #endregion
+
+        #region 根据缓存键获取从起始排名到终点排名的数据
+
+        /// <summary>
+        /// 根据缓存键获取从起始排名到终点排名的数据
+        /// </summary>
+        /// <param name="key">缓存键</param>
+        /// <param name="fromRank">起始排名下标（包含）</param>
+        /// <param name="toRank">终点排名下标（包含）</param>
+        /// <param name="isDesc">是否降序，默认降序</param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public List<SortedSetResponse<T>> SortedSetRangeWithScoresFrom<T>(string key, int fromRank, int toRank,
+            bool isDesc = true)
+        {
+            var sortSetList = this.Get<SortedSet<SortSetRequest<T>>>(key);
+            if (sortSetList == null)
+            {
+                return new List<SortedSetResponse<T>>();
+            }
+
             var count = toRank - fromRank + 1;
             if (isDesc)
             {
                 return sortSetList.OrderByDescending(x => x.Score).Take(fromRank).Take(count)
-                    .Select(x => x.Data).ToArray();
+                    .Select(x => new SortedSetResponse<T>(x.Score, x.Data)).ToList();
             }
 
-            return sortSetList.OrderBy(x => x.Score).Take(count).Select(x => x.Data).ToArray();
+            return sortSetList.OrderBy(x => x.Score).Take(count).Select(x => new SortedSetResponse<T>(x.Score, x.Data))
+                .ToList();
+        }
+
+        #endregion
+
+        #region 根据缓存key以及最小分值以及最大分值得到区间的成员（根据分值）
+
+        /// <summary>
+        /// 根据缓存key以及最小分值以及最大分值得到区间的成员（根据分值）
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <param name="min">分数最小值 decimal.MinValue 1</param>
+        /// <param name="max">分数最大值 decimal.MaxValue 10</param>
+        /// <param name="skip">跳过多少条</param>
+        /// <param name="count">查询多少条，默认-1 查询全部</param>
+        /// <param name="isDesc">是否按分值降序，默认降序</param>
+        /// <returns></returns>
+        public string[] SortedSetRangeByScore(string key, decimal min, decimal max, int skip = 0, int count = -1,
+            bool isDesc = true)
+        {
+            return this.SortedSetRangeByScore<string>(key, min, max, skip, count, isDesc);
+        }
+
+        #endregion
+
+        #region 根据缓存key以及最小分值以及最大分值得到区间的成员（根据分值）
+
+        /// <summary>
+        /// 根据缓存key以及最小分值以及最大分值得到区间的成员（根据分值）
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <param name="min">分数最小值 decimal.MinValue 1</param>
+        /// <param name="max">分数最大值 decimal.MaxValue 10</param>
+        /// <param name="skip">跳过多少条</param>
+        /// <param name="count">查询多少条，默认-1 查询全部</param>
+        /// <param name="isDesc">是否按分值降序，默认降序</param>
+        /// <returns></returns>
+        public T[] SortedSetRangeByScore<T>(string key, decimal min, decimal max, int skip = 0, int count = -1,
+            bool isDesc = true)
+        {
+            var sortSetList = this.Get<SortedSet<SortSetRequest<T>>>(key);
+            if (sortSetList == null)
+            {
+                return new List<T>().ToArray();
+            }
+
+            if (count < -1 || count == 0)
+            {
+                throw new Exception("count is negative 1 or greater than 0");
+            }
+
+            if (skip < 0)
+            {
+                throw new Exception("skip is greater than or equal to 0");
+            }
+
+            var list = sortSetList.ToList();
+            if (isDesc)
+            {
+                list.Reverse();
+            }
+
+            return sortSetList.Where(x => x.Score >= min && x.Score <= max).Skip(skip).Take(count)
+                .Select(x => x.Data).ToArray();
+        }
+
+        #endregion
+
+        #region 根据缓存key以及最小分值以及最大分值得到区间的成员以及分值（根据分值）
+
+        /// <summary>
+        /// 根据缓存key以及最小分值以及最大分值得到区间的成员以及分值（根据分值）
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <param name="min">分数最小值 decimal.MinValue 1</param>
+        /// <param name="max">分数最大值 decimal.MaxValue 10</param>
+        /// <param name="skip">跳过多少条</param>
+        /// <param name="count">查询多少条，默认-1 查询全部</param>
+        /// <param name="isDesc">是否按分值降序，默认降序</param>
+        /// <returns></returns>
+        public List<SortedSetResponse<string>> SortedSetRangeByScoreWithScores(string key, decimal min, decimal max,
+            int skip = 0, int count = -1,
+            bool isDesc = true)
+        {
+            return this.SortedSetRangeByScoreWithScores<string>(key, min, max, skip, count, isDesc);
+        }
+
+        #endregion
+
+        #region 根据缓存key以及最小分值以及最大分值得到区间的成员（根据分值）
+
+        /// <summary>
+        /// 根据缓存key以及最小分值以及最大分值得到区间的成员（根据分值）
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <param name="min">分数最小值 decimal.MinValue 1</param>
+        /// <param name="max">分数最大值 decimal.MaxValue 10</param>
+        /// <param name="skip">跳过多少条</param>
+        /// <param name="count">查询多少条，默认-1 查询全部</param>
+        /// <param name="isDesc">是否按分值降序，默认降序</param>
+        /// <returns></returns>
+        public List<SortedSetResponse<T>> SortedSetRangeByScoreWithScores<T>(string key, decimal min, decimal max,
+            int skip = 0, int count = -1,
+            bool isDesc = true)
+        {
+            var sortSetList = this.Get<SortedSet<SortSetRequest<T>>>(key);
+            if (sortSetList == null)
+            {
+                return new List<SortedSetResponse<T>>().ToList();
+            }
+
+            if (count < -1 || count == 0)
+            {
+                throw new Exception("count is negative 1 or greater than 0");
+            }
+
+            if (skip < 0)
+            {
+                throw new Exception("skip is greater than or equal to 0");
+            }
+
+            var list = sortSetList.ToList();
+            if (isDesc)
+            {
+                list.Reverse();
+            }
+
+            return list.Where(x => x.Score >= min && x.Score <= max).Skip(skip).Take(count)
+                .Select(x => new SortedSetResponse<T>(x.Score, x.Data)).ToList();
         }
 
         #endregion
@@ -401,7 +610,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <returns></returns>
         public decimal SortedSetIncrement<T>(string key, T value, long val = 1)
         {
-            lock (obj)
+            lock (_obj)
             {
                 var sortSetList = this.Get<SortedSet<SortSetRequest<T>>>(key) ?? new SortedSet<SortSetRequest<T>>(
                     new List<SortSetRequest<T>>(),

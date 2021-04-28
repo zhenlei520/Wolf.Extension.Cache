@@ -80,6 +80,7 @@ namespace Wolf.Extension.Cache.Redis
         /// 添加redis配置
         /// </summary>
         /// <param name="serviceCollection"></param>
+        /// <param name="nodeRule"></param>
         /// <param name="connectionStrings">mymaster,password=123456,poolsize=50,connectTimeout=200,ssl=false</param>
         /// <param name="serviceId">服务id</param>
         public static IServiceCollection AddRedis(this IServiceCollection serviceCollection,
