@@ -529,6 +529,86 @@ namespace Wolf.Extension.Cache.MemoryCache
 
         #endregion
 
+        #region 返回有序集合中指定成员的索引
+
+        /// <summary>
+        /// 返回有序集合中指定成员的索引
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <param name="value">缓存值</param>
+        /// <param name="isDesc">是否降序，默认降序</param>
+        /// <returns></returns>
+        public long? SortedSetIndex(string key, string value, bool isDesc)
+        {
+            var sortSetList = this.Get<SortedSet<SortSetRequest<string>>>(key);
+            if (sortSetList == null)
+            {
+                return null;
+            }
+
+            var list = sortSetList.ToList();
+            if (isDesc)
+            {
+                list = list.OrderByDescending(x => x.Score).ToList();
+            }
+            else
+            {
+                list.OrderBy(x => x.Score).ToList();
+            }
+
+            for (var index = 0; index < list.Count; index++)
+            {
+                if (list[index].Data.Equals(value))
+                {
+                    return index;
+                }
+            }
+
+            return null;
+        }
+
+        #endregion
+
+        #region 返回有序集合中指定成员的索引
+
+        /// <summary>
+        /// 返回有序集合中指定成员的索引
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <param name="value">缓存值</param>
+        /// <param name="isDesc">是否降序，默认降序</param>
+        /// <returns></returns>
+        public long? SortedSetIndex<T>(string key, T value, bool isDesc = true)
+        {
+            var sortSetList = this.Get<SortedSet<SortSetRequest<T>>>(key);
+            if (sortSetList == null)
+            {
+                return null;
+            }
+
+            var list = sortSetList.ToList();
+            if (isDesc)
+            {
+                list = list.OrderByDescending(x => x.Score).ToList();
+            }
+            else
+            {
+                list.OrderBy(x => x.Score).ToList();
+            }
+
+            for (var index = 0; index < list.Count; index++)
+            {
+                if (list[index].Data.Equals(value))
+                {
+                    return index;
+                }
+            }
+
+            return null;
+        }
+
+        #endregion
+
         #region 查询指定缓存下的value是否存在
 
         /// <summary>

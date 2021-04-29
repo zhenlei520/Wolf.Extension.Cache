@@ -201,6 +201,25 @@ namespace Wolf.Extension.Cache.Abstractions
             bool isDesc = true);
 
         /// <summary>
+        /// 返回有序集合中指定成员的索引（异步）
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <param name="value">缓存值</param>
+        /// <param name="isDesc">是否降序，默认降序</param>
+        /// <returns></returns>
+        Task<long?> SortedSetIndexAsync(string key, string value, bool isDesc = true);
+
+        /// <summary>
+        /// 返回有序集合中指定成员的索引（异步）
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <param name="value">缓存值</param>
+        /// <param name="isDesc">是否降序，默认降序</param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        Task<long?> SortedSetIndexAsync<T>(string key, T value, bool isDesc = true);
+
+        /// <summary>
         /// 查询指定缓存下的value是否存在（异步）
         /// </summary>
         /// <param name="key">缓存键</param>

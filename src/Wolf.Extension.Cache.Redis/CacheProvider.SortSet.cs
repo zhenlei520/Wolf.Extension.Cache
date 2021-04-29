@@ -311,7 +311,7 @@ namespace Wolf.Extension.Cache.Redis
 
             if (isDesc)
             {
-                return this._client.ZRevRangeByScore(key, min, max, count, skip);
+                return this._client.ZRevRangeByScore(key, max, min, count, skip);
             }
 
             return this._client.ZRangeByScore(key, min, max, count, skip);
@@ -426,6 +426,46 @@ namespace Wolf.Extension.Cache.Redis
 
             return this._client.ZRangeByScoreWithScores<T>(key, min, max, count, skip)
                 .Select(x => new SortedSetResponse<T>(x.score, x.member)).ToList();
+        }
+
+        #endregion
+
+        #region 返回有序集合中指定成员的索引
+
+        /// <summary>
+        /// 返回有序集合中指定成员的索引
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <param name="value">缓存值</param>
+        /// <param name="isDesc">是否降序，默认降序</param>
+        /// <returns></returns>
+        public long? SortedSetIndex(string key, string value, bool isDesc = true)
+        {
+            if (isDesc)
+            {
+                return this._client.ZRevRank(key, value);
+            }
+            return this._client.ZRank(key, value);
+        }
+
+        #endregion
+
+        #region 返回有序集合中指定成员的索引
+
+        /// <summary>
+        /// 返回有序集合中指定成员的索引
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <param name="value">缓存值</param>
+        /// <param name="isDesc">是否降序，默认降序</param>
+        /// <returns></returns>
+        public long? SortedSetIndex<T>(string key, T value, bool isDesc = true)
+        {
+            if (isDesc)
+            {
+                return this._client.ZRevRank(key, value);
+            }
+            return this._client.ZRank(key, value);
         }
 
         #endregion

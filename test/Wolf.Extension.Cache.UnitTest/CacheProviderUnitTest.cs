@@ -26,7 +26,6 @@ namespace Wolf.Extension.Cache.UnitTest
         public void Set(string key, string value)
         {
             base._cacheProvider.ListLeftPush("cacheKye", "woshice");
-
             base._cacheProvider.Set(key, value, new BasePersistentOps());
         }
 

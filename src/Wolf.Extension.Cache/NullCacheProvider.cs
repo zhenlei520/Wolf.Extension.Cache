@@ -21,6 +21,143 @@ namespace Wolf.Extension.Cache
     /// </summary>
     public class NullCacheProvider : ICacheProvider
     {
+        public bool SortedSet(string key, string value, decimal score)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool SortedSet(string key, params SortedSetRequest<string>[] request)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool SortedSet<T>(string key, T value, decimal score)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool SortedSet<T>(string key, params SortedSetRequest<T>[] request)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool SortedSetRemove(string key, string value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool SortedSetRemove<T>(string key, T value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool SortedSetRemoveByRank(string key, int fromRank, int toRank)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool SortedSetRemoveByScore(string key, decimal min, decimal max)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string[] SortedSetRangeByRank(string key, int count = 1000, bool isDesc = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public T[] SortedSetRangeByRank<T>(string key, int count = 1000, bool isDesc = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string[] SortedSetRangeFrom(string key, int fromRank, int toRank, bool isDesc = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public T[] SortedSetRangeFrom<T>(string key, int fromRank, int toRank, bool isDesc = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<SortedSetResponse<string>> SortedSetRangeWithScoresFrom(string key, int fromRank, int toRank, bool isDesc = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<SortedSetResponse<T>> SortedSetRangeWithScoresFrom<T>(string key, int fromRank, int toRank, bool isDesc = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string[] SortedSetRangeByScore(string key, decimal min, decimal max, int skip = 0, int count = -1, bool isDesc = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public T[] SortedSetRangeByScore<T>(string key, decimal min, decimal max, int skip = 0, int count = -1, bool isDesc = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<SortedSetResponse<string>> SortedSetRangeByScoreWithScores(string key, decimal min, decimal max, int skip = 0, int count = -1,
+            bool isDesc = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<SortedSetResponse<T>> SortedSetRangeByScoreWithScores<T>(string key, decimal min, decimal max, int skip = 0, int count = -1,
+            bool isDesc = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public long? SortedSetIndex(string key, string value, bool isDesc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public long? SortedSetIndex<T>(string key, T value, bool isDesc = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool SortedSetExist<T>(string key, T value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public long SortedSetLength(string key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public long SortedSetLength(string key, decimal min, decimal max)
+        {
+            throw new NotImplementedException();
+        }
+
+        public decimal SortedSetIncrement(string key, string value, long val = 1)
+        {
+            throw new NotImplementedException();
+        }
+
+        public decimal SortedSetIncrement<T>(string key, T value, long val = 1)
+        {
+            throw new NotImplementedException();
+        }
+
+        public decimal SortedSetDecrement(string key, string value, long val = 1)
+        {
+            throw new NotImplementedException();
+        }
+
+        public decimal SortedSetDecrement<T>(string key, T value, long val = 1)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<bool> SortedSetAsync(string key, string value, decimal score)
         {
             throw new NotImplementedException();
@@ -114,6 +251,26 @@ namespace Wolf.Extension.Cache
             throw new NotImplementedException();
         }
 
+        public Task<long?> SortedSetIndexAsync(string key, string value, bool isDesc = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<long?> SortedSetIndexAsync<T>(string key, T value, bool isDesc = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<long?> SortedSetIndexAsync(string key, string value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<long?> SortedSetIndexAsync<T>(string key, T value)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<bool> SortedSetExistAsync<T>(string key, T value)
         {
             throw new NotImplementedException();
@@ -145,208 +302,6 @@ namespace Wolf.Extension.Cache
         }
 
         public Task<decimal> SortedSetDecrementAsync<T>(string key, T value, long val = 1)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool SortedSet(string key, string value, decimal score)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool SortedSet(string key, params SortedSetRequest<string>[] request)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool SortedSet<T>(string key, T value, decimal score)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool SortedSet<T>(string key, params SortedSetRequest<T>[] request)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool SortedSetRemove(string key, string value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool SortedSetRemove<T>(string key, T value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool SortedSetRemoveByRank(string key, int fromRank, int toRank)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool SortedSetRemoveByScore(string key, decimal min, decimal max)
-        {
-            throw new NotImplementedException();
-        }
-
-        public string[] SortedSetRangeByRank(string key, int count = 1000, bool isDesc = true)
-        {
-            throw new NotImplementedException();
-        }
-
-        public T[] SortedSetRangeByRank<T>(string key, int count = 1000, bool isDesc = true)
-        {
-            throw new NotImplementedException();
-        }
-
-        public string[] SortedSetRangeFrom(string key, int fromRank, int toRank, bool isDesc = true)
-        {
-            throw new NotImplementedException();
-        }
-
-        public T[] SortedSetRangeFrom<T>(string key, int fromRank, int toRank, bool isDesc = true)
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<SortedSetResponse<string>> SortedSetRangeWithScoresFrom(string key, int fromRank, int toRank, bool isDesc = true)
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<SortedSetResponse<T>> SortedSetRangeWithScoresFrom<T>(string key, int fromRank, int toRank, bool isDesc = true)
-        {
-            throw new NotImplementedException();
-        }
-
-        public string[] SortedSetRangeByScore(string key, decimal min, decimal max, int skip = 0, int count = -1, bool isDesc = true)
-        {
-            throw new NotImplementedException();
-        }
-
-        public T[] SortedSetRangeByScore<T>(string key, decimal min, decimal max, int skip = 0, int count = -1, bool isDesc = true)
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<SortedSetResponse<string>> SortedSetRangeByScoreWithScores(string key, decimal min, decimal max, int skip = 0, int count = -1,
-            bool isDesc = true)
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<SortedSetResponse<T>> SortedSetRangeByScoreWithScores<T>(string key, decimal min, decimal max, int skip = 0, int count = -1,
-            bool isDesc = true)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool SortedSetExist<T>(string key, T value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public long SortedSetLength(string key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public long SortedSetLength(string key, decimal min, decimal max)
-        {
-            throw new NotImplementedException();
-        }
-
-        public decimal SortedSetIncrement(string key, string value, long val = 1)
-        {
-            throw new NotImplementedException();
-        }
-
-        public decimal SortedSetIncrement<T>(string key, T value, long val = 1)
-        {
-            throw new NotImplementedException();
-        }
-
-        public decimal SortedSetDecrement(string key, string value, long val = 1)
-        {
-            throw new NotImplementedException();
-        }
-
-        public decimal SortedSetDecrement<T>(string key, T value, long val = 1)
-        {
-            throw new NotImplementedException();
-        }
-
-        public long ListRightPush(string key, string value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public long ListRightPush<T>(string key, T value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public string ListRightPop(string key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public T ListRightPop<T>(string key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public long ListLeftPush(string key, string value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public long ListLeftPush<T>(string key, T value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public string ListLeftPop(string key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public T ListLeftPop<T>(string key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public string[] ListLeftRange(string key, int count = 1000)
-        {
-            throw new NotImplementedException();
-        }
-
-        public T[] ListLeftRange<T>(string key, int count = 1000)
-        {
-            throw new NotImplementedException();
-        }
-
-        public string[] ListRightRange(string key, int count = 1000)
-        {
-            throw new NotImplementedException();
-        }
-
-        public T[] ListRightRange<T>(string key, int count = 1000)
-        {
-            throw new NotImplementedException();
-        }
-
-        public long ListRemove(string key, string value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public long ListRemove<T>(string key, T value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public long ListLength(string key)
         {
             throw new NotImplementedException();
         }
@@ -612,6 +567,81 @@ namespace Wolf.Extension.Cache
         }
 
         public Task<long> HashDecrementAsync(string key, string hashKey, long val = 1)
+        {
+            throw new NotImplementedException();
+        }
+
+        public long ListRightPush(string key, string value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public long ListRightPush<T>(string key, T value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string ListRightPop(string key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public T ListRightPop<T>(string key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public long ListLeftPush(string key, string value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public long ListLeftPush<T>(string key, T value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string ListLeftPop(string key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public T ListLeftPop<T>(string key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string[] ListLeftRange(string key, int count = 1000)
+        {
+            throw new NotImplementedException();
+        }
+
+        public T[] ListLeftRange<T>(string key, int count = 1000)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string[] ListRightRange(string key, int count = 1000)
+        {
+            throw new NotImplementedException();
+        }
+
+        public T[] ListRightRange<T>(string key, int count = 1000)
+        {
+            throw new NotImplementedException();
+        }
+
+        public long ListRemove(string key, string value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public long ListRemove<T>(string key, T value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public long ListLength(string key)
         {
             throw new NotImplementedException();
         }

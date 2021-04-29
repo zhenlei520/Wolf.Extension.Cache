@@ -29,7 +29,7 @@ namespace Wolf.Extension.Cache.MemoryCache
             string value,
             BasePersistentOps persistentOps = null)
         {
-            return Task.FromResult(Set(key, value, (BasePersistentOps) persistentOps));
+            return Task.FromResult(Set(key, value, persistentOps));
         }
 
         #endregion
@@ -109,7 +109,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <returns></returns>
         public Task<List<BaseResponse<string>>> GetAsync(ICollection<string> keys)
         {
-            return Task.FromResult(Get((ICollection<string>) keys));
+            return Task.FromResult(Get(keys));
         }
 
         #endregion
@@ -138,7 +138,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <returns></returns>
         public Task<List<BaseResponse<T>>> GetAsync<T>(ICollection<string> keys)
         {
-            return Task.FromResult(Get<T>((ICollection<string>) keys));
+            return Task.FromResult(Get<T>(keys));
         }
 
         #endregion

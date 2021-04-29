@@ -24,7 +24,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <returns></returns>
         public Task<bool> SortedSetAsync(string key, string value, decimal score)
         {
-            return Task.FromResult<bool>(SortedSet(key, value, (decimal) score));
+            return Task.FromResult(SortedSet(key, value, score));
         }
 
         #endregion
@@ -35,12 +35,11 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// 设置SortSet类型的缓存键值对（异步）
         /// </summary>
         /// <param name="key">缓存键</param>
-        /// <param name="value">缓存值</param>
-        /// <param name="score">分值</param>
+        /// <param name="request"></param>
         /// <returns></returns>
         public Task<bool> SortedSetAsync(string key, params SortedSetRequest<string>[] request)
         {
-            return Task.FromResult<bool>(SortedSet(key, request));
+            return Task.FromResult(SortedSet(key, request));
         }
 
         #endregion
@@ -57,7 +56,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <returns></returns>
         public Task<bool> SortedSetAsync<T>(string key, T value, decimal score)
         {
-            return Task.FromResult(SortedSet(key, value, (decimal) score));
+            return Task.FromResult(SortedSet(key, value, score));
         }
 
         #endregion
@@ -68,8 +67,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// 设置SortSet类型的缓存键值对(异步)
         /// </summary>
         /// <param name="key">缓存键</param>
-        /// <param name="value">缓存值</param>
-        /// <param name="score">分值</param>
+        /// <param name="request"></param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         public Task<bool> SortedSetAsync<T>(string key, params SortedSetRequest<T>[] request)
@@ -89,7 +87,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <returns></returns>
         public Task<bool> SortedSetRemoveAsync(string key, string value)
         {
-            return Task.FromResult<bool>(this.SortedSetRemove(key, value));
+            return Task.FromResult(this.SortedSetRemove(key, value));
         }
 
         #endregion
@@ -121,7 +119,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <returns></returns>
         public Task<bool> SortedSetRemoveByRankAsync(string key, int fromRank, int toRank)
         {
-            return Task.FromResult<bool>(SortedSetRemoveByRank(key, fromRank, toRank));
+            return Task.FromResult(SortedSetRemoveByRank(key, fromRank, toRank));
         }
 
         #endregion
@@ -242,7 +240,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         public Task<List<SortedSetResponse<T>>> SortedSetRangeWithScoresFromAsync<T>(string key, int fromRank, int toRank,
             bool isDesc = true)
         {
-            return Task.FromResult<List<SortedSetResponse<T>>>(this.SortedSetRangeWithScoresFrom<T>(key,fromRank,toRank,isDesc));
+            return Task.FromResult(this.SortedSetRangeWithScoresFrom<T>(key,fromRank,toRank,isDesc));
         }
 
         #endregion
@@ -282,7 +280,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         public Task<T[]> SortedSetRangeByScoreAsync<T>(string key, decimal min, decimal max, int skip = 0, int count = -1,
             bool isDesc = true)
         {
-            return Task.FromResult<T[]>(this.SortedSetRangeByScore<T>(key,min,max,skip,count,isDesc));
+            return Task.FromResult(this.SortedSetRangeByScore<T>(key,min,max,skip,count,isDesc));
         }
 
         #endregion
@@ -324,7 +322,40 @@ namespace Wolf.Extension.Cache.MemoryCache
             int skip = 0, int count = -1,
             bool isDesc = true)
         {
-            return Task.FromResult<List<SortedSetResponse<T>>>(this.SortedSetRangeByScoreWithScores<T>(key,min,max,skip,count,isDesc));
+            return Task.FromResult(this.SortedSetRangeByScoreWithScores<T>(key,min,max,skip,count,isDesc));
+        }
+
+        #endregion
+
+        #region 返回有序集合中指定成员的索引
+
+        /// <summary>
+        /// 返回有序集合中指定成员的索引
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <param name="value">缓存值</param>
+        /// <param name="isDesc">是否降序，默认降序</param>
+        /// <returns></returns>
+        public Task<long?> SortedSetIndexAsync(string key, string value, bool isDesc = true)
+        {
+            return Task.FromResult(this.SortedSetIndex(key,value, isDesc));
+        }
+
+        #endregion
+
+        #region 返回有序集合中指定成员的索引
+
+        /// <summary>
+        /// 返回有序集合中指定成员的索引
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <param name="value">缓存值</param>
+        /// <param name="isDesc">是否降序，默认降序</param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public Task<long?> SortedSetIndexAsync<T>(string key, T value, bool isDesc = true)
+        {
+            return Task.FromResult(this.SortedSetIndex(key,value, isDesc));
         }
 
         #endregion
@@ -370,7 +401,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <returns></returns>
         public Task<long> SortedSetLengthAsync(string key, decimal min, decimal max)
         {
-            return Task.FromResult<long>(SortedSetLength(key, min, max));
+            return Task.FromResult(SortedSetLength(key, min, max));
         }
 
         #endregion
@@ -386,7 +417,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <returns></returns>
         public Task<decimal> SortedSetIncrementAsync(string key, string value, long val = 1)
         {
-            return Task.FromResult<decimal>(SortedSetIncrement(key, value, val));
+            return Task.FromResult(SortedSetIncrement(key, value, val));
         }
 
         #endregion
@@ -402,7 +433,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <returns></returns>
         public Task<decimal> SortedSetIncrementAsync<T>(string key, T value, long val = 1)
         {
-            return Task.FromResult<decimal>(SortedSetIncrement(key, value, val));
+            return Task.FromResult(SortedSetIncrement(key, value, val));
         }
 
         #endregion
@@ -418,7 +449,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <returns></returns>
         public Task<decimal> SortedSetDecrementAsync(string key, string value, long val = 1)
         {
-            return Task.FromResult<decimal>(SortedSetDecrement(key, value, val));
+            return Task.FromResult(SortedSetDecrement(key, value, val));
         }
 
         #endregion
@@ -434,7 +465,7 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// <returns></returns>
         public Task<decimal> SortedSetDecrementAsync<T>(string key, T value, long val = 1)
         {
-            return Task.FromResult<decimal>(SortedSetDecrement(key, value, val));
+            return Task.FromResult(SortedSetDecrement(key, value, val));
         }
 
         #endregion

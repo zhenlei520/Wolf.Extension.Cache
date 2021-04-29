@@ -437,6 +437,48 @@ namespace Wolf.Extension.Cache.Redis
 
         #endregion
 
+        #region 返回有序集合中指定成员的索引
+
+        /// <summary>
+        /// 返回有序集合中指定成员的索引
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <param name="value">缓存值</param>
+        /// <param name="isDesc">是否降序，默认降序</param>
+        /// <returns></returns>
+        public Task<long?> SortedSetIndexAsync(string key, string value, bool isDesc = true)
+        {
+            if (isDesc)
+            {
+                return this._client.ZRevRankAsync(key, value);
+            }
+
+            return this._client.ZRankAsync(key, value);
+        }
+
+        #endregion
+
+        #region 返回有序集合中指定成员的索引
+
+        /// <summary>
+        /// 返回有序集合中指定成员的索引
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <param name="value">缓存值</param>
+        /// <param name="isDesc">是否降序，默认降序</param>
+        /// <returns></returns>
+        public Task<long?> SortedSetIndexAsync<T>(string key, T value, bool isDesc = true)
+        {
+            if (isDesc)
+            {
+                return this._client.ZRevRankAsync(key, value);
+            }
+
+            return this._client.ZRankAsync(key, value);
+        }
+
+        #endregion
+
         #region 查询指定缓存下的value是否存在（异步）
 
         /// <summary>

@@ -514,7 +514,7 @@ namespace Wolf.Extension.Cache.MemoryCache
                 return new List<HashMultResponse<T>>();
             }
 
-            var cacheList = Get<HashSet<HashResponse<T>>>((ICollection<string>) keys);
+            var cacheList = Get<HashSet<HashResponse<T>>>(keys);
             if (cacheList == null || !cacheList.Any())
             {
                 return new List<HashMultResponse<T>>();
