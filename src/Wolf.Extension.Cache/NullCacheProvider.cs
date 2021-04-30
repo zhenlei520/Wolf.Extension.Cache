@@ -123,6 +123,11 @@ namespace Wolf.Extension.Cache
             throw new NotImplementedException();
         }
 
+        public bool SortedSetExist(string key, string value)
+        {
+            throw new NotImplementedException();
+        }
+
         public bool SortedSetExist<T>(string key, T value)
         {
             throw new NotImplementedException();
@@ -257,6 +262,11 @@ namespace Wolf.Extension.Cache
         }
 
         public Task<long?> SortedSetIndexAsync<T>(string key, T value, bool isDesc = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> SortedSetExistAsync(string key, string value)
         {
             throw new NotImplementedException();
         }
