@@ -1,6 +1,8 @@
 ﻿// Copyright (c) zhenlei520 All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
+using Wolf.Extension.Cache.Abstractions.Configurations;
+
 namespace Wolf.Extension.Cache.Abstractions
 {
     /// <summary>
@@ -10,20 +12,24 @@ namespace Wolf.Extension.Cache.Abstractions
     {
         /// <summary>
         /// 入队（先进先出）
+        /// 如果仅当list的缓存key不存在时设置会消耗很大的性能，不建议使用
         /// </summary>
         /// <param name="key">缓存key</param>
         /// <param name="value">值</param>
+        /// <param name="persistentOps">策略</param>
         /// <returns>返回队列中总数</returns>
-        long ListRightPush(string key, string value);
+        long ListRightPush(string key, string value, ListPersistentOps persistentOps = null);
 
         /// <summary>
         /// 入队（先进先出）
+        /// 如果仅当list的缓存key不存在时设置会消耗很大的性能，不建议使用
         /// </summary>
         /// <param name="key">缓存key</param>
         /// <param name="value">值</param>
+        /// <param name="persistentOps">策略</param>
         /// <typeparam name="T"></typeparam>
         /// <returns>返回队列中总数</returns>
-        long ListRightPush<T>(string key, T value);
+        long ListRightPush<T>(string key, T value, ListPersistentOps persistentOps = null);
 
         /// <summary>
         /// 出队（先进先出）

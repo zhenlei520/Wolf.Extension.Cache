@@ -1,5 +1,10 @@
 ﻿// Copyright (c) zhenlei520 All rights reserved.
 
+using System.Linq;
+using Wolf.Extension.Cache.Abstractions.Common;
+using Wolf.Extension.Cache.Abstractions.Configurations;
+using Wolf.Extension.Cache.Abstractions.Enum;
+
 namespace Wolf.Extension.Cache.Redis
 {
     /// <summary>
@@ -11,12 +16,30 @@ namespace Wolf.Extension.Cache.Redis
 
         /// <summary>
         /// 入队（先进先出）
+        /// 如果仅当list的缓存key不存在时设置会消耗很大的性能，不建议使用
         /// </summary>
         /// <param name="key">缓存key</param>
         /// <param name="value">值</param>
+        /// <param name="persistentOps">策略</param>
         /// <returns>返回队列中总数</returns>
-        public long ListRightPush(string key, string value)
+        public long ListRightPush(string key, string value, ListPersistentOps persistentOps = null)
         {
+            persistentOps = persistentOps.Get();
+
+            if (persistentOps.SetStrategy == SetStrategy.Exist)
+            {
+                return this._client.LPushX(key, value);
+            }
+
+            if (persistentOps.SetStrategy == SetStrategy.NoFind)
+            {
+                var list = this.ListLeftRange(key, -1);
+                if (list.Any(x => x.Equals(value)))
+                {
+                    return list.Length;
+                }
+            }
+
             return this._client.LPush(key, value);
         }
 
@@ -26,13 +49,31 @@ namespace Wolf.Extension.Cache.Redis
 
         /// <summary>
         /// 入队（先进先出）
+        /// 如果仅当list的缓存key不存在时设置会消耗很大的性能，不建议使用
         /// </summary>
         /// <param name="key">缓存key</param>
         /// <param name="value">值</param>
+        /// <param name="persistentOps">策略</param>
         /// <typeparam name="T"></typeparam>
         /// <returns>返回队列中总数</returns>
-        public long ListRightPush<T>(string key, T value)
+        public long ListRightPush<T>(string key, T value, ListPersistentOps persistentOps = null)
         {
+            persistentOps = persistentOps.Get();
+
+            if (persistentOps.SetStrategy == SetStrategy.Exist)
+            {
+                return this._client.LPushX(key, value);
+            }
+
+            if (persistentOps.SetStrategy == SetStrategy.NoFind)
+            {
+                var list = this.ListLeftRange<T>(key, -1);
+                if (list.Any(x => x.Equals(value)))
+                {
+                    return list.Length;
+                }
+            }
+
             return this._client.RPush(key, value);
         }
 
@@ -135,7 +176,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <returns></returns>
         public string[] ListLeftRange(string key, int count = 1000)
         {
-            return this._client.LRange(key,0, count);
+            return this._client.LRange(key, 0, count);
         }
 
         #endregion
@@ -195,7 +236,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <returns>返回队列中总数</returns>
         public long ListRemove(string key, string value)
         {
-            return this._client.LRem(key,0, value);
+            return this._client.LRem(key, 0, value);
         }
 
         #endregion
@@ -211,7 +252,7 @@ namespace Wolf.Extension.Cache.Redis
         /// <returns>返回队列中总数</returns>
         public long ListRemove<T>(string key, T value)
         {
-            return this._client.LRem(key,0, value);
+            return this._client.LRem(key, 0, value);
         }
 
         #endregion

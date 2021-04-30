@@ -21,6 +21,224 @@ namespace Wolf.Extension.Cache
     /// </summary>
     public class NullCacheProvider : ICacheProvider
     {
+        public long ListRightPush(string key, string value, ListPersistentOps persistentOps = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public long ListRightPush<T>(string key, T value, ListPersistentOps persistentOps = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string ListRightPop(string key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public T ListRightPop<T>(string key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public long ListLeftPush(string key, string value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public long ListLeftPush<T>(string key, T value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string ListLeftPop(string key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public T ListLeftPop<T>(string key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string[] ListLeftRange(string key, int count = 1000)
+        {
+            throw new NotImplementedException();
+        }
+
+        public T[] ListLeftRange<T>(string key, int count = 1000)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string[] ListRightRange(string key, int count = 1000)
+        {
+            throw new NotImplementedException();
+        }
+
+        public T[] ListRightRange<T>(string key, int count = 1000)
+        {
+            throw new NotImplementedException();
+        }
+
+        public long ListRemove(string key, string value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public long ListRemove<T>(string key, T value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public long ListLength(string key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> SortedSetAsync(string key, string value, decimal score)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> SortedSetAsync(string key, params SortedSetRequest<string>[] request)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> SortedSetAsync<T>(string key, T value, decimal score)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> SortedSetAsync<T>(string key, params SortedSetRequest<T>[] request)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> SortedSetRemoveAsync(string key, string value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> SortedSetRemoveAsync<T>(string key, T value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> SortedSetRemoveByRankAsync(string key, int fromRank, int toRank)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> SortedSetRemoveByScoreAsync(string key, decimal min, decimal max)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<string[]> SortedSetRangeByRankAsync(string key, int count = 1000, bool isDesc = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<T[]> SortedSetRangeByRankAsync<T>(string key, int count = 1000, bool isDesc = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<string[]> SortedSetRangeFromAsync(string key, int fromRank, int toRank, bool isDesc = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<T[]> SortedSetRangeFromAsync<T>(string key, int fromRank, int toRank, bool isDesc = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<SortedSetResponse<string>>> SortedSetRangeWithScoresFromAsync(string key, int fromRank, int toRank, bool isDesc = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<SortedSetResponse<T>>> SortedSetRangeWithScoresFromAsync<T>(string key, int fromRank, int toRank, bool isDesc = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<string[]> SortedSetRangeByScoreAsync(string key, decimal min, decimal max, int skip = 0, int count = -1, bool isDesc = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<T[]> SortedSetRangeByScoreAsync<T>(string key, decimal min, decimal max, int skip = 0, int count = -1,
+            bool isDesc = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<SortedSetResponse<string>>> SortedSetRangeByScoreWithScoresAsync(string key, decimal min, decimal max, int skip = 0, int count = -1,
+            bool isDesc = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<SortedSetResponse<T>>> SortedSetRangeByScoreWithScoresAsync<T>(string key, decimal min, decimal max, int skip = 0, int count = -1,
+            bool isDesc = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<long?> SortedSetIndexAsync(string key, string value, bool isDesc = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<long?> SortedSetIndexAsync<T>(string key, T value, bool isDesc = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> SortedSetExistAsync(string key, string value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> SortedSetExistAsync<T>(string key, T value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<long> SortedSetLengthAsync(string key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<long> SortedSetLengthAsync(string key, decimal min, decimal max)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<decimal> SortedSetIncrementAsync(string key, string value, long val = 1)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<decimal> SortedSetIncrementAsync<T>(string key, T value, long val = 1)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<decimal> SortedSetDecrementAsync(string key, string value, long val = 1)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<decimal> SortedSetDecrementAsync<T>(string key, T value, long val = 1)
+        {
+            throw new NotImplementedException();
+        }
+
         public bool SortedSet(string key, string value, decimal score)
         {
             throw new NotImplementedException();
@@ -159,159 +377,6 @@ namespace Wolf.Extension.Cache
         }
 
         public decimal SortedSetDecrement<T>(string key, T value, long val = 1)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> SortedSetAsync(string key, string value, decimal score)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> SortedSetAsync(string key, params SortedSetRequest<string>[] request)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> SortedSetAsync<T>(string key, T value, decimal score)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> SortedSetAsync<T>(string key, params SortedSetRequest<T>[] request)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> SortedSetRemoveAsync(string key, string value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> SortedSetRemoveAsync<T>(string key, T value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> SortedSetRemoveByRankAsync(string key, int fromRank, int toRank)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> SortedSetRemoveByScoreAsync(string key, decimal min, decimal max)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<string[]> SortedSetRangeByRankAsync(string key, int count = 1000, bool isDesc = true)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<T[]> SortedSetRangeByRankAsync<T>(string key, int count = 1000, bool isDesc = true)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<string[]> SortedSetRangeFromAsync(string key, int fromRank, int toRank, bool isDesc = true)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<T[]> SortedSetRangeFromAsync<T>(string key, int fromRank, int toRank, bool isDesc = true)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<SortedSetResponse<string>>> SortedSetRangeWithScoresFromAsync(string key, int fromRank, int toRank, bool isDesc = true)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<SortedSetResponse<T>>> SortedSetRangeWithScoresFromAsync<T>(string key, int fromRank, int toRank, bool isDesc = true)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<string[]> SortedSetRangeByScoreAsync(string key, decimal min, decimal max, int skip = 0, int count = -1, bool isDesc = true)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<T[]> SortedSetRangeByScoreAsync<T>(string key, decimal min, decimal max, int skip = 0, int count = -1,
-            bool isDesc = true)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<SortedSetResponse<string>>> SortedSetRangeByScoreWithScoresAsync(string key, decimal min, decimal max, int skip = 0, int count = -1,
-            bool isDesc = true)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<SortedSetResponse<T>>> SortedSetRangeByScoreWithScoresAsync<T>(string key, decimal min, decimal max, int skip = 0, int count = -1,
-            bool isDesc = true)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<long?> SortedSetIndexAsync(string key, string value, bool isDesc = true)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<long?> SortedSetIndexAsync<T>(string key, T value, bool isDesc = true)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> SortedSetExistAsync(string key, string value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<long?> SortedSetIndexAsync(string key, string value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<long?> SortedSetIndexAsync<T>(string key, T value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> SortedSetExistAsync<T>(string key, T value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<long> SortedSetLengthAsync(string key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<long> SortedSetLengthAsync(string key, decimal min, decimal max)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<decimal> SortedSetIncrementAsync(string key, string value, long val = 1)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<decimal> SortedSetIncrementAsync<T>(string key, T value, long val = 1)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<decimal> SortedSetDecrementAsync(string key, string value, long val = 1)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<decimal> SortedSetDecrementAsync<T>(string key, T value, long val = 1)
         {
             throw new NotImplementedException();
         }
@@ -577,81 +642,6 @@ namespace Wolf.Extension.Cache
         }
 
         public Task<long> HashDecrementAsync(string key, string hashKey, long val = 1)
-        {
-            throw new NotImplementedException();
-        }
-
-        public long ListRightPush(string key, string value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public long ListRightPush<T>(string key, T value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public string ListRightPop(string key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public T ListRightPop<T>(string key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public long ListLeftPush(string key, string value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public long ListLeftPush<T>(string key, T value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public string ListLeftPop(string key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public T ListLeftPop<T>(string key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public string[] ListLeftRange(string key, int count = 1000)
-        {
-            throw new NotImplementedException();
-        }
-
-        public T[] ListLeftRange<T>(string key, int count = 1000)
-        {
-            throw new NotImplementedException();
-        }
-
-        public string[] ListRightRange(string key, int count = 1000)
-        {
-            throw new NotImplementedException();
-        }
-
-        public T[] ListRightRange<T>(string key, int count = 1000)
-        {
-            throw new NotImplementedException();
-        }
-
-        public long ListRemove(string key, string value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public long ListRemove<T>(string key, T value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public long ListLength(string key)
         {
             throw new NotImplementedException();
         }

@@ -14,7 +14,7 @@ namespace Wolf.Extension.Cache.Abstractions.Enum
         NoFind,
 
         /// <summary>
-        /// 只设置不存在的键
+        /// 只设置存在的键
         /// </summary>
         Exist
     }
