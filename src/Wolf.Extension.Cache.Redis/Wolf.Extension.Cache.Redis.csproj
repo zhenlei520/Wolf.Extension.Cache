@@ -32,10 +32,10 @@
     <Compile Update="CacheProvider.List.Async.cs">
       <DependentUpon>CacheProvider.Async.cs</DependentUpon>
     </Compile>
-    <Compile Update="CacheProvider.SortSet.cs">
+    <Compile Update="CacheProvider.SortedSet.cs">
       <DependentUpon>CacheProvider.cs</DependentUpon>
     </Compile>
-    <Compile Update="CacheProvider.SortSet.Async.cs">
+    <Compile Update="CacheProvider.SortedSet.Async.cs">
       <DependentUpon>CacheProvider.Async.cs</DependentUpon>
     </Compile>
     <Compile Update="CacheProvider.Set.cs">

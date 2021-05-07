@@ -24,7 +24,7 @@
     <Compile Update="ICacheProvider.List.cs">
       <DependentUpon>ICacheProvider.cs</DependentUpon>
     </Compile>
-    <Compile Update="ICacheProvider.SortSet.cs">
+    <Compile Update="ICacheProvider.SortedSet.cs">
       <DependentUpon>ICacheProvider.cs</DependentUpon>
     </Compile>
     <Compile Update="ICacheProvider.Hash.Async.cs">
@@ -33,7 +33,7 @@
     <Compile Update="ICacheProvider.List.Async.cs">
       <DependentUpon>ICacheProvider.Async.cs</DependentUpon>
     </Compile>
-    <Compile Update="ICacheProvider.SortSet.Async.cs">
+    <Compile Update="ICacheProvider.SortedSet.Async.cs">
       <DependentUpon>ICacheProvider.Async.cs</DependentUpon>
     </Compile>
     <Compile Update="ICacheProvider.Set.cs">

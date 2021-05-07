@@ -3,6 +3,9 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using Wolf.Extension.Cache.Abstractions.Common;
+using Wolf.Extension.Cache.Abstractions.Configurations;
+using Wolf.Extension.Cache.Abstractions.Enum;
 
 namespace Wolf.Extension.Cache.MemoryCache
 {
@@ -18,9 +21,11 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// </summary>
         /// <param name="key">缓存key</param>
         /// <param name="value">值</param>
+        /// <param name="persistentOps">策略</param>
         /// <returns>返回队列中总数</returns>
-        public long ListRightPush(string key, string value)
+        public long ListRightPush(string key, string value, ListPersistentOps persistentOps = null)
         {
+            persistentOps = persistentOps.Get();
             return this.ListRightPush<string>(key, value);
         }
 
@@ -34,15 +39,22 @@ namespace Wolf.Extension.Cache.MemoryCache
         /// </summary>
         /// <param name="key">缓存key</param>
         /// <param name="value">值</param>
+        /// <param name="persistentOps">策略</param>
         /// <typeparam name="T"></typeparam>
         /// <returns>返回队列中总数</returns>
-        public long ListRightPush<T>(string key, T value)
+        public long ListRightPush<T>(string key, T value, ListPersistentOps persistentOps = null)
         {
+            persistentOps = persistentOps.Get();
             lock (_obj)
             {
                 var list = this.Get<List<T>>(key);
                 if (list == null)
                 {
+                    if (persistentOps.SetStrategy == SetStrategy.NoFind)
+                    {
+                        return 0;
+                    }
+
                     list = new List<T>();
                 }
 

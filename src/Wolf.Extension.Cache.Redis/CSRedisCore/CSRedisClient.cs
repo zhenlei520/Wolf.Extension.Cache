@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -2455,8 +2456,8 @@ return 0", $"CSRedisPSubscribe{psubscribeKey}", "", trylong.ToString());
         /// <param name="max">分数最大值 decimal.MaxValue 10</param>
         /// <returns></returns>
         public long ZCount(string key, decimal min, decimal max) => ExecuteScalar(key,
-            (c, k) => c.Value.ZCount(k, min == decimal.MinValue ? "-inf" : min.ToString(),
-                max == decimal.MaxValue ? "+inf" : max.ToString()));
+            (c, k) => c.Value.ZCount(k, min == decimal.MinValue ? "-inf" : min.ToString(CultureInfo.InvariantCulture),
+                max == decimal.MaxValue ? "+inf" : max.ToString(CultureInfo.InvariantCulture)));
 
         /// <summary>
         /// 计算在有序集合中指定区间分数的成员数量
