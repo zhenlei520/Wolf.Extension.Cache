@@ -36,6 +36,12 @@
     <Compile Update="ICacheProvider.SortSet.Async.cs">
       <DependentUpon>ICacheProvider.Async.cs</DependentUpon>
     </Compile>
+    <Compile Update="ICacheProvider.Set.cs">
+      <DependentUpon>ICacheProvider.cs</DependentUpon>
+    </Compile>
+    <Compile Update="ICacheProvider.Set.Async.cs">
+      <DependentUpon>ICacheProvider.Async.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
   
 </Project>
