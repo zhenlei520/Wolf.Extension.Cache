@@ -223,5 +223,225 @@ namespace Wolf.Extension.Cache.Redis
         }
 
         #endregion
+
+        #region 根据缓存key将源集合移动到destination集合
+
+        /// <summary>
+        /// 根据缓存key将源集合移动到destination集合
+        /// </summary>
+        /// <param name="key">源缓存key</param>
+        /// <param name="optKey">目标缓存key</param>
+        /// <param name="value">缓存值</param>
+        public bool SetMove(string key, string optKey, string value)
+        {
+            return this._client.SMove(key, optKey, value);
+        }
+
+        /// <summary>
+        /// 根据缓存key将源集合移动到destination集合
+        /// </summary>
+        /// <param name="key">源缓存key</param>
+        /// <param name="optKey">目标缓存key</param>
+        /// <param name="value">缓存值</param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public bool SetMove<T>(string key, string optKey, T value)
+        {
+            return this._client.SMove(key, optKey, value);
+        }
+
+        #endregion
+
+        #region 根据缓存key获取一个随机元素并移除
+
+        /// <summary>
+        /// 根据缓存key获取一个随机元素并移除
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <returns>获取一个随机元素</returns>
+        public string SetPop(string key)
+        {
+            return this._client.SPop(key);
+        }
+
+        /// <summary>
+        /// 根据缓存key获取一个随机元素并移除
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>获取一个随机元素</returns>
+        public T SetPop<T>(string key)
+        {
+            return this._client.SPop<T>(key);
+        }
+
+        /// <summary>
+        /// 根据缓存key获取count个随机元素并移除
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <param name="count">获取指定count的缓存</param>
+        /// <returns>获取count个随机元素</returns>
+        public string[] SetPop(string key, int count)
+        {
+            return this._client.SPop(key, count);
+        }
+
+        /// <summary>
+        /// 根据缓存key获取count个随机元素并移除
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <param name="count">获取指定count的缓存</param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>获取count个随机元素</returns>
+        public T[] SetPop<T>(string key, int count)
+        {
+            return this._client.SPop<T>(key, count);
+        }
+
+        #endregion
+
+        #region 根据缓存key获取随机元素但不移除
+
+        /// <summary>
+        /// 根据缓存key获取一个随机元素但不移除
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <returns>获取一个随机元素</returns>
+        public string SetRandomGet(string key)
+        {
+            return this._client.SRandMember(key);
+        }
+
+        /// <summary>
+        /// 根据缓存key获取一个随机元素但不移除
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>获取一个随机元素</returns>
+        public T SetRandomGet<T>(string key)
+        {
+            return this._client.SRandMember<T>(key);
+        }
+
+        /// <summary>
+        /// 根据缓存key获取count个随机元素但不移除
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <param name="count">获取指定count的缓存</param>
+        /// <returns>获取count个随机元素</returns>
+        public string[] SetRandomGet(string key, int count)
+        {
+            return this._client.SRandMembers(key, count);
+        }
+
+        /// <summary>
+        /// 根据缓存key获取count个随机元素但不移除
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <param name="count">获取指定count的缓存</param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>获取count个随机元素</returns>
+        public T[] SetRandomGet<T>(string key, int count)
+        {
+            return this._client.SRandMembers<T>(key, count);
+        }
+
+        #endregion
+
+        #region 根据缓存key移除元素
+
+        #region 根据缓存key以及缓存值移除指定元素
+
+        /// <summary>
+        /// 根据缓存key以及缓存值移除指定元素
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <param name="value">缓存值</param>
+        /// <returns>被成功移除的元素的数量，不包括被忽略的元素</returns>
+        public long SetRem(string key, string value)
+        {
+            return this._client.SRem(key, value);
+        }
+
+        /// <summary>
+        /// 根据缓存key以及缓存值移除指定元素
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <param name="values">多个缓存值</param>
+        /// <returns>被成功移除的元素的数量，不包括被忽略的元素</returns>
+        public long SetRem(string key, params string[] values)
+        {
+            return this._client.SRem(key, values);
+        }
+
+        #endregion
+
+        #region 根据缓存key以及缓存值移除指定元素
+
+        /// <summary>
+        /// 根据缓存key以及缓存值移除指定元素
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <param name="value">缓存值</param>
+        /// <returns>被成功移除的元素的数量，不包括被忽略的元素</returns>
+        public long SetRem<T>(string key, T value)
+        {
+            return this._client.SRem<T>(key, value);
+        }
+
+        /// <summary>
+        /// 根据缓存key以及缓存值移除指定元素
+        /// </summary>
+        /// <param name="key">缓存key</param>
+        /// <param name="values">缓存值</param>
+        /// <returns>被成功移除的元素的数量，不包括被忽略的元素</returns>
+        public long SetRem<T>(string key, params T[] values)
+        {
+            return this._client.SRem<T>(key, values);
+        }
+
+        #endregion
+
+        #endregion
+
+        #region 得到给定集合的并集
+
+        /// <summary>
+        /// 得到给定集合的并集
+        /// </summary>
+        /// <param name="keys">缓存key集合</param>
+        /// <returns>并集成员的列表</returns>
+        public string[] SetUnion(params string[] keys)
+        {
+            return this._client.SUnion(keys);
+        }
+
+        /// <summary>
+        /// 得到给定集合的并集
+        /// </summary>
+        /// <param name="keys">缓存key集合</param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>并集成员的列表</returns>
+        public T[] SetUnion<T>(params string[] keys)
+        {
+            return this._client.SUnion<T>(keys);
+        }
+
+        #endregion
+
+        #region 将指定的缓存key集合并到一起且保存到新的集合中
+
+        /// <summary>
+        /// 将指定的缓存key集合并到一起且保存到新的集合中并返回结果集中的元素数量
+        /// </summary>
+        /// <param name="optKey">新的缓存key</param>
+        /// <param name="keys">指定缓存key集合</param>
+        /// <returns>结果集中的元素数量</returns>
+        public long SetUnionStore(string optKey,params string[]keys)
+        {
+            return this._client.SUnionStore(optKey,keys);
+        }
+
+        #endregion
     }
 }
