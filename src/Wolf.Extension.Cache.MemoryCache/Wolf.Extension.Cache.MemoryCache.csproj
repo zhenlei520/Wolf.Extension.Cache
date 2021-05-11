@@ -18,7 +18,7 @@
 
   <ItemGroup>
     <PackageReference Include="System.Collections" Version="4.3.0" />
-    <PackageReference Include="Wolf.Systems.Core" Version="0.0.1-preview-t011" />
+    <PackageReference Include="Wolf.Systems.Core" Version="0.0.1-preview-t012" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' != 'netcoreapp3.0' And '$(TargetFramework)' != 'netcoreapp3.1'">
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="2.0.0" />
@@ -47,6 +47,12 @@
       <DependentUpon>CacheProvider.Async.cs</DependentUpon>
     </Compile>
     <Compile Update="CacheProvider.SortedSet.Async.cs">
+      <DependentUpon>CacheProvider.Async.cs</DependentUpon>
+    </Compile>
+    <Compile Update="CacheProvider.Set.cs">
+      <DependentUpon>CacheProvider.cs</DependentUpon>
+    </Compile>
+    <Compile Update="CacheProvider.Set.Async.cs">
       <DependentUpon>CacheProvider.Async.cs</DependentUpon>
     </Compile>
   </ItemGroup>

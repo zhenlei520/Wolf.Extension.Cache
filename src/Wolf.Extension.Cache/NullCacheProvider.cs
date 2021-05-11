@@ -381,6 +381,326 @@ namespace Wolf.Extension.Cache
             throw new NotImplementedException();
         }
 
+        public Task<bool> SetAddAsync(string key, string value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> SetAddAsync<T>(string key, T value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> SetAddRangeAsync(string key, params string[] values)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> SetAddRangeAsync<T>(string key, params T[] values)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<long> SetLengthAsync(string key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<string[]> SetDiffAsync(params string[] keys)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<T[]> SetDiffAsync<T>(params string[] keys)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> SetDiffStoreAsync(string destination, params string[] keys)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<string>> SetInterAsync(params string[] keys)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<T>> SetInterAsync<T>(params string[] keys)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> SetInterStoreAsync(string destination, params string[] keys)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> SetExistsAsync(string key, string value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> SetExistsAsync<T>(string key, T value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<string>> SetGetAsync(string key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<T>> SetGetAsync<T>(string key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> SetMoveAsync(string key, string optKey, string value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> SetMoveAsync<T>(string key, string optKey, T value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<string> SetPopAsync(string key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<T> SetPopAsync<T>(string key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<string[]> SetPopAsync(string key, int count)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<T[]> SetPopAsync<T>(string key, int count)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<string> SetRandomGetAsync(string key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<T> SetRandomGetAsync<T>(string key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<string[]> SetRandomGetAsync(string key, int count)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<T[]> SetRandomGetAsync<T>(string key, int count)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<long> SetRemAsync(string key, string value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<long> SetRemAsync(string key, params string[] values)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<long> SetRemAsync<T>(string key, T value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<long> SetRemAsync<T>(string key, params T[] values)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<string[]> SetUnionAsync(params string[] keys)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<T[]> SetUnionAsync<T>(params string[] keys)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<long> SetUnionStoreAsync(string optKey, params string[] keys)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool SetAdd(string key, string value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool SetAdd<T>(string key, T value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool SetAddRange(string key, params string[] values)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool SetAddRange<T>(string key, params T[] values)
+        {
+            throw new NotImplementedException();
+        }
+
+        public long SetLength(string key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string[] SetDiff(params string[] keys)
+        {
+            throw new NotImplementedException();
+        }
+
+        public T[] SetDiff<T>(params string[] keys)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool SetDiffStore(string destination, params string[] keys)
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<string> SetInter(params string[] keys)
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<T> SetInter<T>(params string[] keys)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool SetInterStore(string destination, params string[] keys)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool SetExists(string key, string value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool SetExists<T>(string key, T value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<string> SetGet(string key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<T> SetGet<T>(string key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool SetMove(string key, string optKey, string value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool SetMove<T>(string key, string optKey, T value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string SetPop(string key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public T SetPop<T>(string key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string[] SetPop(string key, int count)
+        {
+            throw new NotImplementedException();
+        }
+
+        public T[] SetPop<T>(string key, int count)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string SetRandomGet(string key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public T SetRandomGet<T>(string key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string[] SetRandomGet(string key, int count)
+        {
+            throw new NotImplementedException();
+        }
+
+        public T[] SetRandomGet<T>(string key, int count)
+        {
+            throw new NotImplementedException();
+        }
+
+        public long SetRem(string key, string value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public long SetRem(string key, params string[] values)
+        {
+            throw new NotImplementedException();
+        }
+
+        public long SetRem<T>(string key, T value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public long SetRem<T>(string key, params T[] values)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string[] SetUnion(params string[] keys)
+        {
+            throw new NotImplementedException();
+        }
+
+        public T[] SetUnion<T>(params string[] keys)
+        {
+            throw new NotImplementedException();
+        }
+
+        public long SetUnionStore(string optKey, params string[] keys)
+        {
+            throw new NotImplementedException();
+        }
+
         public bool Set(string key, string value, BasePersistentOps persistentOps = null)
         {
             throw new NotImplementedException();
