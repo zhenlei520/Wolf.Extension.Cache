@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CSRedis;
 using Microsoft.Extensions.DependencyInjection;
-using Wolf.DependencyInjection.Autofac;
+using Wolf.DependencyInjection;
 using Wolf.Extension.Cache.Abstractions;
 using Wolf.Extension.Cache.Abstractions.Configurations;
 using Wolf.Extension.Cache.Redis;
@@ -51,7 +51,7 @@ namespace Wolf.Extension.Cache.UnitTest.Base
 
             serviceCollection.AddNewtonsoftJson();
             serviceCollection.AddRedis(new RedisOptions("127.0.0.1", 6379, "", "", 0, 50, false), "");
-            return serviceCollection.Build("Wolf");
+            return serviceCollection.AddAutoInject("Wolf").BuildServiceProvider();
         }
     }
 }
