@@ -17,6 +17,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Wolf.Systems.Core" Version="0.0.1-preview-t013" />
+    <PackageReference Include="Wolf.Systems.Core" Version="0.0.1-preview-t016" />
   </ItemGroup>
 </Project>

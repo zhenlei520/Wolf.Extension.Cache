@@ -13,8 +13,8 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="Wolf.DependencyInjection" Version="0.0.1-preview-t012" />
-    <PackageReference Include="Wolf.Extensions.Serialize.Json.Abstracts" Version="0.0.1-preview-t011" />
+    <PackageReference Include="Wolf.DependencyInjection" Version="0.0.1-preview-t017" />
+    <PackageReference Include="Wolf.Extensions.Serialize.Json.Abstracts" Version="0.0.1-preview-t012" />
   </ItemGroup>
   
   <ItemGroup>
