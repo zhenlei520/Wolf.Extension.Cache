@@ -1,0 +1,37 @@
+name: publish to nuget
+
+on:
+  push:
+    tags:
+    - '*' 
+
+jobs:
+  nupkgJob:
+    name: Wolf.Extension.Cache
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.407
+      
+    - name: Install Nuget
+      uses: nuget/setup-nuget@v1
+      with:        
+        nuget-version: '5.x'
+
+    - name: Pack Wolf.Extension.Cache
+      run: dotnet pack src\Wolf.Extension.Cache\Wolf.Extension.Cache.csproj --configuration Release -p:IncludeSymbols=true
+      
+    - name: Pack Wolf.Extension.Cache.Abstractions
+      run: dotnet pack src\Wolf.Extension.Cache.Abstractions\Wolf.Extension.Cache.Abstractions.csproj --configuration Release -p:IncludeSymbols=true
+      
+    - name: Pack Wolf.Extension.Cache.MemoryCache
+      run: dotnet pack src\Wolf.Extension.Cache.MemoryCache\Wolf.Extension.Cache.MemoryCache.csproj --configuration Release -p:IncludeSymbols=true
+      
+    - name: Pack Wolf.Extension.Cache.Redis
+      run: dotnet pack src\Wolf.Extension.Cache.Redis\Wolf.Extension.Cache.Redis.csproj --configuration Release -p:IncludeSymbols=true
+
+    - name: Push to Nuget nupkg
+      run: nuget push src\*\bin\Release\*.nupkg -Source https://api.nuget.org/v3/index.json -ApiKey ${{ secrets.NUGET }}
