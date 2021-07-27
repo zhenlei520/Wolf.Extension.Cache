@@ -9,6 +9,17 @@ namespace Wolf.Extension.Cache.Redis.Configurations
     public class RedisOptions
     {
         /// <summary>
+        /// 初始化Redis配置（推荐）
+        /// </summary>
+        /// <param name="ip">Ip地址</param>
+        /// <param name="port">端口（默认端口3306）</param>
+        /// <param name="password">密码（默认密码为空）</param>
+        public RedisOptions(string ip, int port = 3306, string password = "") : this(ip, port, password, "", 0, 50,
+            false)
+        {
+        }
+
+        /// <summary>
         ///
         /// </summary>
         /// <param name="ip">Ip地址</param>
@@ -18,7 +29,8 @@ namespace Wolf.Extension.Cache.Redis.Configurations
         /// <param name="dataBase">储存的数据库索引</param>
         /// <param name="poolSize">Redis连接池连接数</param>
         /// <param name="ssl">Enable encrypted transmission</param>
-        public RedisOptions(string ip, int port, string password,string prefix,int dataBase,int poolSize,bool ssl=false)
+        public RedisOptions(string ip, int port, string password, string prefix, int dataBase, int poolSize,
+            bool ssl = false)
         {
             this.Prefix = prefix;
             this.Ip = ip;
@@ -60,7 +72,7 @@ namespace Wolf.Extension.Cache.Redis.Configurations
         public int PoolSize { get; set; }
 
         /// <summary>
-        /// Enable encrypted transmission
+        /// Enable encrypted transmission（默认false）
         /// </summary>
         public bool Ssl { get; set; }
 
@@ -70,7 +82,71 @@ namespace Wolf.Extension.Cache.Redis.Configurations
         /// <returns></returns>
         public override string ToString()
         {
-            return $"{this.Ip}:{this.Port},password={this.Password},defaultDatabase={this.DataBase},prefix={this.Prefix},ssl={this.Ssl}";
+            return
+                $"{this.Ip}:{this.Port},password={this.Password},defaultDatabase={this.DataBase},prefix={this.Prefix},ssl={this.Ssl}";
         }
+
+        #region methods
+
+        #region 设置Redis前缀
+
+        /// <summary>
+        /// 设置Redis前缀
+        /// </summary>
+        /// <param name="prefix">前缀</param>
+        /// <returns></returns>
+        public RedisOptions SetPrefix(string prefix)
+        {
+            this.Prefix = prefix;
+            return this;
+        }
+
+        #endregion
+
+        #region 设置数据库
+
+        /// <summary>
+        /// 设置数据库
+        /// </summary>
+        /// <param name="dataBase">数据库下标</param>
+        /// <returns></returns>
+        public RedisOptions SetDataBase(int dataBase)
+        {
+            this.DataBase = dataBase;
+            return this;
+        }
+
+        #endregion
+
+        #region 设置线程池大小
+
+        /// <summary>
+        /// 设置线程池大小
+        /// </summary>
+        /// <param name="poolSize">线程池大小</param>
+        /// <returns></returns>
+        public RedisOptions SetPoolSize(int poolSize)
+        {
+            this.PoolSize = poolSize;
+            return this;
+        }
+
+        #endregion
+
+        #region 启用加密传输
+
+        /// <summary>
+        /// 启用加密传输
+        /// </summary>
+        /// <returns></returns>
+        public RedisOptions EnableSsl()
+        {
+            this.Ssl = true;
+            return this;
+        }
+
+        #endregion
+
+        #endregion
     }
 }

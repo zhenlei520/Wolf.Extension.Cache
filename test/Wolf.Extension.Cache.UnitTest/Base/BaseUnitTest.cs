@@ -31,13 +31,13 @@ namespace Wolf.Extension.Cache.UnitTest.Base
             var redisOption = provider.GetService<CacheOptions>();
             var cacheBuilder = provider.GetService<ICacheBuilder>();
 
-            var options=provider.GetService<IEnumerable<CacheOptions>>();
-            RedisConfigs config = options.Select(x=>x.Configuration).FirstOrDefault() as RedisConfigs;
+            var options = provider.GetService<IEnumerable<CacheOptions>>();
+            RedisConfigs config = options.Select(x => x.Configuration).FirstOrDefault() as RedisConfigs;
             var csRedisClient = new CSRedisClient(provider.GetService<IJsonFactory>(), config.NodeRuleExternal,
                 config.Sentinels, config.ReadOnly, null, config.ConnectionStrings);
 
-            var s=csRedisClient.SIsMember("tes", "asd");
-            _cacheProvider=provider.GetService<ICacheFactory>().CreateProvider();
+            var s = csRedisClient.SIsMember("tes", "asd");
+            _cacheProvider = provider.GetService<ICacheFactory>().CreateProvider();
             // CSRedisClient client = new CSRedisClient(new JsonFactory(new List<IJsonBuilder>()
             // {
             //     new JsonBuilder()
@@ -50,7 +50,9 @@ namespace Wolf.Extension.Cache.UnitTest.Base
             var serviceCollection = new ServiceCollection();
 
             serviceCollection.AddNewtonsoftJson();
-            serviceCollection.AddRedis(new RedisOptions("127.0.0.1", 6379, "", "", 0, 50, false), "");
+            serviceCollection.AddRedis(
+                new RedisOptions("127.0.0.1", 6379)
+                .SetDataBase(0), "");
             return serviceCollection.AddAutoInject("Wolf").BuildServiceProvider();
         }
     }
